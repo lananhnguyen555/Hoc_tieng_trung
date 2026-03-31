@@ -1,6 +1,10 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import { Plus, Trash2, Edit2, Save, X, FileUp, Download } from "lucide-react";
 import styles from "./admin.module.css";
 import HanziSuggester from "@/components/HanziSuggester";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminPage() {
   const [vocab, setVocab] = useState<any[]>([]);

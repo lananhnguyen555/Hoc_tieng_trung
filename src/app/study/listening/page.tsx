@@ -20,26 +20,22 @@ export default function ListeningPage() {
   // Generate random options (including the correct one)
   const options = MOCK_WORDS.map(w => w.word);
 
-  const playAudio = async () => {
-    setAudioLoading(true);
-    try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        body: JSON.stringify({ text: current.word }),
-      });
-
-      if (!res.ok) throw new Error("TTS failed");
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.play();
-    } catch (err) {
-      console.error(err);
-      alert("Hãy cấu hình OPENAI_API_KEY để sử dụng tính năng này.");
-    } finally {
-      setAudioLoading(false);
+  const playAudio = () => {
+    if (!window.speechSynthesis) {
+      alert("Trình duyệt không hỗ trợ phát âm.");
+      return;
     }
+    setAudioLoading(true);
+    
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(current.word);
+    utterance.lang = "zh-CN";
+    utterance.rate = 0.8;
+    
+    utterance.onend = () => setAudioLoading(false);
+    utterance.onerror = () => setAudioLoading(false);
+    
+    window.speechSynthesis.speak(utterance);
   };
 
   const handleOptionClick = (word: string) => {

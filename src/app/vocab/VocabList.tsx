@@ -38,6 +38,18 @@ export default function VocabList() {
     fetchData();
   }, []);
 
+  const speak = (text: string) => {
+    if (!window.speechSynthesis) {
+      alert("Trình duyệt không hỗ trợ phát âm.");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "zh-CN";
+    utterance.rate = 0.8;
+    window.speechSynthesis.speak(utterance);
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -196,10 +208,12 @@ export default function VocabList() {
   };
 
   const filteredVocab = vocab.filter(item => {
+    if (selectedLessonId === "all") return false; // Hien tai khong hien thi gi o trang 'Tat ca'
+    
     const matchesSearch = item.word.includes(search) ||
                           item.pinyin.toLowerCase().includes(search.toLowerCase()) ||
                           item.meaning.toLowerCase().includes(search.toLowerCase());
-    const matchesLesson = selectedLessonId === "all" || item.lesson_id === selectedLessonId;
+    const matchesLesson = item.lesson_id === selectedLessonId;
     return matchesSearch && matchesLesson;
   });
 
@@ -244,25 +258,29 @@ export default function VocabList() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className={styles.buttonGroup}>
-            <button className={styles.actionBtn} onClick={() => {
-              setNewWord(prev => ({...prev, lesson_id: selectedLessonId !== "all" ? selectedLessonId : ""}));
-              setShowImportModal(true);
-            }}>
-              <FileUp size={18} /> Nhập CSV
-            </button>
-            <button className={`${styles.actionBtn} ${styles.primaryBtn}`} onClick={() => {
-              setNewWord(prev => ({...prev, lesson_id: selectedLessonId !== "all" ? selectedLessonId : ""}));
-              setShowAddModal(true);
-            }}>
-              <Plus size={18} /> Thêm từ mới
-            </button>
-          </div>
+          {selectedLessonId !== "all" && (
+            <div className={styles.buttonGroup}>
+              <button className={styles.actionBtn} onClick={() => {
+                setNewWord(prev => ({...prev, lesson_id: selectedLessonId}));
+                setShowImportModal(true);
+              }}>
+                <FileUp size={18} /> Nhập CSV
+              </button>
+              <button className={`${styles.actionBtn} ${styles.primaryBtn}`} onClick={() => {
+                setNewWord(prev => ({...prev, lesson_id: selectedLessonId}));
+                setShowAddModal(true);
+              }}>
+                <Plus size={18} /> Thêm từ mới
+              </button>
+            </div>
+          )}
         </div>
 
         <div className={styles.grid}>
           {loading ? (
             <div className={styles.loader}>Đang tải dữ liệu...</div>
+          ) : selectedLessonId === "all" ? (
+            <div className={styles.empty}>Vui lòng chọn một buổi học ở bên trái để bắt đầu.</div>
           ) : filteredVocab.length === 0 ? (
             <div className={styles.empty}>Chưa có từ vựng nào trong buổi này.</div>
           ) : (
@@ -273,7 +291,13 @@ export default function VocabList() {
                 onClick={() => setSelectedWord(item)}
               >
                 <div className={styles.cardHeader}>
-                  <button className={styles.audioBtn}>
+                  <button 
+                    className={styles.audioBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      speak(item.word);
+                    }}
+                  >
                     <Play size={16} fill="currentColor" />
                   </button>
                 </div>

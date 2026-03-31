@@ -99,7 +99,7 @@ export default function QuizPage() {
   };
 
   const nextQuestion = () => {
-    if (step < MOCK_QUESTIONS.length - 1) {
+    if (step < questions.length - 1) {
       setStep(step + 1);
       setSelectedOption(null);
       setIsCorrect(null);
