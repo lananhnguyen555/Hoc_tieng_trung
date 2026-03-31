@@ -1,0 +1,54 @@
+.container {
+  padding: 3rem 0;
+}
+
+.header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-muted);
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.grammarCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.grammarCard h2 {
+  color: var(--primary);
+  font-size: 1.5rem;
+}
+
+.content {
+  font-size: 1.1rem;
+}
+
+.exampleBox {
+  background: var(--background);
+  padding: 1rem;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--primary);
+}
+
+.exampleBox strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+}
