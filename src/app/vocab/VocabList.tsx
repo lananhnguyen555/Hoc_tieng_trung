@@ -454,7 +454,7 @@ export default function VocabList() {
                   pinyin={newWord.pinyin} 
                   onSelect={(char, _) => {
                     const fullChar = newWord.word + char;
-                    const fullPinyin = getPinyin(fullChar, { toneType: "symbol" });
+                    const fullPinyin = getPinyin(fullChar, { toneType: "symbol" }).replace(/\s+/g, '');
                     setNewWord({...newWord, word: fullChar, pinyin: fullPinyin});
                   }} 
                 />
@@ -554,8 +554,8 @@ export default function VocabList() {
                   pinyin={editingWord.pinyin} 
                   onSelect={(char, accented) => {
                     const fullChar = editingWord.word + char;
-                    const fullPinyin = getPinyin(fullChar, { toneType: "symbol" });
-                    setEditingWord({...editingWord, word: fullChar, pinyin: fullPinyin});
+                    const fullPinyin = getPinyin(fullChar, { toneType: "symbol" }).replace(/\s+/g, '');
+                    setNewWord({...editingWord, word: fullChar, pinyin: fullPinyin});
                   }} 
                 />
               </div>
