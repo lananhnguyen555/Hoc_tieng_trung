@@ -224,9 +224,12 @@
 
 .iconBtn {
   color: var(--text-muted);
-  padding: 0.25rem;
-  border-radius: 4px;
+  padding: 0.6rem;
+  border-radius: 8px;
   transition: all 0.2s ease;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .iconBtn:hover {
@@ -234,13 +237,23 @@
   color: var(--primary);
 }
 
+.iconBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
 .audioBtn {
   color: var(--text-muted);
   transition: color 0.2s ease;
+  padding: 0.6rem;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
-.audioBtn:hover {
-  color: var(--primary);
+.audioBtn svg {
+  width: 22px;
+  height: 22px;
 }
 
 .cardMain {
@@ -251,7 +264,7 @@
 }
 
 .word {
-  font-size: 3rem;
+  font-size: 2.2rem;
   font-weight: 800;
   color: var(--foreground);
 }
@@ -434,6 +447,28 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.exampleToggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.exampleToggle label {
+  font-size: 0.8rem;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+}
+
+.emptyExample {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
 }
 
 .formGroup {

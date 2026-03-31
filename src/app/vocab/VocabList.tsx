@@ -6,6 +6,7 @@ import styles from "./vocab.module.css";
 import HanziWriter from "hanzi-writer";
 import { supabase } from "@/lib/supabase";
 import HanziSuggester from "@/components/HanziSuggester";
+import { pinyin as getPinyin } from "pinyin-pro";
 
 // MOCK DATA
 const MOCK_VOCAB = [
@@ -33,7 +34,15 @@ export default function VocabList() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form States
-  const [newWord, setNewWord] = useState({ word: "", pinyin: "", meaning: "", lesson_id: "" });
+  const [newWord, setNewWord] = useState({ 
+    word: "", 
+    pinyin: "", 
+    meaning: "", 
+    lesson_id: "",
+    example_cn: "",
+    example_py: "",
+    example_vi: ""
+  });
   const [newLessonName, setNewLessonName] = useState("");
 
   useEffect(() => {
@@ -124,7 +133,15 @@ export default function VocabList() {
     
     setVocab(prev => [...prev, newEntry]);
     setShowAddModal(false);
-    setNewWord({ word: "", pinyin: "", meaning: "", lesson_id: selectedLessonId !== "all" ? selectedLessonId : "" });
+    setNewWord({ 
+      word: "", 
+      pinyin: "", 
+      meaning: "", 
+      lesson_id: selectedLessonId !== "all" ? selectedLessonId : "",
+      example_cn: "",
+      example_py: "",
+      example_vi: ""
+    });
   };
 
   const handleDeleteWord = (id: string, e: React.MouseEvent) => {
@@ -375,11 +392,15 @@ export default function VocabList() {
               <div className={styles.modalRight}>
                 <h3>Ví dụ & Ngữ pháp</h3>
                 <div className={styles.exampleList}>
-                  <div className={styles.exampleItem}>
-                    <p className={styles.exampleCn}>我正在学习汉语。</p>
-                    <p className={styles.examplePy}>Wǒ zhèngzài xuéxí Hànyǔ.</p>
-                    <p className={styles.exampleVi}>Tôi đang học tiếng Hán.</p>
-                  </div>
+                  {selectedWord.example_cn ? (
+                    <div className={styles.exampleItem}>
+                      <p className={styles.exampleCn}>{selectedWord.example_cn}</p>
+                      <p className={styles.examplePy}>{selectedWord.example_py}</p>
+                      <p className={styles.exampleVi}>{selectedWord.example_vi}</p>
+                    </div>
+                  ) : (
+                    <div className={styles.emptyExample}>Chưa có ví dụ cho từ này. Bạn có thể tự thêm ở phần Sửa.</div>
+                  )}
                 </div>
                 <button className={styles.aiGenBtn}>
                   <BookOpen size={16} /> Sinh ví dụ với AI
@@ -431,7 +452,11 @@ export default function VocabList() {
                 />
                 <HanziSuggester 
                   pinyin={newWord.pinyin} 
-                  onSelect={(char, accented) => setNewWord({...newWord, word: newWord.word + char, pinyin: accented})} 
+                  onSelect={(char, _) => {
+                    const fullChar = newWord.word + char;
+                    const fullPinyin = getPinyin(fullChar, { toneType: "symbol" });
+                    setNewWord({...newWord, word: fullChar, pinyin: fullPinyin});
+                  }} 
                 />
               </div>
               <div className={styles.formGroup}>
@@ -444,6 +469,29 @@ export default function VocabList() {
                   required 
                 />
               </div>
+              
+              <div className={styles.exampleToggle}>
+                <label>Ví dụ (Không bắt buộc)</label>
+                <input 
+                  type="text" 
+                  placeholder="Tiếng Trung"
+                  value={newWord.example_cn || ""}
+                  onChange={e => setNewWord({...newWord, example_cn: e.target.value})}
+                />
+                <input 
+                  type="text" 
+                  placeholder="Pinyin"
+                  value={newWord.example_py || ""}
+                  onChange={e => setNewWord({...newWord, example_py: e.target.value})}
+                />
+                <input 
+                  type="text" 
+                  placeholder="Nghĩa tiếng Việt"
+                  value={newWord.example_vi || ""}
+                  onChange={e => setNewWord({...newWord, example_vi: e.target.value})}
+                />
+              </div>
+
               <button type="submit" className="btn-primary">Lưu lại</button>
             </form>
           </div>
@@ -504,7 +552,11 @@ export default function VocabList() {
                 />
                 <HanziSuggester 
                   pinyin={editingWord.pinyin} 
-                  onSelect={(char, accented) => setEditingWord({...editingWord, word: editingWord.word + char, pinyin: accented})} 
+                  onSelect={(char, accented) => {
+                    const fullChar = editingWord.word + char;
+                    const fullPinyin = getPinyin(fullChar, { toneType: "symbol" });
+                    setEditingWord({...editingWord, word: fullChar, pinyin: fullPinyin});
+                  }} 
                 />
               </div>
               <div className={styles.formGroup}>
@@ -516,6 +568,29 @@ export default function VocabList() {
                   required 
                 />
               </div>
+
+              <div className={styles.exampleToggle}>
+                <label>Ví dụ (Không bắt buộc)</label>
+                <input 
+                  type="text" 
+                  placeholder="Tiếng Trung"
+                  value={editingWord.example_cn || ""}
+                  onChange={e => setEditingWord({...editingWord, example_cn: e.target.value})}
+                />
+                <input 
+                  type="text" 
+                  placeholder="Pinyin"
+                  value={editingWord.example_py || ""}
+                  onChange={e => setEditingWord({...editingWord, example_py: e.target.value})}
+                />
+                <input 
+                  type="text" 
+                  placeholder="Nghĩa tiếng Việt"
+                  value={editingWord.example_vi || ""}
+                  onChange={e => setEditingWord({...editingWord, example_vi: e.target.value})}
+                />
+              </div>
+
               <button type="submit" className="btn-primary">Cập nhật</button>
             </form>
           </div>
