@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Play, BookOpen, RefreshCw, Plus, FileUp, X, Download } from "lucide-react";
+import { Search, Play, BookOpen, RefreshCw, Plus, FileUp, X, Download, Trash2, Edit2 } from "lucide-react";
 import styles from "./vocab.module.css";
 import HanziWriter from "hanzi-writer";
 import { supabase } from "@/lib/supabase";
@@ -25,8 +25,10 @@ export default function VocabList() {
   const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddLessonModal, setShowAddLessonModal] = useState(false);
+  const [editingWord, setEditingWord] = useState<any>(null);
   const writerRef = useRef<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -113,7 +115,8 @@ export default function VocabList() {
     const newEntry = { 
       ...newWord, 
       id: `local-word-${Date.now()}`,
-      lesson: lessonObj?.name || "Cá nhân"
+      lesson: lessonObj?.name || "Cá nhân",
+      lesson_id: newWord.lesson_id
     };
 
     const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
@@ -122,6 +125,34 @@ export default function VocabList() {
     setVocab(prev => [...prev, newEntry]);
     setShowAddModal(false);
     setNewWord({ word: "", pinyin: "", meaning: "", lesson_id: selectedLessonId !== "all" ? selectedLessonId : "" });
+  };
+
+  const handleDeleteWord = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Xóa từ vựng này?")) return;
+    
+    // Remote delete if applicable, or just local
+    const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+    const updatedLocal = localVocab.filter((v: any) => v.id !== id);
+    localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
+    
+    setVocab(prev => prev.filter(v => v.id !== id));
+  };
+
+  const openEditModal = (word: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingWord({ ...word });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateWord = (e: React.FormEvent) => {
+    e.preventDefault();
+    const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+    const updatedLocal = localVocab.map((v: any) => v.id === editingWord.id ? editingWord : v);
+    localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
+    
+    setVocab(prev => prev.map(v => v.id === editingWord.id ? editingWord : v));
+    setShowEditModal(false);
   };
 
   const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -291,15 +322,25 @@ export default function VocabList() {
                 onClick={() => setSelectedWord(item)}
               >
                 <div className={styles.cardHeader}>
-                  <button 
-                    className={styles.audioBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      speak(item.word);
-                    }}
-                  >
-                    <Play size={16} fill="currentColor" />
-                  </button>
+                  <div className={styles.leftActions}>
+                    <button 
+                      className={styles.audioBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        speak(item.word);
+                      }}
+                    >
+                      <Play size={16} fill="currentColor" />
+                    </button>
+                  </div>
+                  <div className={styles.rightActions}>
+                    <button className={styles.iconBtn} onClick={(e) => openEditModal(item, e)}>
+                      <Edit2 size={14} />
+                    </button>
+                    <button className={styles.iconBtn} onClick={(e) => handleDeleteWord(item.id, e)}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
                 <div className={styles.cardMain}>
                   <span className={styles.word}>{item.word}</span>
@@ -390,7 +431,7 @@ export default function VocabList() {
                 />
                 <HanziSuggester 
                   pinyin={newWord.pinyin} 
-                  onSelect={(char) => setNewWord({...newWord, word: newWord.word + char})} 
+                  onSelect={(char, accented) => setNewWord({...newWord, word: newWord.word + char, pinyin: accented})} 
                 />
               </div>
               <div className={styles.formGroup}>
@@ -430,6 +471,52 @@ export default function VocabList() {
                 />
               </div>
               <button type="submit" className="btn-primary">Tạo buổi học</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Word Modal */}
+      {showEditModal && editingWord && (
+        <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
+          <div className={`card ${styles.smallModal}`} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeaderRow}>
+              <h2>Sửa từ vựng</h2>
+              <button onClick={() => setShowEditModal(false)}><X size={24} /></button>
+            </div>
+            <form onSubmit={handleUpdateWord} className={styles.addForm}>
+              <div className={styles.formGroup}>
+                <label>Pinyin</label>
+                <input 
+                  type="text" 
+                  value={editingWord.pinyin} 
+                  onChange={e => setEditingWord({...editingWord, pinyin: e.target.value})}
+                  required 
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Hán tự</label>
+                <input 
+                  type="text" 
+                  value={editingWord.word} 
+                  onChange={e => setEditingWord({...editingWord, word: e.target.value})}
+                  required 
+                />
+                <HanziSuggester 
+                  pinyin={editingWord.pinyin} 
+                  onSelect={(char, accented) => setEditingWord({...editingWord, word: editingWord.word + char, pinyin: accented})} 
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Nghĩa</label>
+                <input 
+                  type="text" 
+                  value={editingWord.meaning} 
+                  onChange={e => setEditingWord({...editingWord, meaning: e.target.value})}
+                  required 
+                />
+              </div>
+              <button type="submit" className="btn-primary">Cập nhật</button>
             </form>
           </div>
         </div>

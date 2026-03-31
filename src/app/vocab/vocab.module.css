@@ -204,6 +204,36 @@
   font-weight: 600;
 }
 
+.leftActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.rightActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.vocabCard:hover .rightActions {
+  opacity: 1;
+}
+
+.iconBtn {
+  color: var(--text-muted);
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.iconBtn:hover {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--primary);
+}
+
 .audioBtn {
   color: var(--text-muted);
   transition: color 0.2s ease;

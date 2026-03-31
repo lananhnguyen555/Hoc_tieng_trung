@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { PINYIN_TO_HANZI } from "@/lib/pinyin-data";
 import styles from "./suggester.module.css";
+import { pinyin as getPinyin } from "pinyin-pro";
 
 interface Props {
   pinyin: string;
-  onSelect: (char: string) => void;
+  onSelect: (char: string, accented: string) => void;
 }
 
 export default function HanziSuggester({ pinyin, onSelect }: Props) {
@@ -22,7 +23,6 @@ export default function HanziSuggester({ pinyin, onSelect }: Props) {
     const cleanPinyin = pinyin.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/v/g, "ü");
     
     // Find suggestions for each syllable if it's a multi-syllable word
-    // For simplicity, we just look at the last syllable or the whole thing
     const syllables = cleanPinyin.split(/\s+/);
     const lastSyllable = syllables[syllables.length - 1];
     
@@ -38,7 +38,10 @@ export default function HanziSuggester({ pinyin, onSelect }: Props) {
         <button
           key={`${char}-${index}`}
           className={styles.suggestion}
-          onClick={() => onSelect(char)}
+          onClick={() => {
+            const accented = getPinyin(char, { toneType: "symbol" });
+            onSelect(char, accented);
+          }}
           type="button"
         >
           {char}
