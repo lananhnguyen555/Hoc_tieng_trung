@@ -2,41 +2,79 @@
 
 import React from 'react';
 import styles from './phonetics.module.css';
+import { Volume2 } from 'lucide-react';
 
-const INITIALS = [
-  { pinyin: 'b', sound: '[pua]', speak: 'bo', description: 'Đọc là [pua] (kết hợp với "ua")' },
-  { pinyin: 'p', sound: '[pua]', speak: 'po', description: 'Đọc là [pua] (kèm bật hơi)' },
-  { pinyin: 'm', sound: '[mua]', speak: 'mo', description: 'Đọc là [mua] (kết hợp với "ua")' },
-  { pinyin: 'f', sound: '[phua]', speak: 'fo', description: 'Đọc là [phua] (kết hợp với "ua")' },
-  { pinyin: 'd', sound: '[tưa]', speak: 'de', description: 'Đọc là [tưa] (kết hợp với "ưa")' },
-  { pinyin: 't', sound: '[thưa]', speak: 'te', description: 'Đọc là [thưa] (kèm bật hơi)' },
-  { pinyin: 'n', sound: '[nưa]', speak: 'ne', description: 'Đọc là [nưa] (kết hợp với "ưa")' },
-  { pinyin: 'l', sound: '[lưa]', speak: 'le', description: 'Đọc là [lưa] (kết hợp với "ưa")' },
-  { pinyin: 'g', sound: '[cưa]', speak: 'ge', description: 'Đọc là [cưa] (kết hợp với "ưa")' },
-  { pinyin: 'k', sound: '[khưa]', speak: 'ke', description: 'Đọc là [khưa] (kèm bật hơi)' },
-  { pinyin: 'h', sound: '[khưa]', speak: 'he', description: 'Đọc là [khưa] (không bật hơi)' },
-  { pinyin: 'j', sound: '[chi]', speak: 'ji', description: 'Đọc là [chi] (kết hợp với "i")' },
-  { pinyin: 'q', sound: '[chi]', speak: 'qi', description: 'Đọc là [chi] (kèm bật hơi)' },
-  { pinyin: 'x', sound: '[xi]', speak: 'xi', description: 'Đọc là [xi] (không bật hơi)' },
-  { pinyin: 'z', sound: '[chư]', speak: 'zi', description: 'Đọc là [chư] (dứt khoát)' },
-  { pinyin: 'c', sound: '[chư]', speak: 'ci', description: 'Đọc là [chư] (kèm bật hơi)' },
-  { pinyin: 's', sound: '[xư]', speak: 'si', description: 'Đọc là [xư] (không bật hơi)' },
-  { pinyin: 'zh', sound: '[trư]', speak: 'zhi', description: 'Đọc là [trư] (không cuốn lưỡi)' },
-  { pinyin: 'ch', sound: '[trư]', speak: 'chi', description: 'Đọc là [trư] (kèm bật hơi)' },
-  { pinyin: 'sh', sound: '[sư]', speak: 'shi', description: 'Đọc là [sư] (cong lưỡi)' },
-  { pinyin: 'r', sound: '[rư]', speak: 'ri', description: 'Đọc tương tự [rư]' },
+interface InitialItem {
+  pinyin: string;
+  combination: string;
+  sound: string;
+  speak: string;
+  instruction: string;
+}
+
+const INITIAL_GROUPS = [
+  {
+    name: "Âm hai môi + âm môi răng",
+    items: [
+      { pinyin: 'b', combination: 'b + o', sound: 'pua', speak: 'bo', instruction: 'Mím môi rồi bật hơi nhẹ nhàng.' },
+      { pinyin: 'p', combination: 'p + o', sound: 'pua (bật hơi)', speak: 'po', instruction: 'Mím môi rồi bật hơi thật mạnh.' },
+      { pinyin: 'm', combination: 'm + o', sound: 'mua', speak: 'mo', instruction: 'Mím môi nhẹ nhàng, âm đi qua mũi.' },
+      { pinyin: 'f', combination: 'f + o', sound: 'phua', speak: 'fo', instruction: 'Răng trên chạm nhẹ môi dưới.' },
+    ]
+  },
+  {
+    name: "Âm đầu lưỡi",
+    items: [
+      { pinyin: 'd', combination: 'd + e', sound: 'tưa', speak: 'de', instruction: 'Đầu lưỡi chạm vào lợi hàm trên.' },
+      { pinyin: 't', combination: 't + e', sound: 'thưa (bật hơi)', speak: 'te', instruction: 'Đầu lưỡi chạm lợi, bật hơi mạnh.' },
+      { pinyin: 'n', combination: 'n + e', sound: 'nưa', speak: 'ne', instruction: 'Âm đi qua mũi, đầu lưỡi chạm lợi.' },
+      { pinyin: 'l', combination: 'l + e', sound: 'lưa', speak: 'le', instruction: 'Đầu lưỡi hạ thấp, âm đi hai bên.' },
+    ]
+  },
+  {
+    name: "Âm gốc lưỡi",
+    items: [
+      { pinyin: 'g', combination: 'g + e', sound: 'cưa', speak: 'ge', instruction: 'Gốc lưỡi nâng cao chạm vòm họng.' },
+      { pinyin: 'k', combination: 'k + e', sound: 'khưa (bật hơi)', speak: 'ke', instruction: 'Gốc lưỡi nâng cao, bật hơi mạnh.' },
+      { pinyin: 'h', combination: 'h + e', sound: 'khưa', speak: 'he', instruction: 'Lưỡi thả lỏng, đẩy hơi nhẹ nhàng.' },
+    ]
+  },
+  {
+    name: "Âm mặt lưỡi",
+    items: [
+      { pinyin: 'j', combination: 'j + i', sound: 'chi', speak: 'ji', instruction: 'Mặt lưỡi phẳng, nhè nhẹ đẩy hơi.' },
+      { pinyin: 'q', combination: 'q + i', sound: 'chi (bật hơi)', speak: 'qi', instruction: 'Mặt lưỡi phẳng, bật hơi thật mạnh.' },
+      { pinyin: 'x', combination: 'x + i', sound: 'xi', speak: 'xi', instruction: 'Mặt lưỡi phẳng, đẩy hơi qua khe hẹp.' },
+    ]
+  },
+  {
+    name: "Âm lưỡi trước",
+    items: [
+      { pinyin: 'z', combination: 'z + i', sound: 'chư (dứt khoát)', speak: 'zi', instruction: 'Đầu lưỡi chạm mặt sau răng trên.' },
+      { pinyin: 'c', combination: 'c + i', sound: 'chư (bật hơi)', speak: 'ci', instruction: 'Đầu lưỡi chạm răng trên, bật hơi mạnh.' },
+      { pinyin: 's', combination: 's + i', sound: 'xư', speak: 'si', instruction: 'Đầu lưỡi gần răng trên, đẩy hơi nhẹ.' },
+    ]
+  },
+  {
+    name: "Âm lưỡi sau",
+    items: [
+      { pinyin: 'zh', combination: 'zh + i', sound: 'trư', speak: 'zhi', instruction: 'Uốn lưỡi chạm vòm họng cứng.' },
+      { pinyin: 'ch', combination: 'ch + i', sound: 'trư (bật hơi)', speak: 'chi', instruction: 'Uốn lưỡi chạm vòm, bật hơi mạnh.' },
+      { pinyin: 'sh', combination: 'sh + i', sound: 'sư', speak: 'shi', instruction: 'Uốn lưỡi gần vòm họng, đẩy hơi.' },
+      { pinyin: 'r', combination: 'r + i', sound: 'rư', speak: 'ri', instruction: 'Uốn lưỡi, không rung dây thanh quản.' },
+    ]
+  }
 ];
 
 export default function InitialsTable() {
   const playAudio = (text: string) => {
     if (typeof window === 'undefined') return;
     
-    // Use Google Translate TTS (High Quality)
-    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh-CN&client=tw-ob`;
+    // Using a more robust human-sounding audio source (Yoyochinese or Google TTS Fallback)
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh-CN&client=tw-ob&ts=${Date.now()}`;
     const audio = new Audio(audioUrl);
     
     audio.play().catch(() => {
-      // Fallback to local TTS if Google TTS fails
       const utterance = new window.SpeechSynthesisUtterance(text);
       utterance.lang = 'zh-CN';
       window.speechSynthesis.speak(utterance);
@@ -46,14 +84,42 @@ export default function InitialsTable() {
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>21 Thanh Mẫu (Phụ âm đầu)</h2>
-      <div className={styles.grid}>
-        {INITIALS.map((item) => (
-          <div key={item.pinyin} className={styles.card} onClick={() => playAudio(item.speak)}>
-            <div className={styles.pinyin}>{item.pinyin}</div>
-            <div className={styles.sound}>{item.sound}</div>
-            <div className={styles.desc}>{item.description}</div>
-          </div>
-        ))}
+      <p className={styles.subtitle}>Phát âm chuẩn theo trình tự: Thanh mẫu -> Kết hợp -> Cách đọc</p>
+      
+      <div className={styles.tableWrapper}>
+        <table className={styles.pinyinTable}>
+          <thead>
+            <tr>
+              <th>Thanh mẫu</th>
+              <th>Nghe âm</th>
+              <th>Kết hợp Pinyin</th>
+              <th>Cách đọc (Gần giống)</th>
+              <th>Hướng dẫn phát âm</th>
+            </tr>
+          </thead>
+          <tbody>
+            {INITIAL_GROUPS.map((group) => (
+              <React.Fragment key={group.name}>
+                <tr className={styles.groupRow}>
+                  <td colSpan={5}>{group.name}</td>
+                </tr>
+                {group.items.map((item) => (
+                  <tr key={item.pinyin} className={styles.dataRow}>
+                    <td className={styles.pinyinCell}>{item.pinyin}</td>
+                    <td>
+                      <button className={styles.playBtn} onClick={() => playAudio(item.speak)}>
+                        <Volume2 size={20} />
+                      </button>
+                    </td>
+                    <td className={styles.combinationCell}>{item.combination}</td>
+                    <td className={styles.soundCell}>{item.sound}</td>
+                    <td className={styles.instructionCell}>{item.instruction}</td>
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

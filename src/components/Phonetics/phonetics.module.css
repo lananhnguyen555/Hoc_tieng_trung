@@ -10,177 +10,132 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 1.5rem;
+  margin-bottom: 4rem;
 }
 
 .sectionTitle {
   font-size: 2.25rem;
   font-weight: 800;
   text-align: center;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .sectionTitle::after {
   content: '';
-  width: 80px;
+  width: 60px;
   height: 4px;
   background: var(--primary);
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
   border-radius: 2px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.5rem;
+.subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-bottom: 2rem;
 }
 
-.card {
+/* Premium Table Styling (Prep Style) */
+.tableWrapper {
+  overflow-x: auto;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  border-color: var(--primary);
-  box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.2);
+.pinyinTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
 }
 
-.pinyin {
-  font-size: 2rem;
+.pinyinTable th {
+  background: rgba(14, 165, 233, 0.05);
+  padding: 1.5rem 1rem;
+  text-align: left;
   font-weight: 800;
   color: var(--primary);
-  margin-bottom: 0.5rem;
-}
-
-.sound {
-  font-size: 1rem;
-  color: var(--foreground);
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.desc {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-/* Groups Layout for Initials */
-.groupsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-}
-
-.groupWrapper {
-  border-left: 4px solid var(--primary);
-  padding-left: 2rem;
-}
-
-.groupTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border);
+  font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.initialsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1.5rem;
+.pinyinTable td {
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 1rem;
+  color: var(--foreground);
 }
 
-.initialCard {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
+.groupRow td {
+  background: rgba(14, 165, 233, 0.02);
+  font-weight: 800;
+  color: var(--foreground);
+  padding: 1rem;
+  border-left: 4px solid var(--primary);
+  font-size: 1.1rem;
 }
 
-.initialCard:hover {
-  transform: translateY(-4px);
-  border-color: var(--primary);
-  box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.3);
+.dataRow:hover {
+  background: rgba(14, 165, 233, 0.02);
 }
 
-.initialHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-}
-
-.pinyinLarge {
-  font-size: 2.5rem;
+.pinyinCell {
+  font-size: 2rem;
   font-weight: 800;
   color: var(--primary);
-  line-height: 1;
+  width: 120px;
 }
 
-.infoBtn {
+.playBtn {
   background: rgba(14, 165, 233, 0.1);
   color: var(--primary);
-  padding: 0.5rem;
+  padding: 0.75rem;
   border-radius: 50%;
   border: none;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
 }
 
-.infoBtn:hover {
+.playBtn:hover {
   background: var(--primary);
   color: white;
+  transform: scale(1.1);
 }
 
-.initialHint {
+/* Specific Cell styling */
+.combinationCell {
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  margin-bottom: 0.25rem;
-  font-size: 1rem;
-}
-
-.initialDetail {
-  font-size: 0.875rem;
   color: var(--text-muted);
 }
 
-/* Finals Layout */
+.soundCell {
+  font-style: italic;
+  font-weight: 700;
+}
+
+.instructionCell {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 400px;
+}
+
+/* Finals Layout (Remains Modern Tags) */
 .finalsWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-}
-
-.finalGroupBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.finalGroupName {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.finalsGrid {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  justify-content: center;
 }
 
 .finalTag {
@@ -203,18 +158,49 @@
   transform: scale(1.05);
 }
 
-.finalInfoBtn {
-  color: var(--text-muted);
-  background: transparent;
-  border: none;
+/* Modal and Pinyin Table Grid */
+.combinationGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.tableContainer {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+}
+
+.fullTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 0.8rem;
+}
+
+.fullTable th, .fullTable td {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.fullTable th {
+  background: #f8fafc;
+  font-weight: 700;
+}
+
+.cell {
   cursor: pointer;
+  padding: 4px;
 }
 
-.finalInfoBtn:hover {
-  color: var(--primary);
+.cell:hover {
+  background: var(--primary);
+  color: white;
 }
 
-/* Modal System */
+/* Tones UI Extension */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -228,92 +214,8 @@
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
-  animation: fadeIn 0.2s ease-out;
 }
 
-.modalContent {
-  background: var(--card-bg);
-  width: 100%;
-  max-width: 600px;
-  border-radius: 1.5rem;
-  padding: 2.5rem;
-  position: relative;
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.closeBtn {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.modalHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-}
-
-.modalPinyin {
-  font-size: 4rem;
-  font-weight: 800;
-  color: var(--primary);
-}
-
-.modalSpeakBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--primary);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 100px;
-  border: none;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.modalSpeakBtn:hover {
-  transform: scale(1.05);
-  filter: brightness(1.1);
-}
-
-.modalBody {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.modalRow {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.modalRow strong {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.instructionText {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  color: var(--foreground);
-  background: rgba(0, 0, 0, 0.02);
-  padding: 1.5rem;
-  border-radius: 1rem;
-  border-left: 3px solid var(--primary);
-}
-
-/* Tone Selection */
 .tonePopContent {
   background: var(--card-bg);
   width: 100%;
@@ -325,15 +227,16 @@
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 .popHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
-}
-
-.accentText {
-  color: var(--primary);
 }
 
 .toneGrid {
@@ -352,31 +255,19 @@
   border: 1px solid var(--border);
   border-radius: 1rem;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .toneBtn:hover {
   border-color: var(--primary);
-  background: rgba(14, 165, 233, 0.05);
 }
 
 .tonedChar {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 800;
   color: var(--primary);
 }
 
 .toneLabel {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
 }
