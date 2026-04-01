@@ -2,17 +2,37 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Moon, Sun, BookOpen, GraduationCap, Scale, Home } from "lucide-react";
+import { Moon, Sun, BookOpen, GraduationCap, Scale, Home, LogIn, LogOut, User } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
   const [theme, setTheme] = useState("light");
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
     setTheme(savedTheme);
     document.documentElement.setAttribute("data-theme", savedTheme);
+
+    // Check Auth
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -25,7 +45,7 @@ export default function Navbar() {
     <header className={`${styles.header} glass`}>
       <nav className={`${styles.nav} container`}>
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoText}> Học Tiếng Trung</span>
+          <span className={styles.logoText}> Học Tiếng Trung <span className={styles.betaBadge}>BETA</span></span>
         </Link>
 
         <div className={styles.links}>
@@ -41,6 +61,19 @@ export default function Navbar() {
           <Link href="/rules" className={styles.link}>
             <Scale size={20} /> <span>Quy tắc</span>
           </Link>
+          
+          {user ? (
+            <div className={styles.userSection}>
+              <span className={styles.userEmail}><User size={16} /> {user.email?.split('@')[0]}</span>
+              <button onClick={handleLogout} className={styles.logoutBtn}>
+                <LogOut size={20} />
+              </button>
+            </div>
+          ) : (
+            <Link href="/auth" className={styles.loginLink}>
+              <LogIn size={20} /> <span>Đăng nhập</span>
+            </Link>
+          )}
         </div>
 
         <button onClick={toggleTheme} className={styles.themeToggle}>

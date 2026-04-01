@@ -50,11 +50,65 @@
   opacity: 1;
 }
 
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border);
+}
+
+.userEmail {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.logoutBtn {
+  padding: 0.4rem;
+  border-radius: 6px;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.loginLink {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+  transition: all 0.2s ease;
+}
+
+.loginLink:hover {
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.betaBadge {
+  font-size: 0.65rem;
+  background: var(--primary);
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
 .themeToggle {
   color: var(--foreground);
   padding: 0.5rem;
   border-radius: 50%;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
