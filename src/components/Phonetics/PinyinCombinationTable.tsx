@@ -7,7 +7,7 @@ import { Volume2, X } from 'lucide-react';
 const INITIALS = ['b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'zh', 'ch', 'sh', 'r', 'z', 'c', 's'];
 const FINALS_SAMPLE = ['a', 'o', 'e', 'i', 'u', 'ai', 'ei', 'ao', 'ou', 'ie', 'an', 'en', 'in', 'ang', 'eng', 'ing', 'ong'];
 
-// Bảng dấu thanh điệu đầy đủ cho từng nguyên âm
+// Bảng dấu thanh điệu Unicode đầy đủ [0=không dấu, 1=bằng, 2=sắc, 3=hỏi, 4=nặng]
 const TONE_MARKS: Record<string, string[]> = {
   'a': ['a', 'ā', 'á', 'ǎ', 'à'],
   'o': ['o', 'ō', 'ó', 'ǒ', 'ò'],
@@ -17,22 +17,20 @@ const TONE_MARKS: Record<string, string[]> = {
   'ü': ['ü', 'ǖ', 'ǘ', 'ǚ', 'ǜ'],
 };
 
-// Thứ tự ưu tiên đặt dấu: a > o > e > i/u (khi đứng riêng)
+// Thứ tự ưu tiên đặt dấu thanh: a > o > e trước; ui/iu đặc biệt
 const VOWEL_PRIORITY = ['a', 'o', 'e', 'ü', 'i', 'u'];
 
-/**
- * Thêm dấu thanh điệu vào âm tiết bằng dấu Unicode thực sự.
- * Đây là cách ĐÚNG duy nhất để Web Speech API đọc đúng thanh điệu tiếng Trung.
- */
 const addToneMark = (syllable: string, tone: number): string => {
   if (tone === 0) return syllable;
 
-  // Quy tắc đặc biệt: ui → dấu trên i, iu → dấu trên u
+  // Quy tắc đặc biệt tiếng Trung Quốc:
+  // ui → dấu trên i (vì viết tắt của uei)
   if (syllable.endsWith('ui')) {
-    return syllable.slice(0, -1) + (TONE_MARKS['i'][tone] || 'i');
+    return syllable.slice(0, -1) + (TONE_MARKS['i']?.[tone] ?? 'i');
   }
+  // iu → dấu trên u (vì viết tắt của iou)
   if (syllable.endsWith('iu')) {
-    return syllable.slice(0, -1) + (TONE_MARKS['u'][tone] || 'u');
+    return syllable.slice(0, -1) + (TONE_MARKS['u']?.[tone] ?? 'u');
   }
 
   for (const v of VOWEL_PRIORITY) {
@@ -44,27 +42,31 @@ const addToneMark = (syllable: string, tone: number): string => {
 };
 
 /**
- * Phát âm bằng Web Speech API với dấu thanh điệu Unicode thực sự.
- * Đây là cách đáng tin cậy nhất để phân biệt 4 thanh điệu trong trình duyệt.
+ * Phát âm thanh điệu qua Google Translate TTS với dấu Unicode chuẩn người Trung.
+ * Google TTS nhận dấu thanh điệu Unicode và đọc đúng pitch cho từng thanh.
  */
-const speakSyllable = (syllable: string, tone: number) => {
+const playWithGoogleTTS = (syllable: string, tone: number) => {
   if (typeof window === 'undefined') return;
 
   const toned = addToneMark(syllable, tone);
-  window.speechSynthesis.cancel();
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(toned)}&tl=zh-CN&client=tw-ob&ts=${Date.now()}`;
 
-  const utterance = new window.SpeechSynthesisUtterance(toned);
-  utterance.lang = 'zh-CN';
-  utterance.rate = 0.8;
-  utterance.pitch = 1;
-  window.speechSynthesis.speak(utterance);
+  const audio = new Audio(url);
+  audio.play().catch(() => {
+    // Fallback: Web Speech API
+    window.speechSynthesis.cancel();
+    const utt = new window.SpeechSynthesisUtterance(toned);
+    utt.lang = 'zh-CN';
+    utt.rate = 0.8;
+    window.speechSynthesis.speak(utt);
+  });
 };
 
 const TONE_INFO = [
-  { num: 1, symbol: '—', name: 'Ngang', desc: 'Đọc đều, cao, không lên xuống', color: '#60a5fa' },
-  { num: 2, symbol: 'ˊ', name: 'Sắc', desc: 'Đọc lên từ giữa lên cao', color: '#34d399' },
-  { num: 3, symbol: 'ˇ', name: 'Hỏi', desc: 'Xuống rồi lên lại (xuống-hỏi)', color: '#fbbf24' },
-  { num: 4, symbol: 'ˋ', name: 'Nặng', desc: 'Đọc xuống thật mạnh', color: '#f87171' },
+  { num: 1, symbol: '—', name: 'Thanh Bằng', desc: 'Đọc cao đều, không lên xuống', color: '#60a5fa' },
+  { num: 2, symbol: 'ˊ', name: 'Thanh Dương Bình', desc: 'Từ giữa lên cao dần', color: '#34d399' },
+  { num: 3, symbol: 'ˇ', name: 'Thanh Thượng', desc: 'Xuống thấp rồi lên lại', color: '#fbbf24' },
+  { num: 4, symbol: 'ˋ', name: 'Thanh Khứ', desc: 'Từ cao xuống thấp mạnh', color: '#f87171' },
 ];
 
 export default function PinyinCombinationTable() {
@@ -127,15 +129,17 @@ export default function PinyinCombinationTable() {
                   <button
                     key={num}
                     className={styles.toneBtnLarge}
-                    onClick={() => speakSyllable(activeSyllable, num)}
-                    style={{ borderColor: color }}
+                    onClick={() => playWithGoogleTTS(activeSyllable, num)}
+                    style={{ borderColor: color + '66' }}
                   >
                     <div className={styles.toneVisual}>
                       <span className={styles.tonedCharBig} style={{ color }}>{toned}</span>
                       <Volume2 size={20} className={styles.volumeIcon} />
                     </div>
-                    <span className={styles.toneDesc} style={{ color }}>Thanh {num} {symbol}</span>
-                    <div className={styles.toneHint}>{name} — {desc}</div>
+                    <span className={styles.toneDesc} style={{ color }}>
+                      {name} {symbol}
+                    </span>
+                    <div className={styles.toneHint}>{desc}</div>
                   </button>
                 );
               })}
