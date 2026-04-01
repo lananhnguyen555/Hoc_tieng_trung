@@ -12,6 +12,22 @@ const PREP_AUDIO: Record<string, string> = {
   'i': 'https://static-assets.prepcdn.com/content-management-system/i_8603e681d4.mp3',
   'u': 'https://static-assets.prepcdn.com/content-management-system/u_1f9fe0a647.mp3',
   'ü': 'https://static-assets.prepcdn.com/content-management-system/ue_f5050fba07.mp3',
+  'ai': 'https://static-assets.prepcdn.com/content-management-system/ai_58561b30d2.mp3',
+  'ei': 'https://static-assets.prepcdn.com/content-management-system/ei_acdda1c48d.mp3',
+  'ui': 'https://static-assets.prepcdn.com/content-management-system/ui_713ccaab02.mp3',
+  'ao': 'https://static-assets.prepcdn.com/content-management-system/ao_d503dd0b47.mp3',
+  'ou': 'https://static-assets.prepcdn.com/content-management-system/ou_8b76b05e36.mp3',
+  'ie': 'https://static-assets.prepcdn.com/content-management-system/ie_5ec596fdcf.mp3',
+  'üe': 'https://static-assets.prepcdn.com/content-management-system/uee_4683c57932.mp3',
+  'er': 'https://static-assets.prepcdn.com/content-management-system/er_dfaed74852.mp3',
+  'an': 'https://static-assets.prepcdn.com/content-management-system/an_9891f2f6ce.mp3',
+  'en': 'https://static-assets.prepcdn.com/content-management-system/en_1bf99e7eea.mp3',
+  'in': 'https://static-assets.prepcdn.com/content-management-system/in_184bc5592a.mp3',
+  'un': 'https://static-assets.prepcdn.com/content-management-system/un_c9c59c31fc.mp3',
+  'ang': 'https://static-assets.prepcdn.com/content-management-system/ang_d7e5fa513e.mp3',
+  'eng': 'https://static-assets.prepcdn.com/content-management-system/eng_a36ff361f1.mp3',
+  'ing': 'https://static-assets.prepcdn.com/content-management-system/ing_eb4c50f87b.mp3',
+  'ong': 'https://static-assets.prepcdn.com/content-management-system/ong_2e0a850f2c.mp3',
 };
 
 /**
