@@ -118,6 +118,40 @@ export default function VocabList() {
     setShowAddLessonModal(false);
   };
 
+  const translateText = async (text: string) => {
+    if (!text) return "";
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      return data[0][0][0];
+    } catch (err) {
+      console.error("Translation error:", err);
+      return "";
+    }
+  };
+
+  const handleAutoTranslate = async () => {
+    if (!newWord.word) {
+      alert("Vui lòng nhập Hán tự trước khi dịch!");
+      return;
+    }
+    const translated = await translateText(newWord.word);
+    if (translated) {
+      setNewWord(prev => ({...prev, meaning: translated}));
+    }
+  };
+
+  const handleEditAutoTranslate = async () => {
+    if (!editingWord?.word) {
+      alert("Vui lòng nhập Hán tự trước khi dịch!");
+      return;
+    }
+    const translated = await translateText(editingWord.word);
+    if (translated) {
+      setEditingWord((prev: any) => ({...prev, meaning: translated}));
+    }
+  };
+
   const handleAddWord = (e: React.FormEvent) => {
     e.preventDefault();
     const lessonObj = lessons.find(l => l.id === newWord.lesson_id);
@@ -460,7 +494,16 @@ export default function VocabList() {
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Nghĩa</label>
+                <div className={styles.labelRow}>
+                  <label>Nghĩa</label>
+                  <button 
+                    type="button" 
+                    className={styles.translateBtn}
+                    onClick={handleAutoTranslate}
+                  >
+                    <RefreshCw size={12} /> Tự động dịch
+                  </button>
+                </div>
                 <input 
                   type="text" 
                   value={newWord.meaning} 
@@ -560,7 +603,16 @@ export default function VocabList() {
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Nghĩa</label>
+                <div className={styles.labelRow}>
+                  <label>Nghĩa</label>
+                  <button 
+                    type="button" 
+                    className={styles.translateBtn}
+                    onClick={handleEditAutoTranslate}
+                  >
+                    <RefreshCw size={12} /> Tự động dịch
+                  </button>
+                </div>
                 <input 
                   type="text" 
                   value={editingWord.meaning} 
