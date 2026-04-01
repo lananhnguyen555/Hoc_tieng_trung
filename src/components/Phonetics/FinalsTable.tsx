@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import styles from './phonetics.module.css';
-import { Volume2, Info, X } from 'lucide-react';
+import { Volume2, X, Info } from 'lucide-react';
 
 interface FinalItem {
   pinyin: string;
-  description: string;
+  sound: string;
+  instruction: string;
   group: string;
 }
 
@@ -19,104 +20,112 @@ const PREP_AUDIO: Record<string, string> = {
   'ü': 'https://static-assets.prepcdn.com/content-management-system/ue_f5050fba07.mp3',
 };
 
-const FINALS: FinalItem[] = [
-  // Vận mẫu đơn
-  { pinyin: 'a', description: "Phát âm như 'a' trong tiếng Việt.", group: "Vận mẫu đơn" },
-  { pinyin: 'o', description: "Phát âm gần như 'ô' trong tiếng Việt.", group: "Vận mẫu đơn" },
-  { pinyin: 'e', description: "Phát âm gần như 'ưa' (hoặc 'ơ') trong tiếng Việt.", group: "Vận mẫu đơn" },
-  { pinyin: 'i', description: "Phát âm như 'i' trong tiếng Việt.", group: "Vận mẫu đơn" },
-  { pinyin: 'u', description: "Phát âm như 'u' trong tiếng Việt.", group: "Vận mẫu đơn" },
-  { pinyin: 'ü', description: "Phát âm như 'uy' nhưng môi giữ tròn (giống âm 'u' nhưng lưỡi ở vị trí 'i').", group: "Vận mẫu đơn" },
-  
-  // Vận mẫu kép
-  { pinyin: 'ai', description: "Đọc như 'ai' (kéo dài âm a rồi lướt sang i).", group: "Vận mẫu kép" },
-  { pinyin: 'ei', description: "Đọc như 'ây' trong bộ gõ tiếng Việt.", group: "Vận mẫu kép" },
-  { pinyin: 'ui', description: "Viết tắt của 'uei', đọc là 'uây'.", group: "Vận mẫu kép" },
-  { pinyin: 'ao', description: "Đọc như 'ao' trong tiếng Việt.", group: "Vận mẫu kép" },
-  { pinyin: 'ou', description: "Đọc như 'âu' trong tiếng Việt.", group: "Vận mẫu kép" },
-  { pinyin: 'iu', description: "Viết tắt của 'iou', đọc như 'iêu'.", group: "Vận mẫu kép" },
-  { pinyin: 'ie', description: "Đọc như 'iê' hoặc 'i-ê'.", group: "Vận mẫu kép" },
-  { pinyin: 'üe', description: "Đọc như 'uê' với môi tròn.", group: "Vận mẫu kép" },
-  { pinyin: 'er', description: "Âm cong lưỡi. Đọc như 'ơ' rồi uốn lưỡi lên.", group: "Vận mẫu kép" },
-  
-  // Vận mẫu mũi
-  { pinyin: 'an', description: "Đọc như 'an' trong tiếng Việt.", group: "Vận mẫu mũi" },
-  { pinyin: 'en', description: "Đọc như 'ân' trong tiếng Việt.", group: "Vận mẫu mũi" },
-  { pinyin: 'in', description: "Đọc như 'in' trong tiếng Việt.", group: "Vận mẫu mũi" },
-  { pinyin: 'un', description: "Viết tắt của 'uen', đọc là 'uân'.", group: "Vận mẫu mũi" },
-  { pinyin: 'ün', description: "Đọc là 'uyn' với môi tròn.", group: "Vận mẫu mũi" },
-  { pinyin: 'ang', description: "Đọc như 'ang' trong tiếng Việt.", group: "Vận mẫu mũi" },
-  { pinyin: 'eng', description: "Đọc như 'âng' trong tiếng Việt.", group: "Vận mẫu mũi" },
-  { pinyin: 'ing', description: "Đọc như 'ing' trong tiếng Việt.", group: "Vận mẫu mũi" },
-  { pinyin: 'ong', description: "Đọc như 'ung' nhưng có độ vang.", group: "Vận mẫu mũi" },
-
-  // Vận mẫu phức khác
-  { pinyin: 'ia', description: "Đọc như 'ia'.", group: "Vận mẫu phức" },
-  { pinyin: 'iao', description: "Đọc như 'iao' (i + ao).", group: "Vận mẫu phức" },
-  { pinyin: 'ian', description: "Đọc như 'i-en' (nghe gần giống iên).", group: "Vận mẫu phức" },
-  { pinyin: 'iang', description: "Đọc như 'i-ang'.", group: "Vận mẫu phức" },
-  { pinyin: 'iong', description: "Đọc như 'i-ung'.", group: "Vận mẫu phức" },
-  { pinyin: 'ua', description: "Đọc như 'oa'.", group: "Vận mẫu phức" },
-  { pinyin: 'uo', description: "Đọc như 'u-ô' (nghe gần giống ua).", group: "Vận mẫu phức" },
-  { pinyin: 'uai', description: "Đọc như 'uai'.", group: "Vận mẫu phức" },
-  { pinyin: 'uan', description: "Đọc như 'oan'.", group: "Vận mẫu phức" },
-  { pinyin: 'uang', description: "Đọc như 'oang'.", group: "Vận mẫu phức" },
-  { pinyin: 'ueng', description: "Đọc như 'u-âng'.", group: "Vận mẫu phức" },
-  { pinyin: 'üan', description: "Đọc như 'uên'.", group: "Vận mẫu phức" },
+const FINAL_GROUPS = [
+  {
+    name: "Vận mẫu đơn",
+    items: [
+      { pinyin: 'a', sound: 'a', instruction: "Phát âm như 'a' trong tiếng Việt." },
+      { pinyin: 'o', sound: 'ô', instruction: "Phát âm gần như 'ô' trong tiếng Việt." },
+      { pinyin: 'e', sound: 'ưa / ơ', instruction: "Phát âm gần như 'ưa' (hoặc 'ơ') trong tiếng Việt." },
+      { pinyin: 'i', sound: 'i', instruction: "Phát âm như 'i' trong tiếng Việt." },
+      { pinyin: 'u', sound: 'u', instruction: "Phát âm như 'u' trong tiếng Việt." },
+      { pinyin: 'ü', sound: 'uy', instruction: "Phát âm như 'uy' nhưng môi giữ tròn." },
+    ]
+  },
+  {
+    name: "Vận mẫu kép",
+    items: [
+      { pinyin: 'ai', sound: 'ai', instruction: "Đọc như 'ai' (kéo dài âm a rồi lướt sang i)." },
+      { pinyin: 'ei', sound: 'ây', instruction: "Đọc như 'ây' trong bộ gõ tiếng Việt." },
+      { pinyin: 'ui', sound: 'uây', instruction: "Viết tắt của 'uei', đọc là 'uây'." },
+      { pinyin: 'ao', sound: 'ao', instruction: "Đọc như 'ao' trong tiếng Việt." },
+      { pinyin: 'ou', sound: 'âu', instruction: "Đọc như 'âu' trong tiếng Việt." },
+      { pinyin: 'iu', sound: 'iêu', instruction: "Viết tắt của 'iou', đọc như 'iêu'." },
+      { pinyin: 'ie', sound: 'iê', instruction: "Đọc như 'iê' hoặc 'i-ê'." },
+      { pinyin: 'üe', sound: 'uê', instruction: "Đọc như 'uê' với môi tròn." },
+      { pinyin: 'er', sound: 'ơ (uốn lưỡi)', instruction: "Âm cong lưỡi. Đọc như 'ơ' rồi uốn lưỡi lên." },
+    ]
+  },
+  {
+    name: "Vận mẫu mũi",
+    items: [
+      { pinyin: 'an', sound: 'an', instruction: "Đọc như 'an' trong tiếng Việt." },
+      { pinyin: 'en', sound: 'ân', instruction: "Đọc như 'ân' trong tiếng Việt." },
+      { pinyin: 'in', sound: 'in', instruction: "Đọc như 'in' trong tiếng Việt." },
+      { pinyin: 'un', sound: 'uân', instruction: "Viết tắt của 'uen', đọc là 'uân'." },
+      { pinyin: 'ün', sound: 'uyn', instruction: "Đọc là 'uyn' với môi tròn." },
+      { pinyin: 'ang', sound: 'ang', instruction: "Đọc như 'ang' trong tiếng Việt." },
+      { pinyin: 'eng', sound: 'âng', instruction: "Đọc như 'âng' trong tiếng Việt." },
+      { pinyin: 'ing', sound: 'ing', instruction: "Đọc như 'ing' trong tiếng Việt." },
+      { pinyin: 'ong', sound: 'ung', instruction: "Đọc như 'ung' nhưng có độ vang." },
+    ]
+  }
 ];
 
 export default function FinalsTable() {
-  const [selectedFinal, setSelectedFinal] = useState<FinalItem | null>(null);
+  const [selectedFinal, setSelectedFinal] = useState<any>(null);
 
   const playAudio = (pinyin: string) => {
     if (typeof window === 'undefined') return;
     
-    // Check for standard Prep audio first
-    const audioUrl = PREP_AUDIO[pinyin];
-    if (audioUrl) {
-      new Audio(audioUrl).play().catch(console.error);
+    const prepUrl = PREP_AUDIO[pinyin];
+    if (prepUrl) {
+      new Audio(prepUrl).play().catch(console.error);
     } else {
-      // Fallback for complex finals
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(pinyin)}1&tl=zh-CN&client=tw-ob`;
+      // For complex finals, use numbered pinyin to force tone 1 for consistency
+      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(pinyin)}1&tl=zh-CN&client=tw-ob&ts=${Date.now()}`;
       new Audio(ttsUrl).play().catch(console.error);
     }
   };
 
-  const groups = Array.from(new Set(FINALS.map(f => f.group)));
-
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>36 Vận Mẫu (Nguyên âm)</h2>
+      <p className={styles.subtitle}>Thiết kế bảng tương tự Thanh mẫu &rarr; Chuẩn phát âm Prep</p>
       
-      <div className={styles.finalsWrapper}>
-        {groups.map(group => (
-          <div key={group} className={styles.finalGroupBlock}>
-            <h3 className={styles.finalGroupName}>{group}</h3>
-            <div className={styles.finalsGrid}>
-              {FINALS.filter(f => f.group === group).map((item) => (
-                <div 
-                  key={item.pinyin} 
-                  className={styles.finalTag} 
-                  onClick={() => playAudio(item.pinyin)}
-                >
-                  <span className={styles.finalText}>{item.pinyin}</span>
-                  <button 
-                    className={styles.finalInfoBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFinal(item);
-                    }}
-                  >
-                    <Info size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+      <div className={styles.tableWrapper}>
+        <table className={styles.pinyinTable}>
+          <thead>
+            <tr>
+              <th>Vận mẫu</th>
+              <th>Nghe âm</th>
+              <th>Cách đọc (Gần giống)</th>
+              <th>Hướng dẫn chi tiết</th>
+            </tr>
+          </thead>
+          <tbody>
+            {FINAL_GROUPS.map((group) => (
+              <React.Fragment key={group.name}>
+                <tr className={styles.groupRow}>
+                  <td colSpan={4}>{group.name}</td>
+                </tr>
+                {group.items.map((item) => (
+                  <tr key={item.pinyin} className={styles.dataRow}>
+                    <td className={styles.pinyinCell}>{item.pinyin}</td>
+                    <td>
+                      <button className={styles.playBtn} onClick={() => playAudio(item.pinyin)}>
+                        <Volume2 size={20} />
+                      </button>
+                    </td>
+                    <td className={styles.soundCell}>{item.sound}</td>
+                    <td className={styles.instructionCell}>
+                      {item.instruction}
+                      <button 
+                        className={styles.infoSmallBtn} 
+                        onClick={() => setSelectedFinal({ ...item, group: group.name })}
+                      >
+                        <Info size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* Modal for Final Details */}
+      {/* Modal remains for deep detail if needed */}
       {selectedFinal && (
         <div className={styles.modalOverlay} onClick={() => setSelectedFinal(null)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -126,18 +135,12 @@ export default function FinalsTable() {
             <div className={styles.modalHeader}>
               <span className={styles.modalPinyin}>{selectedFinal.pinyin}</span>
               <button className={styles.modalSpeakBtn} onClick={() => playAudio(selectedFinal.pinyin)}>
-                <Volume2 size={24} /> Nghe phát âm
+                <Volume2 size={24} /> Nghe âm chuẩn
               </button>
             </div>
             <div className={styles.modalBody}>
-              <div className={styles.modalRow}>
-                <strong>Phân loại:</strong>
-                <span>{selectedFinal.group}</span>
-              </div>
-              <div className={styles.modalRow}>
-                <strong>Hướng dẫn:</strong>
-                <p className={styles.instructionText}>{selectedFinal.description}</p>
-              </div>
+              <p><strong>Loại:</strong> {selectedFinal.group}</p>
+              <p><strong>Chi tiết:</strong> {selectedFinal.instruction}</p>
             </div>
           </div>
         </div>

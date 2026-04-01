@@ -47,6 +47,7 @@
   border: 1px solid var(--border);
   border-radius: 1.5rem;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
 }
 
 .pinyinTable {
@@ -75,7 +76,7 @@
 }
 
 .groupRow td {
-  background: rgba(14, 165, 233, 0.02);
+  background: #f8fafc;
   font-weight: 800;
   color: var(--foreground);
   padding: 1rem;
@@ -112,162 +113,199 @@
   transform: scale(1.1);
 }
 
-/* Specific Cell styling */
-.combinationCell {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
+.infoSmallBtn {
+  background: none;
+  border: none;
   color: var(--text-muted);
-}
-
-.soundCell {
-  font-style: italic;
-  font-weight: 700;
-}
-
-.instructionCell {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  max-width: 400px;
-}
-
-/* Finals Layout (Remains Modern Tags) */
-.finalsWrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-.finalTag {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  padding: 0.6rem 1.2rem;
-  border-radius: 100px;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 700;
-  font-size: 1.1rem;
+  margin-left: 0.5rem;
+  border-radius: 4px;
 }
 
-.finalTag:hover {
-  border-color: var(--primary);
-  background: rgba(14, 165, 233, 0.05);
-  transform: scale(1.05);
+.infoSmallBtn:hover {
+  color: var(--primary);
+  background: rgba(14, 165, 233, 0.1);
 }
 
-/* Modal and Pinyin Table Grid */
-.combinationGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-  gap: 2px;
-  background: var(--border);
-  border: 1px solid var(--border);
-}
-
-.tableContainer {
-  overflow-x: auto;
-  border-radius: 0.5rem;
-}
-
+/* Combination Table (Grid Style) */
 .fullTable {
   width: 100%;
   border-collapse: collapse;
+  min-width: 1000px;
   background: white;
-  font-size: 0.8rem;
-}
-
-.fullTable th, .fullTable td {
-  border: 1px solid var(--border);
-  padding: 0.5rem;
-  text-align: center;
 }
 
 .fullTable th {
-  background: #f8fafc;
-  font-weight: 700;
+  background: #f1f5f9;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  font-weight: 800;
+  color: var(--primary);
 }
 
-.cell {
+.fullTable td {
+  padding: 0;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.initialHeaderEdge {
+  background: #f1f5f9 !important;
+  font-size: 1.2rem;
+}
+
+.pinyinCellClickable {
   cursor: pointer;
-  padding: 4px;
+  background: white;
+  transition: all 0.2s;
 }
 
-.cell:hover {
+.pinyinCellClickable:hover {
   background: var(--primary);
   color: white;
 }
 
-/* Tones UI Extension */
+.pinyinCellInner {
+  padding: 1.25rem 0.5rem;
+  font-weight: 600;
+}
+
+/* Tone Popover Improvement */
+.tonePopContent {
+  background: var(--card-bg);
+  width: 100%;
+  max-width: 600px;
+  border-radius: 2rem;
+  padding: 2.5rem;
+  position: relative;
+  box-shadow: 0 40px 100px -12px rgba(0, 0, 0, 0.3);
+}
+
+.popHeader h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.accentText {
+  color: var(--primary);
+  font-size: 2rem;
+}
+
+.toneGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.toneBtnLarge {
+  background: var(--background);
+  border: 2px solid var(--border);
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.toneBtnLarge:hover {
+  border-color: var(--primary);
+  background: rgba(14, 165, 233, 0.05);
+  transform: translateY(-4px);
+}
+
+.toneVisual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.tonedCharBig {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--primary);
+}
+
+.volumeIcon {
+  color: var(--text-muted);
+}
+
+.toneDesc {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.toneHint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Common Modal Elements */
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   padding: 1rem;
 }
 
-.tonePopContent {
+.modalContent {
   background: var(--card-bg);
-  width: 100%;
-  max-width: 500px;
-  border-radius: 1.5rem;
-  padding: 2rem;
+  padding: 3rem;
+  border-radius: 2rem;
   position: relative;
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 500px;
+  width: 100%;
 }
 
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.popHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.toneGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.toneBtn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
+.closeBtn, .closeBtnSmall {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
   cursor: pointer;
+  color: var(--text-muted);
 }
 
-.toneBtn:hover {
-  border-color: var(--primary);
+/* ... existing logic for modal rows etc ... */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
 }
 
-.tonedChar {
-  font-size: 2.5rem;
-  font-weight: 800;
+.modalPinyin {
+  font-size: 4rem;
+  font-weight: 900;
   color: var(--primary);
 }
 
-.toneLabel {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+.modalSpeakBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: 100px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.instructionText {
+  line-height: 1.6;
+  font-size: 1.1rem;
 }
