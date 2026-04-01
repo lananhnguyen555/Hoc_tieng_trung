@@ -31,6 +31,7 @@ export default function VocabList() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddLessonModal, setShowAddLessonModal] = useState(false);
   const [editingWord, setEditingWord] = useState<any>(null);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
   const writerRef = useRef<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -120,14 +121,27 @@ export default function VocabList() {
   };
 
   const translateText = async (text: string) => {
-    if (!text) return "";
+    if (!text) return { primary: "", dict: [] };
     try {
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(text)}`);
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&dt=bd&q=${encodeURIComponent(text)}`);
       const data = await res.json();
-      return data[0][0][0];
+      
+      const primary = data[0][0][0];
+      const dictArr: any[] = [];
+      
+      // Parse dictionary meanings (dt=bd)
+      if (data[1]) {
+        data[1].forEach((posGroup: any) => {
+          const pos = posGroup[0]; // e.g. "noun", "verb"
+          const terms = posGroup[1] || [];
+          dictArr.push({ pos, terms });
+        });
+      }
+      
+      return { primary, dict: dictArr };
     } catch (err) {
       console.error("Translation error:", err);
-      return "";
+      return { primary: "", dict: [] };
     }
   };
 
@@ -137,11 +151,23 @@ export default function VocabList() {
     // 1. Get Han-Viet locally
     const hv = getHanViet(text);
     
-    // 2. Fetch Google Translation
-    const translated = await translateText(text);
+    // 2. Fetch Rich Translation
+    const { primary, dict } = await translateText(text);
     
-    // Suggested meaning: use Han-Viet if it's a known common word, otherwise use translated
-    const suggestedMeaning = (hv && hv !== text) ? hv : translated;
+    // 3. Process Suggestions (Hanzii style)
+    const allSuggestions: string[] = [];
+    if (primary) allSuggestions.push(primary);
+    if (hv && hv !== text) allSuggestions.push(hv);
+    dict.forEach((group: any) => {
+      group.terms.forEach((t: string) => {
+        if (!allSuggestions.includes(t)) allSuggestions.push(t);
+      });
+    });
+    
+    setSuggestions(allSuggestions.slice(0, 8)); // Max 8 suggestions
+
+    // 4. Set default meaning if empty
+    const suggestedMeaning = (hv && hv !== text) ? hv : primary;
 
     if (isEdit) {
       setEditingWord((prev: any) => ({ ...prev, meaning: prev.meaning || suggestedMeaning }));
@@ -552,6 +578,21 @@ export default function VocabList() {
                   placeholder="Ví dụ: Học tập" 
                   required 
                 />
+                
+                {suggestions.length > 0 && (
+                  <div className={styles.suggestionsList}>
+                    {suggestions.map((s, i) => (
+                      <button 
+                        key={i} 
+                        type="button" 
+                        onClick={() => setNewWord({...newWord, meaning: s})}
+                        className={styles.suggestionItem}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className={styles.exampleToggle}>
@@ -660,6 +701,21 @@ export default function VocabList() {
                   onChange={e => setEditingWord({...editingWord, meaning: e.target.value})}
                   required 
                 />
+                
+                {suggestions.length > 0 && (
+                  <div className={styles.suggestionsList}>
+                    {suggestions.map((s, i) => (
+                      <button 
+                        key={i} 
+                        type="button" 
+                        onClick={() => setEditingWord({...editingWord, meaning: s})}
+                        className={styles.suggestionItem}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className={styles.exampleToggle}>
