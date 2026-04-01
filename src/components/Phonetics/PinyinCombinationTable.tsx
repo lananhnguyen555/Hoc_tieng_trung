@@ -10,7 +10,6 @@ const FINALS_SAMPLE = ['a', 'o', 'e', 'ai', 'ei', 'ao', 'ou', 'an', 'en', 'ang',
 // Simple tone mark mapping helper
 const addTone = (syllable: string, tone: number) => {
   if (tone === 0) return syllable;
-  // This is a simplified version for common combinations
   const marks: Record<string, string[]> = {
     'a': ['a', 'ā', 'á', 'ǎ', 'à'],
     'o': ['o', 'ō', 'ó', 'ǒ', 'ò'],
@@ -20,7 +19,6 @@ const addTone = (syllable: string, tone: number) => {
     'ü': ['ü', 'ǖ', 'ǘ', 'ǚ', 'ǜ']
   };
 
-  // Find the priority vowel
   const priority = ['a', 'o', 'e', 'i', 'u', 'ü'];
   for (const v of priority) {
     if (syllable.includes(v)) {
@@ -33,11 +31,15 @@ const addTone = (syllable: string, tone: number) => {
 export default function PinyinCombinationTable() {
   const [activeSyllable, setActiveSyllable] = useState<string | null>(null);
 
-  const speak = (pinyin: string) => {
+  const playAudio = (text: string) => {
     if (typeof window === 'undefined') return;
-    const utterance = new window.SpeechSynthesisUtterance(pinyin);
-    utterance.lang = 'zh-CN';
-    window.speechSynthesis.speak(utterance);
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh-CN&client=tw-ob`;
+    const audio = new Audio(audioUrl);
+    audio.play().catch(() => {
+      const utterance = new window.SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      window.speechSynthesis.speak(utterance);
+    });
   };
 
   return (
@@ -85,7 +87,7 @@ export default function PinyinCombinationTable() {
                   <button 
                     key={t} 
                     className={styles.toneBtn}
-                    onClick={() => speak(toned)}
+                    onClick={() => playAudio(toned)}
                   >
                     <span className={styles.tonedChar}>{toned}</span>
                     <span className={styles.toneLabel}>Thanh {t}</span>

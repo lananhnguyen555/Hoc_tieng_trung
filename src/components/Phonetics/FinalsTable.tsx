@@ -59,11 +59,15 @@ const FINALS: FinalItem[] = [
 export default function FinalsTable() {
   const [selectedFinal, setSelectedFinal] = useState<FinalItem | null>(null);
 
-  const speak = (text: string) => {
+  const playAudio = (text: string) => {
     if (typeof window === 'undefined') return;
-    const utterance = new window.SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-CN';
-    window.speechSynthesis.speak(utterance);
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh-CN&client=tw-ob`;
+    const audio = new Audio(audioUrl);
+    audio.play().catch(() => {
+      const utterance = new window.SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      window.speechSynthesis.speak(utterance);
+    });
   };
 
   const groups = Array.from(new Set(FINALS.map(f => f.group)));
@@ -81,7 +85,7 @@ export default function FinalsTable() {
                 <div 
                   key={item.pinyin} 
                   className={styles.finalTag} 
-                  onClick={() => speak(item.pinyin)}
+                  onClick={() => playAudio(item.pinyin)}
                 >
                   <span className={styles.finalText}>{item.pinyin}</span>
                   <button 
@@ -109,7 +113,7 @@ export default function FinalsTable() {
             </button>
             <div className={styles.modalHeader}>
               <span className={styles.modalPinyin}>{selectedFinal.pinyin}</span>
-              <button className={styles.modalSpeakBtn} onClick={() => speak(selectedFinal.pinyin)}>
+              <button className={styles.modalSpeakBtn} onClick={() => playAudio(selectedFinal.pinyin)}>
                 <Volume2 size={24} /> Nghe phát âm
               </button>
             </div>
