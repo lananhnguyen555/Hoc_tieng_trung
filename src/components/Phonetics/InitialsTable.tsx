@@ -84,7 +84,7 @@ export default function InitialsTable() {
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>21 Thanh Mẫu (Phụ âm đầu)</h2>
-      <p className={styles.subtitle}>Phát âm chuẩn theo trình tự: Thanh mẫu -> Kết hợp -> Cách đọc</p>
+      <p className={styles.subtitle}>Phát âm chuẩn theo trình tự: Thanh mẫu &rarr; Kết hợp &rarr; Cách đọc</p>
       
       <div className={styles.tableWrapper}>
         <table className={styles.pinyinTable}>
