@@ -1,15 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './phonetics.module.css';
-import { Volume2, X, Info } from 'lucide-react';
-
-interface FinalItem {
-  pinyin: string;
-  sound: string;
-  instruction: string;
-  group: string;
-}
+import { Volume2 } from 'lucide-react';
 
 const PREP_AUDIO: Record<string, string> = {
   'a': 'https://static-assets.prepcdn.com/content-management-system/bai_1_fix_mp3cut_net_336e4eb225.m4a',
@@ -18,6 +11,15 @@ const PREP_AUDIO: Record<string, string> = {
   'i': 'https://static-assets.prepcdn.com/content-management-system/i_8603e681d4.mp3',
   'u': 'https://static-assets.prepcdn.com/content-management-system/u_1f9fe0a647.mp3',
   'ü': 'https://static-assets.prepcdn.com/content-management-system/ue_f5050fba07.mp3',
+};
+
+// Dấu thanh điệu 1 (bằng) để phát âm chuẩn qua Web Speech API
+const TONE1_MAP: Record<string, string> = {
+  'a': 'ā', 'o': 'ō', 'e': 'ē', 'i': 'ī', 'u': 'ū', 'ü': 'ǖ',
+  'ai': 'āi', 'ei': 'ēi', 'ui': 'uēi', 'ao': 'āo', 'ou': 'ōu',
+  'iu': 'iōu', 'ie': 'iē', 'üe': 'üē', 'er': 'ēr',
+  'an': 'ān', 'en': 'ēn', 'in': 'īn', 'un': 'ūn', 'ün': 'ǖn',
+  'ang': 'āng', 'eng': 'ēng', 'ing': 'īng', 'ong': 'ōng',
 };
 
 const FINAL_GROUPS = [
@@ -63,26 +65,35 @@ const FINAL_GROUPS = [
 ];
 
 export default function FinalsTable() {
-  const [selectedFinal, setSelectedFinal] = useState<any>(null);
-
   const playAudio = (pinyin: string) => {
     if (typeof window === 'undefined') return;
-    
+
+    // Ưu tiên audio Prep cho vận mẫu đơn
     const prepUrl = PREP_AUDIO[pinyin];
     if (prepUrl) {
-      new Audio(prepUrl).play().catch(console.error);
-    } else {
-      // For complex finals, use numbered pinyin to force tone 1 for consistency
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(pinyin)}1&tl=zh-CN&client=tw-ob&ts=${Date.now()}`;
-      new Audio(ttsUrl).play().catch(console.error);
+      new Audio(prepUrl).play().catch(() => speakWithTTS(pinyin));
+      return;
     }
+
+    // Dùng Web Speech API với dấu thanh 1 để phát âm đúng
+    speakWithTTS(pinyin);
+  };
+
+  const speakWithTTS = (pinyin: string) => {
+    if (typeof window === 'undefined') return;
+    const toned = TONE1_MAP[pinyin] || pinyin;
+    const utterance = new window.SpeechSynthesisUtterance(toned);
+    utterance.lang = 'zh-CN';
+    utterance.rate = 0.85;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
   };
 
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>36 Vận Mẫu (Nguyên âm)</h2>
-      <p className={styles.subtitle}>Thiết kế bảng tương tự Thanh mẫu &rarr; Chuẩn phát âm Prep</p>
-      
+      <p className={styles.subtitle}>Phát âm chuẩn Prep → Kết hợp → Cách đọc</p>
+
       <div className={styles.tableWrapper}>
         <table className={styles.pinyinTable}>
           <thead>
@@ -90,7 +101,7 @@ export default function FinalsTable() {
               <th>Vận mẫu</th>
               <th>Nghe âm</th>
               <th>Cách đọc (Gần giống)</th>
-              <th>Hướng dẫn chi tiết</th>
+              <th>Hướng dẫn phát âm</th>
             </tr>
           </thead>
           <tbody>
@@ -108,15 +119,7 @@ export default function FinalsTable() {
                       </button>
                     </td>
                     <td className={styles.soundCell}>{item.sound}</td>
-                    <td className={styles.instructionCell}>
-                      {item.instruction}
-                      <button 
-                        className={styles.infoSmallBtn} 
-                        onClick={() => setSelectedFinal({ ...item, group: group.name })}
-                      >
-                        <Info size={14} />
-                      </button>
-                    </td>
+                    <td className={styles.instructionCell}>{item.instruction}</td>
                   </tr>
                 ))}
               </React.Fragment>
@@ -124,27 +127,6 @@ export default function FinalsTable() {
           </tbody>
         </table>
       </div>
-
-      {/* Modal remains for deep detail if needed */}
-      {selectedFinal && (
-        <div className={styles.modalOverlay} onClick={() => setSelectedFinal(null)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setSelectedFinal(null)}>
-              <X size={24} />
-            </button>
-            <div className={styles.modalHeader}>
-              <span className={styles.modalPinyin}>{selectedFinal.pinyin}</span>
-              <button className={styles.modalSpeakBtn} onClick={() => playAudio(selectedFinal.pinyin)}>
-                <Volume2 size={24} /> Nghe âm chuẩn
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <p><strong>Loại:</strong> {selectedFinal.group}</p>
-              <p><strong>Chi tiết:</strong> {selectedFinal.instruction}</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
