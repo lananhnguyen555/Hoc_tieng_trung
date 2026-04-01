@@ -4,9 +4,7 @@ import React from 'react';
 import styles from './phonetics.module.css';
 import { Volume2 } from 'lucide-react';
 
-/**
- * Audio chuẩn người Trung từ Prep.edu.vn CDN cho vận mẫu đơn.
- */
+// Audio gốc chuẩn người Trung từ Prep.edu.vn cho vận mẫu đơn
 const PREP_AUDIO: Record<string, string> = {
   'a': 'https://static-assets.prepcdn.com/content-management-system/bai_1_fix_mp3cut_net_336e4eb225.m4a',
   'o': 'https://static-assets.prepcdn.com/content-management-system/o_73f74bdecc.mp3',
@@ -17,113 +15,120 @@ const PREP_AUDIO: Record<string, string> = {
 };
 
 /**
- * Bản đồ vận mẫu → dấu thanh bằng (thanh 1) Unicode chính xác để Google TTS đọc đúng.
- * Google Translate TTS với dấu thanh Unicode cho âm chuẩn người Trung.
+ * Map vận mẫu → chữ Hán đại diện để Google TTS đọc chuẩn người Trung.
+ * Google TTS zh-CN đọc chữ Hán với chất lượng native, không đọc pinyin.
  */
-const TONE1_PINYIN: Record<string, string> = {
-  // Vận mẫu đơn (đã có Prep audio, fallback dùng TTS)
-  'a': 'ā',   'o': 'ō',   'e': 'ē',   'i': 'ī',   'u': 'ū',   'ü': 'ǖ',
+const FINAL_CHAR: Record<string, string> = {
+  // Vận mẫu đơn (có Prep audio, chữ Hán chỉ là fallback)
+  'a': '啊', 'o': '哦', 'e': '鹅', 'i': '衣', 'u': '乌', 'ü': '鱼',
   // Vận mẫu kép
-  'ai': 'āi',  'ei': 'ēi',  'ui': 'uēi', 'ao': 'āo',  'ou': 'ōu',
-  'iu': 'iōu', 'ie': 'iē',  'üe': 'üē',  'er': 'ēr',
+  'ai': '哀',  // āi - buồn
+  'ei': '欸',  // éi - thán từ (âm ei rõ nhất)
+  'ui': '威',  // wēi - oai phong (standalone form: wēi)
+  'ao': '熬',  // áo - chịu đựng
+  'ou': '欧',  // Ōu - Châu Âu
+  'iu': '优',  // yōu - xuất sắc (standalone: yōu)
+  'ie': '耶',  // yē - ông ấy / thán từ (standalone: yē)
+  'üe': '约',  // yuē - hẹn gặp (standalone: yuē)
+  'er': '而',  // ér - mà / và
   // Vận mẫu mũi ngắn
-  'an': 'ān',  'en': 'ēn',  'in': 'īn',  'un': 'ūn', 'ün': 'ǖn',
+  'an': '安',  // ān - bình an
+  'en': '恩',  // ēn - ân nghĩa
+  'in': '因',  // yīn - vì (standalone: yīn)
+  'un': '温',  // wēn - ấm áp (standalone: wēn)
+  'ün': '云',  // yún - mây (standalone: yún)
   // Vận mẫu mũi dài
-  'ang': 'āng', 'eng': 'ēng', 'ing': 'īng', 'ong': 'ōng',
-  // Vận mẫu phức hợp
-  'ian': 'iān', 'uan': 'uān', 'üan': 'üān',
-  'iang': 'iāng', 'uang': 'uāng', 'ueng': 'uēng',
-  'iong': 'iōng',
+  'ang': '昂', // áng - ngẩng cao
+  'eng': '鞥', // ēng - dây đai (âm chuẩn nhất cho eng)
+  'ing': '英', // yīng - anh hùng (standalone: yīng)
+  'ong': '拥', // yōng - ôm ấp (âm gần nhất cho ong)
 };
 
 const FINAL_GROUPS = [
   {
     name: "Vận mẫu đơn",
     items: [
-      { pinyin: 'a',  sound: 'a',        instruction: "Há miệng rộng, phát âm như 'a' trong tiếng Việt." },
-      { pinyin: 'o',  sound: 'ô',        instruction: "Môi tròn, phát âm gần như 'ô' trong tiếng Việt." },
-      { pinyin: 'e',  sound: 'ơ / ưa',   instruction: "Miệng hé, không tròn môi, khác 'e' tiếng Việt." },
-      { pinyin: 'i',  sound: 'i',        instruction: "Phát âm như 'i' trong tiếng Việt, kéo dài." },
-      { pinyin: 'u',  sound: 'u',        instruction: "Môi tròn, phát âm như 'u' trong tiếng Việt." },
-      { pinyin: 'ü',  sound: 'uy tròn',  instruction: "Phát 'i' rồi tròn môi lại như 'u'. Không có trong tiếng Việt." },
+      { pinyin: 'a',  sound: 'a',         instruction: "Há miệng rộng, phát âm như 'a' tiếng Việt." },
+      { pinyin: 'o',  sound: 'ô',         instruction: "Môi tròn, gần như 'ô' tiếng Việt." },
+      { pinyin: 'e',  sound: 'ơ',         instruction: "Miệng hé ngang, không tròn môi. Khác 'e' tiếng Việt." },
+      { pinyin: 'i',  sound: 'i',         instruction: "Phát âm như 'i' tiếng Việt, kéo dài hơn." },
+      { pinyin: 'u',  sound: 'u',         instruction: "Môi tròn, phát âm như 'u' tiếng Việt." },
+      { pinyin: 'ü',  sound: 'uy tròn',   instruction: "Phát 'i' rồi tròn môi thành 'u'. Không có trong tiếng Việt." },
     ]
   },
   {
     name: "Vận mẫu kép",
     items: [
-      { pinyin: 'ai', sound: 'ai',       instruction: "Kéo dài 'a' rồi lướt sang 'i'." },
-      { pinyin: 'ei', sound: 'ây',       instruction: "Đọc như 'ây' trong tiếng Việt." },
-      { pinyin: 'ui', sound: 'uây',      instruction: "Viết tắt của 'uei'. Đọc: u-ê-i." },
-      { pinyin: 'ao', sound: 'ao',       instruction: "Như 'ao' tiếng Việt, nhấn vào 'a'." },
-      { pinyin: 'ou', sound: 'âu',       instruction: "Đọc như 'âu' trong tiếng Việt." },
-      { pinyin: 'iu', sound: 'iêu',      instruction: "Viết tắt của 'iou'. Đọc: i-ô-u." },
-      { pinyin: 'ie', sound: 'iê',       instruction: "Đọc như 'iê', nhấn vào 'e'." },
-      { pinyin: 'üe', sound: 'uê tròn', instruction: "Như 'üe': ü + ê, môi tròn." },
-      { pinyin: 'er', sound: 'ơ uốn lưỡi', instruction: "Đọc 'ơ' rồi uốn lưỡi lên (âm erhua)." },
+      { pinyin: 'ai', sound: 'ai',        instruction: "Kéo dài 'a' rồi lướt sang 'i'." },
+      { pinyin: 'ei', sound: 'ây',        instruction: "Đọc như 'ây' tiếng Việt." },
+      { pinyin: 'ui', sound: 'uây',       instruction: "Viết tắt của 'uei'. Standalone: wēi." },
+      { pinyin: 'ao', sound: 'ao',        instruction: "Như 'ao' tiếng Việt, nhấn vào 'a'." },
+      { pinyin: 'ou', sound: 'âu',        instruction: "Đọc như 'âu' tiếng Việt." },
+      { pinyin: 'iu', sound: 'iêu',       instruction: "Viết tắt của 'iou'. Standalone: yōu." },
+      { pinyin: 'ie', sound: 'iê',        instruction: "Đọc như 'iê'. Standalone: yē." },
+      { pinyin: 'üe', sound: 'uê tròn',   instruction: "Standalone: yuē. Môi tròn như ü." },
+      { pinyin: 'er', sound: 'ơ (uốn lưỡi)', instruction: "Đọc 'ơ' rồi uốn lưỡi lên. Âm erhua." },
     ]
   },
   {
     name: "Vận mẫu mũi ngắn (-n)",
     items: [
-      { pinyin: 'an',  sound: 'an',      instruction: "Như 'an' tiếng Việt." },
-      { pinyin: 'en',  sound: 'ân',      instruction: "Như 'ân' tiếng Việt." },
-      { pinyin: 'in',  sound: 'in',      instruction: "Như 'in' tiếng Việt." },
-      { pinyin: 'un',  sound: 'uân',     instruction: "Viết tắt của 'uen'. Đọc: u-ê-n." },
-      { pinyin: 'ün',  sound: 'ün tròn', instruction: "Như 'ün': ü nasalized, môi tròn." },
+      { pinyin: 'an', sound: 'an',        instruction: "Như 'an' tiếng Việt." },
+      { pinyin: 'en', sound: 'ân',        instruction: "Như 'ân' tiếng Việt." },
+      { pinyin: 'in', sound: 'in',        instruction: "Standalone: yīn." },
+      { pinyin: 'un', sound: 'uân',       instruction: "Viết tắt 'uen'. Standalone: wēn." },
+      { pinyin: 'ün', sound: 'ün',        instruction: "Standalone: yún. Môi tròn." },
     ]
   },
   {
     name: "Vận mẫu mũi dài (-ng)",
     items: [
-      { pinyin: 'ang', sound: 'ang',     instruction: "Như 'ang' tiếng Việt, vang hơn." },
-      { pinyin: 'eng', sound: 'âng',     instruction: "Như 'âng' tiếng Việt." },
-      { pinyin: 'ing', sound: 'ing',     instruction: "Như 'ing' tiếng Việt." },
-      { pinyin: 'ong', sound: 'ung',     instruction: "Đọc như 'ung' với âm tròn." },
+      { pinyin: 'ang', sound: 'ang',      instruction: "Như 'ang' tiếng Việt, tiếng vang hơn." },
+      { pinyin: 'eng', sound: 'âng',      instruction: "Như 'âng' tiếng Việt." },
+      { pinyin: 'ing', sound: 'ing',      instruction: "Standalone: yīng." },
+      { pinyin: 'ong', sound: 'ung tròn', instruction: "Đọc như 'ung' với âm tròn đầy. Standalone: yōng." },
     ]
   }
 ];
 
-/**
- * Phát âm qua Google Translate TTS với dấu thanh Unicode chuẩn.
- * Âm thanh chất lượng cao, đọc đúng chuẩn người Trung.
- */
-const playGoogleTTS = (toned: string) => {
-  const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(toned)}&tl=zh-CN&client=tw-ob&ts=${Date.now()}`;
+const playFinalAudio = (pinyin: string) => {
+  if (typeof window === 'undefined') return;
+
+  // 1. Ưu tiên audio gốc Prep cho vận mẫu đơn
+  const prepUrl = PREP_AUDIO[pinyin];
+  if (prepUrl) {
+    new Audio(prepUrl).play().catch(() => playByChar(pinyin));
+    return;
+  }
+
+  // 2. Dùng chữ Hán → Google TTS zh-CN (chuẩn người Trung)
+  playByChar(pinyin);
+};
+
+const playByChar = (pinyin: string) => {
+  const char = FINAL_CHAR[pinyin];
+  if (!char) return;
+
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(char)}&tl=zh-CN&client=tw-ob&ts=${Date.now()}`;
   new Audio(url).play().catch(() => {
-    // Fallback Web Speech API nếu Google TTS bị chặn
-    if (typeof window !== 'undefined') {
-      const utt = new window.SpeechSynthesisUtterance(toned);
-      utt.lang = 'zh-CN';
-      utt.rate = 0.85;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utt);
-    }
+    // Fallback cuối: Web Speech API với giọng Trung
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find(v => v.lang.startsWith('zh'));
+    if (!zhVoice) return;
+    window.speechSynthesis.cancel();
+    const utt = new window.SpeechSynthesisUtterance(char);
+    utt.voice = zhVoice;
+    utt.lang = 'zh-CN';
+    utt.rate = 0.85;
+    window.speechSynthesis.speak(utt);
   });
 };
 
 export default function FinalsTable() {
-  const playAudio = (pinyin: string) => {
-    if (typeof window === 'undefined') return;
-
-    // Ưu tiên audio gốc chuẩn người Trung từ Prep.edu.vn CDN
-    const prepUrl = PREP_AUDIO[pinyin];
-    if (prepUrl) {
-      new Audio(prepUrl).play().catch(() => {
-        const toned = TONE1_PINYIN[pinyin] || pinyin;
-        playGoogleTTS(toned);
-      });
-      return;
-    }
-
-    // Các vận mẫu còn lại: Google TTS với dấu thanh 1 Unicode
-    const toned = TONE1_PINYIN[pinyin] || pinyin;
-    playGoogleTTS(toned);
-  };
-
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>36 Vận Mẫu (Nguyên âm)</h2>
-      <p className={styles.subtitle}>Phát âm chuẩn → Cách đọc → Hướng dẫn chi tiết</p>
+      <p className={styles.subtitle}>Phát âm chuẩn người Trung → Cách đọc → Hướng dẫn</p>
 
       <div className={styles.tableWrapper}>
         <table className={styles.pinyinTable}>
@@ -147,8 +152,8 @@ export default function FinalsTable() {
                     <td>
                       <button
                         className={styles.playBtn}
-                        onClick={() => playAudio(item.pinyin)}
-                        title={`Nghe âm: ${item.pinyin}`}
+                        onClick={() => playFinalAudio(item.pinyin)}
+                        title={`Nghe: ${item.pinyin}`}
                       >
                         <Volume2 size={20} />
                       </button>
