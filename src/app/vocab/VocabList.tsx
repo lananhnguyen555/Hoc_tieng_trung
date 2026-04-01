@@ -130,26 +130,55 @@ export default function VocabList() {
     }
   };
 
-  const handleAutoTranslate = async () => {
+  const handleAutoTranslate = async (text: string, isEdit = false) => {
+    if (!text) return;
+    const translated = await translateText(text);
+    if (translated) {
+      if (isEdit) {
+        setEditingWord((prev: any) => ({ ...prev, meaning: translated }));
+      } else {
+        setNewWord(prev => ({ ...prev, meaning: translated }));
+      }
+    }
+  };
+
+  // Auto-translate for new word
+  useEffect(() => {
+    if (!showAddModal || !newWord.word) return;
+    
+    const timer = setTimeout(() => {
+      // Only auto-translate if meaning is empty or user just changed the word significantly
+      handleAutoTranslate(newWord.word, false);
+    }, 1000); // 1s debounce
+
+    return () => clearTimeout(timer);
+  }, [newWord.word, showAddModal]);
+
+  // Auto-translate for editing word
+  useEffect(() => {
+    if (!showEditModal || !editingWord?.word) return;
+
+    const timer = setTimeout(() => {
+      handleAutoTranslate(editingWord.word, true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [editingWord?.word, showEditModal]);
+
+  const handleManualTranslate = async () => {
     if (!newWord.word) {
       alert("Vui lòng nhập Hán tự trước khi dịch!");
       return;
     }
-    const translated = await translateText(newWord.word);
-    if (translated) {
-      setNewWord(prev => ({...prev, meaning: translated}));
-    }
+    handleAutoTranslate(newWord.word, false);
   };
 
-  const handleEditAutoTranslate = async () => {
+  const handleManualEditTranslate = async () => {
     if (!editingWord?.word) {
       alert("Vui lòng nhập Hán tự trước khi dịch!");
       return;
     }
-    const translated = await translateText(editingWord.word);
-    if (translated) {
-      setEditingWord((prev: any) => ({...prev, meaning: translated}));
-    }
+    handleAutoTranslate(editingWord.word, true);
   };
 
   const handleAddWord = (e: React.FormEvent) => {
@@ -499,9 +528,9 @@ export default function VocabList() {
                   <button 
                     type="button" 
                     className={styles.translateBtn}
-                    onClick={handleAutoTranslate}
+                    onClick={handleManualTranslate}
                   >
-                    <RefreshCw size={12} /> Tự động dịch
+                    <RefreshCw size={12} /> Dịch lại
                   </button>
                 </div>
                 <input 
@@ -598,7 +627,7 @@ export default function VocabList() {
                   onSelect={(char, accented) => {
                     const fullChar = editingWord.word + char;
                     const fullPinyin = getPinyin(fullChar, { toneType: "symbol" }).replace(/\s+/g, '');
-                    setNewWord({...editingWord, word: fullChar, pinyin: fullPinyin});
+                    setEditingWord({...editingWord, word: fullChar, pinyin: fullPinyin});
                   }} 
                 />
               </div>
@@ -608,9 +637,9 @@ export default function VocabList() {
                   <button 
                     type="button" 
                     className={styles.translateBtn}
-                    onClick={handleEditAutoTranslate}
+                    onClick={handleManualEditTranslate}
                   >
-                    <RefreshCw size={12} /> Tự động dịch
+                    <RefreshCw size={12} /> Dịch lại
                   </button>
                 </div>
                 <input 
