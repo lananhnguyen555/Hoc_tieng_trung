@@ -7,6 +7,7 @@ import HanziWriter from "hanzi-writer";
 import { supabase } from "@/lib/supabase";
 import HanziSuggester from "@/components/HanziSuggester";
 import { pinyin as getPinyin } from "pinyin-pro";
+import { getHanViet } from "@/lib/han-viet";
 
 // MOCK DATA
 const MOCK_VOCAB = [
@@ -37,6 +38,7 @@ export default function VocabList() {
   const [newWord, setNewWord] = useState({ 
     word: "", 
     pinyin: "", 
+    han_viet: "",
     meaning: "", 
     lesson_id: "",
     example_cn: "",
@@ -132,13 +134,20 @@ export default function VocabList() {
 
   const handleAutoTranslate = async (text: string, isEdit = false) => {
     if (!text) return;
+    
+    // 1. Get Han-Viet locally
+    const hv = getHanViet(text);
+    
+    // 2. Fetch Google Translation
     const translated = await translateText(text);
-    if (translated) {
-      if (isEdit) {
-        setEditingWord((prev: any) => ({ ...prev, meaning: translated }));
-      } else {
-        setNewWord(prev => ({ ...prev, meaning: translated }));
-      }
+    
+    // Suggested meaning: use Han-Viet if it's a known common word, otherwise use translated
+    const suggestedMeaning = (hv && hv !== text) ? hv : translated;
+
+    if (isEdit) {
+      setEditingWord((prev: any) => ({ ...prev, han_viet: hv, meaning: prev.meaning || suggestedMeaning }));
+    } else {
+      setNewWord(prev => ({ ...prev, han_viet: hv, meaning: prev.meaning || suggestedMeaning }));
     }
   };
 
@@ -199,6 +208,7 @@ export default function VocabList() {
     setNewWord({ 
       word: "", 
       pinyin: "", 
+      han_viet: "",
       meaning: "", 
       lesson_id: selectedLessonId !== "all" ? selectedLessonId : "",
       example_cn: "",
@@ -260,6 +270,7 @@ export default function VocabList() {
             id: `local-word-${Date.now()}-${i}`,
             word,
             pinyin,
+            han_viet: getHanViet(word),
             meaning,
             lesson_id: newWord.lesson_id,
             lesson: lessonObj?.name || "Imported"
@@ -424,7 +435,10 @@ export default function VocabList() {
                 </div>
                 <div className={styles.cardMain}>
                   <span className={styles.word}>{item.word}</span>
-                  <span className={styles.pinyin}>{item.pinyin}</span>
+                  <div className={styles.readingRow}>
+                    <span className={styles.pinyin}>{item.pinyin}</span>
+                    {item.han_viet && <span className={styles.hanVietTag}>{item.han_viet}</span>}
+                  </div>
                   <span className={styles.meaning}>{item.meaning}</span>
                 </div>
               </div>
@@ -441,7 +455,10 @@ export default function VocabList() {
             <div className={styles.modalContent}>
               <div className={styles.modalLeft}>
                 <div className={styles.modalHeader}>
-                  <span className={styles.modalPinyin}>{selectedWord.pinyin}</span>
+                  <div className={styles.modalReading}>
+                    <span className={styles.modalPinyin}>{selectedWord.pinyin}</span>
+                    {selectedWord.han_viet && <span className={styles.modalHanViet}>Hán Việt: {selectedWord.han_viet}</span>}
+                  </div>
                   <p className={styles.modalMeaning}>{selectedWord.meaning}</p>
                 </div>
                 
@@ -520,6 +537,13 @@ export default function VocabList() {
                     const fullPinyin = getPinyin(fullChar, { toneType: "symbol" }).replace(/\s+/g, '');
                     setNewWord({...newWord, word: fullChar, pinyin: fullPinyin});
                   }} 
+                />
+                <label>Hán Việt</label>
+                <input 
+                  type="text" 
+                  value={newWord.han_viet} 
+                  onChange={e => setNewWord({...newWord, han_viet: e.target.value})}
+                  placeholder="Hán Việt (tự động)" 
                 />
               </div>
               <div className={styles.formGroup}>
@@ -629,6 +653,13 @@ export default function VocabList() {
                     const fullPinyin = getPinyin(fullChar, { toneType: "symbol" }).replace(/\s+/g, '');
                     setEditingWord({...editingWord, word: fullChar, pinyin: fullPinyin});
                   }} 
+                />
+                <label>Hán Việt</label>
+                <input 
+                  type="text" 
+                  value={editingWord.han_viet} 
+                  onChange={e => setEditingWord({...editingWord, han_viet: e.target.value})}
+                  placeholder="Hán Việt (tự động)" 
                 />
               </div>
               <div className={styles.formGroup}>
