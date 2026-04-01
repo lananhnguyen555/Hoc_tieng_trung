@@ -1,15 +1,41 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './phonetics.module.css';
+import { Volume2, X } from 'lucide-react';
 
 const INITIALS = ['b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'zh', 'ch', 'sh', 'r', 'z', 'c', 's'];
 const FINALS_SAMPLE = ['a', 'o', 'e', 'ai', 'ei', 'ao', 'ou', 'an', 'en', 'ang', 'eng', 'ong'];
 
+// Simple tone mark mapping helper
+const addTone = (syllable: string, tone: number) => {
+  if (tone === 0) return syllable;
+  // This is a simplified version for common combinations
+  const marks: Record<string, string[]> = {
+    'a': ['a', 'ā', 'á', 'ǎ', 'à'],
+    'o': ['o', 'ō', 'ó', 'ǒ', 'ò'],
+    'e': ['e', 'ē', 'é', 'ě', 'è'],
+    'i': ['i', 'ī', 'í', 'ǐ', 'ì'],
+    'u': ['u', 'ū', 'ú', 'ǔ', 'ù'],
+    'ü': ['ü', 'ǖ', 'ǘ', 'ǚ', 'ǜ']
+  };
+
+  // Find the priority vowel
+  const priority = ['a', 'o', 'e', 'i', 'u', 'ü'];
+  for (const v of priority) {
+    if (syllable.includes(v)) {
+      return syllable.replace(v, marks[v][tone]);
+    }
+  }
+  return syllable;
+};
+
 export default function PinyinCombinationTable() {
-  const speak = (initial: string, final: string) => {
+  const [activeSyllable, setActiveSyllable] = useState<string | null>(null);
+
+  const speak = (pinyin: string) => {
     if (typeof window === 'undefined') return;
-    const utterance = new window.SpeechSynthesisUtterance(initial + final);
+    const utterance = new window.SpeechSynthesisUtterance(pinyin);
     utterance.lang = 'zh-CN';
     window.speechSynthesis.speak(utterance);
   };
@@ -17,18 +43,15 @@ export default function PinyinCombinationTable() {
   return (
     <div className={styles.section}>
       <div className={styles.header}>
-        <h2 className={styles.sectionTitle}>Bảng Ghép Âm Pinyin</h2>
-        <p className={styles.subtitle}>Ví dụ bảng ghép Thanh mẫu và Vận mẫu cơ bản. Nhấp vào các ô để nghe phát âm.</p>
+        <h2 className={styles.sectionTitle}>Bảng Ghép Âm & Thanh Điệu</h2>
+        <p className={styles.subtitle}>Nhấp vào một ô để xem và nghe 4 thanh điệu của âm tiết đó.</p>
       </div>
       
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th rowSpan={2}>Bảng Ghép</th>
-              <th colSpan={FINALS_SAMPLE.length}>Vận Mẫu (Sơ đồ cơ bản)</th>
-            </tr>
-            <tr>
+              <th>Khởi đầu</th>
               {FINALS_SAMPLE.map(f => <th key={f}>{f}</th>)}
             </tr>
           </thead>
@@ -37,7 +60,7 @@ export default function PinyinCombinationTable() {
               <tr key={i}>
                 <th>{i}</th>
                 {FINALS_SAMPLE.map(f => (
-                  <td key={f} onClick={() => speak(i, f)}>
+                  <td key={f} onClick={() => setActiveSyllable(i + f)}>
                     <div className={styles.cell}>{i}{f}</div>
                   </td>
                 ))}
@@ -46,6 +69,34 @@ export default function PinyinCombinationTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Tone Selection Popover */}
+      {activeSyllable && (
+        <div className={styles.modalOverlay} onClick={() => setActiveSyllable(null)}>
+          <div className={styles.tonePopContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.popHeader}>
+              <h3>Thanh điệu cho: <span className={styles.accentText}>{activeSyllable}</span></h3>
+              <button onClick={() => setActiveSyllable(null)}><X size={20}/></button>
+            </div>
+            <div className={styles.toneGrid}>
+              {[1, 2, 3, 4].map(t => {
+                const toned = addTone(activeSyllable, t);
+                return (
+                  <button 
+                    key={t} 
+                    className={styles.toneBtn}
+                    onClick={() => speak(toned)}
+                  >
+                    <span className={styles.tonedChar}>{toned}</span>
+                    <span className={styles.toneLabel}>Thanh {t}</span>
+                    <Volume2 size={16} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

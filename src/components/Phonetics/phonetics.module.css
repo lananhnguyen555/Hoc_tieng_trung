@@ -4,17 +4,17 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 5rem;
+  gap: 6rem;
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .sectionTitle {
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 800;
   text-align: center;
   position: relative;
@@ -25,10 +25,10 @@
 
 .sectionTitle::after {
   content: '';
-  width: 60px;
+  width: 80px;
   height: 4px;
   background: var(--primary);
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   border-radius: 2px;
 }
 
@@ -36,13 +36,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1.5rem;
-}
-
-.flex {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
 }
 
 .card {
@@ -62,7 +55,7 @@
 }
 
 .pinyin {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--primary);
   margin-bottom: 0.5rem;
@@ -70,94 +63,320 @@
 
 .sound {
   font-size: 1rem;
-  color: var(--text-muted);
-  font-family: monospace;
-}
-
-.tag {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  padding: 0.75rem 1.5rem;
-  border-radius: 100px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tag:hover {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-.toneCard {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  padding: 2rem;
-  border-radius: var(--radius);
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.toneCard:hover {
-  border-color: var(--primary);
-  background: rgba(14, 165, 233, 0.03);
-}
-
-.toneChar {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--primary);
-  margin-bottom: 1rem;
-}
-
-.toneName {
+  color: var(--foreground);
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
-.hint {
+.desc {
   font-size: 0.875rem;
   color: var(--text-muted);
   line-height: 1.4;
 }
 
-/* Combination Table */
-.tableWrapper {
-  overflow-x: auto;
-  padding-bottom: 1rem;
+/* Groups Layout for Initials */
+.groupsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 800px;
+.groupWrapper {
+  border-left: 4px solid var(--primary);
+  padding-left: 2rem;
 }
 
-.table th, .table td {
-  border: 1px solid var(--border);
-  padding: 0.75rem;
-  text-align: center;
-}
-
-.table th {
-  background: var(--card-bg);
+.groupTitle {
+  font-size: 1.25rem;
   font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.cell {
+.initialsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.initialCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  border-radius: var(--radius);
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: all 0.1s ease;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.cell:hover {
+.initialCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.3);
+}
+
+.initialHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.pinyinLarge {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.infoBtn {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--primary);
+  padding: 0.5rem;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.infoBtn:hover {
   background: var(--primary);
   color: white;
 }
 
-.emptyCell {
+.initialHint {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+}
+
+.initialDetail {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* Finals Layout */
+.finalsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.finalGroupBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.finalGroupName {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.finalsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.finalTag {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 0.6rem 1.2rem;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.finalTag:hover {
+  border-color: var(--primary);
+  background: rgba(14, 165, 233, 0.05);
+  transform: scale(1.05);
+}
+
+.finalInfoBtn {
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.finalInfoBtn:hover {
+  color: var(--primary);
+}
+
+/* Modal System */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modalContent {
+  background: var(--card-bg);
+  width: 100%;
+  max-width: 600px;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  position: relative;
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.modalPinyin {
+  font-size: 4rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.modalSpeakBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 100px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modalSpeakBtn:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modalRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modalRow strong {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.instructionText {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--foreground);
   background: rgba(0, 0, 0, 0.02);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border-left: 3px solid var(--primary);
+}
+
+/* Tone Selection */
+.tonePopContent {
+  background: var(--card-bg);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.popHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.accentText {
+  color: var(--primary);
+}
+
+.toneGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.toneBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toneBtn:hover {
+  border-color: var(--primary);
+  background: rgba(14, 165, 233, 0.05);
+}
+
+.tonedChar {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.toneLabel {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
