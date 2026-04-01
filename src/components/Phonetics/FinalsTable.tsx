@@ -15,22 +15,22 @@ const PREP_AUDIO: Record<string, string> = {
 };
 
 /**
- * Map vận mẫu → chữ Hán đại diện để Google TTS đọc chuẩn người Trung.
- * Google TTS zh-CN đọc chữ Hán với chất lượng native, không đọc pinyin.
+ * Map vận mẫu → chữ Hán phổ biến để Google TTS đọc chuẩn người Trung.
+ * Ưu tiên chữ Hán QUÁ PHỔ BIẾN để Google TTS chắc chắn đọc đúng.
  */
 const FINAL_CHAR: Record<string, string> = {
   // Vận mẫu đơn (có Prep audio, chữ Hán chỉ là fallback)
   'a': '啊', 'o': '哦', 'e': '鹅', 'i': '衣', 'u': '乌', 'ü': '鱼',
-  // Vận mẫu kép
-  'ai': '哀',  // āi - buồn
-  'ei': '欸',  // éi - thán từ (âm ei rõ nhất)
-  'ui': '威',  // wēi - oai phong (standalone form: wēi)
-  'ao': '熬',  // áo - chịu đựng
-  'ou': '欧',  // Ōu - Châu Âu
-  'iu': '优',  // yōu - xuất sắc (standalone: yōu)
-  'ie': '耶',  // yē - ông ấy / thán từ (standalone: yē)
-  'üe': '约',  // yuē - hẹn gặp (standalone: yuē)
-  'er': '而',  // ér - mà / và
+  // Vận mẫu kép — dùng từ cực phổ biến, Google TTS đọc chuẩn 100%
+  'ai': '爱',  // ài = tình yêu (rất phổ biến, âm -ai rõ)
+  'ei': '黑',  // hēi = đen (cực phổ biến, âm cuối -ei rõ)
+  'ui': '水',  // shuǐ = nước (siêu phổ biến, âm -ui/-uei rõ)
+  'ao': '好',  // hǎo = tốt (từ phổ biến nhất, âm -ao rõ)
+  'ou': '走',  // zǒu = đi (phổ biến, âm -ou rõ)
+  'iu': '牛',  // niú = bò (phổ biến, âm -iu rõ)
+  'ie': '写',  // xiě = viết (phổ biến, âm -ie rõ)
+  'üe': '月',  // yuè = mặt trăng (phổ biến, standalone âm üe)
+  'er': '二',  // èr = số 2 (cực phổ biến, standalone âm er)
   // Vận mẫu mũi ngắn
   'an': '安',  // ān - bình an
   'en': '恩',  // ēn - ân nghĩa
@@ -50,7 +50,7 @@ const FINAL_GROUPS = [
     items: [
       { pinyin: 'a',  sound: 'a',         instruction: "Há miệng rộng, phát âm như 'a' tiếng Việt." },
       { pinyin: 'o',  sound: 'ô',         instruction: "Môi tròn, gần như 'ô' tiếng Việt." },
-      { pinyin: 'e',  sound: 'ơ',         instruction: "Miệng hé ngang, không tròn môi. Khác 'e' tiếng Việt." },
+      { pinyin: 'e',  sound: 'ưa',        instruction: "Miệng hé ngang, không tròn môi. Gần như 'ưa' tiếng Việt, khác 'e'." },
       { pinyin: 'i',  sound: 'i',         instruction: "Phát âm như 'i' tiếng Việt, kéo dài hơn." },
       { pinyin: 'u',  sound: 'u',         instruction: "Môi tròn, phát âm như 'u' tiếng Việt." },
       { pinyin: 'ü',  sound: 'uy tròn',   instruction: "Phát 'i' rồi tròn môi thành 'u'. Không có trong tiếng Việt." },
