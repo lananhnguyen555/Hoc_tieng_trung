@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import styles from './phonetics.module.css';
 
@@ -11,7 +13,8 @@ const TONES = [
 
 export default function TonesSection() {
   const speak = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
+    if (typeof window === 'undefined') return;
+    const utterance = new window.SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-CN';
     window.speechSynthesis.speak(utterance);
   };

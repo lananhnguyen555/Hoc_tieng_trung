@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import styles from './phonetics.module.css';
 
@@ -6,7 +8,8 @@ const FINALS_SAMPLE = ['a', 'o', 'e', 'ai', 'ei', 'ao', 'ou', 'an', 'en', 'ang',
 
 export default function PinyinCombinationTable() {
   const speak = (initial: string, final: string) => {
-    const utterance = new SpeechSynthesisUtterance(initial + final);
+    if (typeof window === 'undefined') return;
+    const utterance = new window.SpeechSynthesisUtterance(initial + final);
     utterance.lang = 'zh-CN';
     window.speechSynthesis.speak(utterance);
   };
