@@ -4,13 +4,6 @@ import React from 'react';
 import styles from './phonetics.module.css';
 import { Volume2 } from 'lucide-react';
 
-interface InitialItem {
-  pinyin: string;
-  combination: string;
-  sound: string;
-  speak: string;
-  instruction: string;
-}
 
 const INITIAL_GROUPS = [
   {
@@ -71,7 +64,7 @@ export default function InitialsTable() {
     if (typeof window === 'undefined') return;
     
     // Using a more robust human-sounding audio source (Yoyochinese or Google TTS Fallback)
-    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh-CN&client=tw-ob&ts=${Date.now()}`;
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh-CN&client=tw-ob`;
     const audio = new Audio(audioUrl);
     
     audio.play().catch(() => {

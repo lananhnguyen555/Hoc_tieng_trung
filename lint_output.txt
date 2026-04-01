@@ -1,0 +1,202 @@
+
+> web_hoc_tieng_trung@0.1.0 lint
+> eslint
+
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\admin\page.tsx
+   4:24  warning  'Edit2' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   4:31  warning  'Save' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   4:37  warning  'X' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  10:38  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  11:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  19:5   error    Error: Cannot access variable before it is declared
+
+`fetchData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\admin\page.tsx:19:5
+  17 |
+  18 |   useEffect(() => {
+> 19 |     fetchData();
+     |     ^^^^^^^^^ `fetchData` accessed before it is declared
+  20 |   }, []);
+  21 |
+  22 |   const fetchData = async () => {
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\admin\page.tsx:22:3
+  20 |   }, []);
+  21 |
+> 22 |   const fetchData = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |     setLoading(true);
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 24 |     const { data: vocabData } = await supabase.from("vocab").select("*, lessons(name)");
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 25 |     const { data: lessonData } = await supabase.from("lessons").select("*");
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 26 |     
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 27 |     if (vocabData) setVocab(vocabData);
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 28 |     if (lessonData) setLessons(lessonData);
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 29 |     setLoading(false);
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 30 |   };
+     | ^^^^^ `fetchData` is declared here
+  31 |
+  32 |   const handleAdd = async (e: React.FormEvent) => {
+  33 |     e.preventDefault();  react-hooks/immutability
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\api\tts\route.ts
+  36:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\auth\page.tsx
+   7:22  warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+  42:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\grammar\page.tsx
+   4:34  warning  'BookOpen' is defined but never used      @typescript-eslint/no-unused-vars
+  61:47  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\rules\page.tsx
+   4:40  warning  'AlertCircle' is defined but never used   @typescript-eslint/no-unused-vars
+   4:53  warning  'CheckCircle' is defined but never used   @typescript-eslint/no-unused-vars
+  60:47  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\study\flashcards\page.tsx
+  15:44  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  16:42  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  26:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\study\flashcards\page.tsx:26:5
+  24 |     
+  25 |     // We'd ideally fetch from Supabase here too, but for simplicity:
+> 26 |     setAllVocab([...MOCK_VOCAB, ...localVocab]);
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |     setLessons([{id: "mock", name: "Dß╗» liß╗çu mß║½u"}, ...localLessons]);
+  28 |   }, []);
+  29 |  react-hooks/set-state-in-effect
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\study\listening\page.tsx
+   4:42  warning  'RotateCcw' is defined but never used           @typescript-eslint/no-unused-vars
+   4:67  warning  'Play' is defined but never used                @typescript-eslint/no-unused-vars
+  16:10  warning  'isCorrect' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\study\quiz\page.tsx
+   29:44  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   30:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   32:46  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   37:10  warning  'isCorrect' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   50:5   error    Error: Cannot access variable before it is declared
+
+`generateQuestions` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\study\quiz\page.tsx:50:5
+  48 |
+  49 |   useEffect(() => {
+> 50 |     generateQuestions();
+     |     ^^^^^^^^^^^^^^^^^ `generateQuestions` accessed before it is declared
+  51 |   }, [allVocab, selectedLessonId]);
+  52 |
+  53 |   const generateQuestions = () => {
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\study\quiz\page.tsx:53:3
+  51 |   }, [allVocab, selectedLessonId]);
+  52 |
+> 53 |   const generateQuestions = () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 54 |     const filtered = allVocab.filter(v => selectedLessonId === "all" || v.lesson_id === selectedLessonId);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 55 |     if (filtered.length === 0) {
+     ÔÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 88 |     setIsCorrect(null);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 89 |   };
+     | ^^^^^ `generateQuestions` is declared here
+  90 |
+  91 |   const currentQuestion = questions[step];
+  92 |  react-hooks/immutability
+   51:6   warning  React Hook useEffect has a missing dependency: 'generateQuestions'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+  111:9   warning  'restart' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\app\vocab\VocabList.tsx
+   23:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   24:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   25:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:50  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:45  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  153:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:45  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  188:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  455:36  warning  '_' is defined but never used             @typescript-eslint/no-unused-vars
+  555:36  warning  'accented' is defined but never used      @typescript-eslint/no-unused-vars
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\components\HanziSuggester.tsx
+  19:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\components\HanziSuggester.tsx:19:7
+  17 |   useEffect(() => {
+  18 |     if (!pinyin) {
+> 19 |       setSuggestions([]);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  20 |       return;
+  21 |     }
+  22 |  react-hooks/set-state-in-effect
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\components\Navbar.tsx
+  12:36  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  17:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\components\Navbar.tsx:17:5
+  15 |   useEffect(() => {
+  16 |     const savedTheme = localStorage.getItem("theme") || "light";
+> 17 |     setTheme(savedTheme);
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  18 |     document.documentElement.setAttribute("data-theme", savedTheme);
+  19 |
+  20 |     // Check Auth  react-hooks/set-state-in-effect
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\components\Phonetics\InitialsTable.tsx
+   7:11   warning  'InitialItem' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  74:132  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\src\components\Phonetics\InitialsTable.tsx:74:132
+  72 |     
+  73 |     // Using a more robust human-sounding audio source (Yoyochinese or Google TTS Fallback)
+> 74 |     const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh-CN&client=tw-ob&ts=${Date.now()}`;
+     |                                                                                                                                    ^^^^^^^^^^ Cannot call impure function
+  75 |     const audio = new Audio(audioUrl);
+  76 |     
+  77 |     audio.play().catch(() => {  react-hooks/purity
+
+F:\Hoc_Tieng_Trung\web_hoc_tieng_trung\tmp_check_db.mjs
+  17:17  warning  'grammar' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  18:17  warning  'rules' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+Ô£û 48 problems (30 errors, 18 warnings)
+
