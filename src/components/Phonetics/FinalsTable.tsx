@@ -10,6 +10,15 @@ interface FinalItem {
   group: string;
 }
 
+const PREP_AUDIO: Record<string, string> = {
+  'a': 'https://static-assets.prepcdn.com/content-management-system/bai_1_fix_mp3cut_net_336e4eb225.m4a',
+  'o': 'https://static-assets.prepcdn.com/content-management-system/o_73f74bdecc.mp3',
+  'e': 'https://static-assets.prepcdn.com/content-management-system/e_c06eba6582.mp3',
+  'i': 'https://static-assets.prepcdn.com/content-management-system/i_8603e681d4.mp3',
+  'u': 'https://static-assets.prepcdn.com/content-management-system/u_1f9fe0a647.mp3',
+  'ü': 'https://static-assets.prepcdn.com/content-management-system/ue_f5050fba07.mp3',
+};
+
 const FINALS: FinalItem[] = [
   // Vận mẫu đơn
   { pinyin: 'a', description: "Phát âm như 'a' trong tiếng Việt.", group: "Vận mẫu đơn" },
@@ -59,15 +68,18 @@ const FINALS: FinalItem[] = [
 export default function FinalsTable() {
   const [selectedFinal, setSelectedFinal] = useState<FinalItem | null>(null);
 
-  const playAudio = (text: string) => {
+  const playAudio = (pinyin: string) => {
     if (typeof window === 'undefined') return;
-    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh-CN&client=tw-ob`;
-    const audio = new Audio(audioUrl);
-    audio.play().catch(() => {
-      const utterance = new window.SpeechSynthesisUtterance(text);
-      utterance.lang = 'zh-CN';
-      window.speechSynthesis.speak(utterance);
-    });
+    
+    // Check for standard Prep audio first
+    const audioUrl = PREP_AUDIO[pinyin];
+    if (audioUrl) {
+      new Audio(audioUrl).play().catch(console.error);
+    } else {
+      // Fallback for complex finals
+      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(pinyin)}1&tl=zh-CN&client=tw-ob`;
+      new Audio(ttsUrl).play().catch(console.error);
+    }
   };
 
   const groups = Array.from(new Set(FINALS.map(f => f.group)));
