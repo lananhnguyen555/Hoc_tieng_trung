@@ -1,6 +1,11 @@
 import Link from "next/link";
-import { BookOpen, GraduationCap, Scale, ChevronRight, Zap, Volume2, CheckCircle2, FileUp } from "lucide-react";
+import { Zap, ChevronRight, BookOpen, GraduationCap, Scale, Volume2, CheckCircle2, FileUp } from "lucide-react";
 import styles from "./page.module.css";
+import phoneticsStyles from "@/components/Phonetics/phonetics.module.css";
+import InitialsTable from "@/components/Phonetics/InitialsTable";
+import FinalsTable from "@/components/Phonetics/FinalsTable";
+import TonesSection from "@/components/Phonetics/TonesSection";
+import PinyinCombinationTable from "@/components/Phonetics/PinyinCombinationTable";
 
 export default function Home() {
   return (
@@ -10,46 +15,54 @@ export default function Home() {
         <div className={styles.heroContent}>
           <div className={styles.badge}>
             <Zap size={14} className={styles.zapIcon} />
-            <span>Cập nhật mới: Flashcards ôn tập</span>
+            <span>Nền tảng học Tiếng Trung thông minh</span>
           </div>
           <h1 className={styles.title}>
-            Làm chủ <span className={styles.accent}>Tiếng Trung</span> <br /> 
-            từ con số không
+            Làm chủ <span className={styles.accent}>Phát Âm</span> <br /> 
+            Chuẩn ngay từ đầu
           </h1>
           <p className={styles.subtitle}>
-            Học từ vựng, ngữ pháp và luyện viết Hán tự với sự hỗ trợ của AI. 
-            Xây dựng lộ trình học tập cá nhân hóa ngay hôm nay.
+            Tìm hiểu về Hệ thống Phiên âm Pinyin (Thanh mẫu, Vận mẫu, Thanh điệu) 
+            và xây dựng nền tảng vững chắc cho việc học Tiếng Trung.
           </p>
           <div className={styles.heroCtas}>
             <Link href="/vocab" className="btn-primary">
-              Bắt đầu học ngay
+              Bắt đầu học Từ vựng
             </Link>
-            <Link href="/rules" className={styles.secondaryBtn}>
-              Xem quy tắc học
-            </Link>
+            <a href="#phonetics" className={styles.secondaryBtn}>
+              Học phát âm Pinyin
+            </a>
           </div>
         </div>
         <div className={styles.heroVisual}>
           <div className={styles.floatingCard}>
-            <span className={styles.chinese}>学习</span>
-            <span className={styles.pinyin}>xuéxí</span>
-            <span className={styles.meaning}>Học tập</span>
+            <span className={styles.chinese}>你好</span>
+            <span className={styles.pinyin}>nǐhǎo</span>
+            <span className={styles.meaning}>Xin chào</span>
           </div>
           <div className={styles.decoration1}></div>
           <div className={styles.decoration2}></div>
         </div>
       </section>
 
+      {/* Phonetics Section */}
+      <section id="phonetics" className={phoneticsStyles.container}>
+        <InitialsTable />
+        <FinalsTable />
+        <TonesSection />
+        <PinyinCombinationTable />
+      </section>
+
       {/* Features Grid */}
       <section className={styles.features}>
-        <h2 className={styles.sectionTitle}>Khám phá kho tàng kiến thức</h2>
+        <h2 className={styles.sectionTitle}>Chức năng mở rộng</h2>
         <div className={styles.grid}>
           <Link href="/vocab" className={`card ${styles.featureCard}`}>
             <div className={`${styles.iconWrapper} ${styles.blue}`}>
               <BookOpen size={24} />
             </div>
             <h3>Từ vựng</h3>
-            <p>Hàng ngàn từ vựng được chia theo buổi học, kèm ví dụ sinh động.</p>
+            <p>Học theo buổi học, kèm gợi ý Hán tự thông minh và Pinyin tự động.</p>
             <span className={styles.learnMore}>
               Xem thêm <ChevronRight size={16} />
             </span>
@@ -60,7 +73,7 @@ export default function Home() {
               <GraduationCap size={24} />
             </div>
             <h3>Ngữ pháp</h3>
-            <p>Các cấu trúc ngữ pháp từ cơ bản đến nâng cao, giải thích chi tiết.</p>
+            <p>Tổng hợp cấu trúc, quy tắc sắp xếp câu từ cơ bản đến nâng cao.</p>
             <span className={styles.learnMore}>
               Xem thêm <ChevronRight size={16} />
             </span>
@@ -70,8 +83,8 @@ export default function Home() {
             <div className={`${styles.iconWrapper} ${styles.orange}`}>
               <Scale size={24} />
             </div>
-            <h3>Quy tắc học</h3>
-            <p>Mẹo và quy chuẩn giúp bạn ghi nhớ và áp dụng tiếng Trung hiệu quả.</p>
+            <h3>Quy tắc</h3>
+            <p>Mẹo học tập, lộ trình hiệu quả cho người mới bắt đầu.</p>
             <span className={styles.learnMore}>
               Xem thêm <ChevronRight size={16} />
             </span>
@@ -81,7 +94,7 @@ export default function Home() {
 
       {/* Study Section */}
       <section className={styles.studyPreview}>
-        <h2 className={styles.sectionTitle}>Sẵn sàng ôn tập?</h2>
+        <h2 className={styles.sectionTitle}>Luyện tập & Ôn tập</h2>
         <div className={styles.studyGrid}>
           <Link href="/study/flashcards" className={`card ${styles.studyCard}`}>
             <Zap size={32} color="#fbbf24" />
@@ -97,7 +110,7 @@ export default function Home() {
           </Link>
           <Link href="/study/import" className={`card ${styles.studyCard}`}>
             <FileUp size={32} color="#a855f7" />
-            <span>Cá nhân hóa</span>
+            <span>Nhập liệu</span>
           </Link>
         </div>
       </section>
