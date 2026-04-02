@@ -360,7 +360,17 @@ export default function VocabList() {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "zh-CN"; utterance.rate = 0.8;
+    
+    // Tìm giọng đọc Trung Quốc tốt nhất có sẵn trên thiết bị
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find(v => v.lang.includes("zh") || v.lang.includes("CN") || v.lang.includes("TW"));
+    if (zhVoice) utterance.voice = zhVoice;
+    
+    utterance.lang = "zh-CN";
+    utterance.rate = 0.8;
+    utterance.volume = 1;
+    
+    // Fix cho một số trình duyệt di động cần tương tác người dùng
     window.speechSynthesis.speak(utterance);
   };
 
