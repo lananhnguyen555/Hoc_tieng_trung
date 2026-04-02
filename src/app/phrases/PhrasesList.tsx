@@ -7,6 +7,8 @@ import HanziWriter from "hanzi-writer";
 import { supabase } from "@/lib/supabase";
 import HanziSuggester from "@/components/HanziSuggester";
 import { HAN_VIET_DATA } from "@/lib/han-viet";
+import * as XLSX from "xlsx";
+import { FileUp, LogIn } from "lucide-react";
 
 interface Phrase {
   id: string;
@@ -130,6 +132,46 @@ export default function PhrasesList() {
     alert(`Đã thêm ${name} thành công!`);
   };
 
+  const handleDeleteLesson = () => {
+    if (selectedLessonId === "all") return;
+    const lessonName = lessons.find(l => l.id === selectedLessonId)?.name;
+    if (!confirm(`Bạn có chắc chắn muốn xóa "${lessonName}" và TOÀN BỘ câu giao tiếp trong này?`)) return;
+    
+    const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
+    const updatedLessons = localLessons.filter((l: any) => l.id !== selectedLessonId);
+    localStorage.setItem("user_lessons", JSON.stringify(updatedLessons));
+    setLessons(prev => prev.filter(l => l.id !== selectedLessonId));
+    
+    const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
+    const updatedPhrases = localPhrases.filter((p: any) => p.lesson_id !== selectedLessonId);
+    localStorage.setItem("user_phrases", JSON.stringify(updatedPhrases));
+    setPhrases(updatedPhrases);
+    
+    setSelectedLessonId("all");
+    alert("Đã xóa buổi thành công!");
+  };
+
+  const handleExportExcel = () => {
+    if (filteredPhrases.length === 0) {
+      alert("Không có dữ liệu để xuất!");
+      return;
+    }
+    
+    const lessonName = lessons.find(l => l.id === selectedLessonId)?.name || "Giao_Tiep";
+    const dataToExport = filteredPhrases.map((item, index) => ({
+      "STT": index + 1,
+      "Hán tự": item.word,
+      "Pinyin": item.pinyin,
+      "Nghĩa Việt": item.meaning
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "GiaoTiep");
+    
+    XLSX.writeFile(workbook, `${lessonName}_GiaoTiep_${new Date().toLocaleDateString()}.xlsx`);
+  };
+
   const filteredPhrases = phrases.filter(item => {
     if (selectedLessonId === "all") return false;
     const matchesSearch = item.word.includes(search) || item.meaning.toLowerCase().includes(search.toLowerCase());
@@ -178,6 +220,11 @@ export default function PhrasesList() {
             <button className={styles.iconBtn} onClick={handleAddLesson} title="Thêm buổi học mới" style={{padding:'5px', background:'var(--primary)', color:'white', borderRadius:'4px', display:'flex'}}>
               <Plus size={20} />
             </button>
+            {selectedLessonId !== "all" && (
+              <button className={styles.iconBtn} onClick={handleDeleteLesson} title="Xóa buổi này" style={{padding:'5px', background:'#ef4444', color:'white', borderRadius:'4px', display:'flex'}}>
+                <Trash2 size={18} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -187,6 +234,9 @@ export default function PhrasesList() {
         </div>
 
         <div className={styles.actionBtns}>
+          <button className={styles.addBtn} style={{background:'#1ea362', color:'white'}} onClick={handleExportExcel}>
+            <FileUp size={20} /> Xuất Excel
+          </button>
           <button className={styles.addBtn} onClick={handleOpenAddModal}>
             <Plus size={20} /> Thêm mẫu câu
           </button>

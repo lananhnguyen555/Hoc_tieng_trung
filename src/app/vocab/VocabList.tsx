@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Play, Plus, X, Edit2, Trash2, ChevronDown, BookOpen, Save, FileUp } from "lucide-react";
+import { Search, Play, Plus, X, Edit2, Trash2, ChevronDown, BookOpen, Save, FileUp, LogIn } from "lucide-react";
 import styles from "./vocab.module.css";
 import HanziWriter from "hanzi-writer";
 import { supabase } from "@/lib/supabase";
 import HanziSuggester from "@/components/HanziSuggester";
 import { HAN_VIET_DATA } from "@/lib/han-viet";
+import * as XLSX from "xlsx";
 
 interface Word {
   id: string;
@@ -221,6 +222,51 @@ export default function VocabList() {
     alert(`Đã thêm ${name} thành công!`);
   };
 
+  const handleDeleteLesson = () => {
+    if (selectedLessonId === "all") return;
+    const lessonName = lessons.find(l => l.id === selectedLessonId)?.name;
+    if (!confirm(`Bạn có chắc chắn muốn xóa "${lessonName}" và TOÀN BỘ từ vựng trong buổi này?`)) return;
+    
+    // Remove lesson
+    const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
+    const updatedLessons = localLessons.filter((l: any) => l.id !== selectedLessonId);
+    localStorage.setItem("user_lessons", JSON.stringify(updatedLessons));
+    setLessons(prev => prev.filter(l => l.id !== selectedLessonId));
+    
+    // Remove vocab of this lesson
+    const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+    const updatedVocab = localVocab.filter((v: any) => v.lesson_id !== selectedLessonId);
+    localStorage.setItem("user_vocab", JSON.stringify(updatedVocab));
+    setVocab(updatedVocab);
+    
+    setSelectedLessonId("all");
+    alert("Đã xóa buổi học thành công!");
+  };
+
+  const handleExportExcel = () => {
+    if (filteredVocab.length === 0) {
+      alert("Không có dữ liệu để xuất!");
+      return;
+    }
+    
+    const lessonName = lessons.find(l => l.id === selectedLessonId)?.name || "Tu_Vung";
+    const dataToExport = filteredVocab.map((item, index) => ({
+      "STT": index + 1,
+      "Hán tự": item.word,
+      "Pinyin": item.pinyin,
+      "Nghĩa Việt": item.meaning,
+      "Ví dụ (Hán)": item.example_cn || "",
+      "Ví dụ (Pinyin)": item.example_py || "",
+      "Ví dụ (Nghĩa)": item.example_vi || ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "TuVung");
+    
+    XLSX.writeFile(workbook, `${lessonName}_${new Date().toLocaleDateString()}.xlsx`);
+  };
+
   const filteredVocab = vocab.filter(item => {
     if (selectedLessonId === "all") return false;
     const matchesSearch = item.word.includes(search) || item.meaning.toLowerCase().includes(search.toLowerCase());
@@ -246,6 +292,11 @@ export default function VocabList() {
             <button className={styles.iconBtn} onClick={handleAddLesson} title="Thêm buổi học mới" style={{padding:'5px', background:'var(--primary)', color:'white', borderRadius:'4px', display:'flex'}}>
               <Plus size={20} />
             </button>
+            {selectedLessonId !== "all" && (
+              <button className={styles.iconBtn} onClick={handleDeleteLesson} title="Xóa buổi này" style={{padding:'5px', background:'#ef4444', color:'white', borderRadius:'4px', display:'flex'}}>
+                <Trash2 size={18} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -255,8 +306,11 @@ export default function VocabList() {
         </div>
 
         <div className={styles.actionBtns}>
+          <button className={styles.addBtn} style={{background:'#1ea362', color:'white'}} onClick={handleExportExcel}>
+            <FileUp size={20} /> Xuất Excel
+          </button>
           <button className={styles.addBtn} style={{background:'var(--foreground)', color:'white'}} onClick={() => setShowImportModal(true)}>
-            <FileUp size={20} /> Nhập CSV
+            <LogIn size={20} /> Nhập CSV
           </button>
           <button className={styles.addBtn} onClick={handleOpenAddModal}>
             <Plus size={20} /> Thêm từ mới
