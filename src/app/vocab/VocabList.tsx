@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Play, BookOpen, RefreshCw, Plus, FileUp, X, Download, Trash2, Edit2 } from "lucide-react";
+import { Search, Play, BookOpen, RefreshCw, Plus, FileUp, X, Download, Trash2, Edit2, Maximize2 } from "lucide-react";
 import styles from "./vocab.module.css";
 import HanziWriter from "hanzi-writer";
 import { supabase } from "@/lib/supabase";
@@ -14,9 +14,7 @@ const MOCK_VOCAB = [
   { id: "1", word: "学习", pinyin: "xuéxí", meaning: "Học tập", lesson: "Buổi 1" },
   { id: "2", word: "老师", pinyin: "lǎoshī", meaning: "Giáo viên", lesson: "Buổi 1" },
   { id: "3", word: "学生", pinyin: "xuésheng", meaning: "Học sinh", lesson: "Buổi 1" },
-  { id: "4", word: "汉语", pinyin: "Hànyǔ", meaning: "Tiếng Hán", lesson: "Buổi 2" },
-  { id: "5", word: "谢谢", pinyin: "xièxie", meaning: "Cảm ơn", lesson: "Buổi 2" },
-  { id: "6", word: "不客气", pinyin: "bú kèqi", meaning: "Đừng khách khí", lesson: "Buổi 2" },
+  { id: "4", word: "汉语", pinyin: "Hànyǔ", meaning: "Tiếng Hán", lesson: "Buổi 1" },
 ];
 
 export default function VocabList() {
@@ -34,6 +32,9 @@ export default function VocabList() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const writerRef = useRef<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Fullscreen Hanzi State
+  const [fullScreenWord, setFullScreenWord] = useState<string | null>(null);
 
   // Form States
   const [newWord, setNewWord] = useState({ 
@@ -52,10 +53,7 @@ export default function VocabList() {
   }, []);
 
   const speak = (text: string) => {
-    if (!window.speechSynthesis) {
-      alert("Trình duyệt không hỗ trợ phát âm.");
-      return;
-    }
+    if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "zh-CN";
@@ -66,20 +64,11 @@ export default function VocabList() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch Lessons (DB + Local)
       const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
       const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-      const combinedLessons = [
-        ...(dbLessons || []),
-        ...localLessons
-      ];
-      setLessons(combinedLessons);
+      setLessons([...(dbLessons || []), ...localLessons]);
 
-      // 2. Fetch Vocab (DB + Local + Mock)
-      const { data: dbVocab, error } = await supabase
-        .from("vocab")
-        .select("*, lessons(name, id)");
-      
+      const { data: dbVocab, error } = await supabase.from("vocab").select("*, lessons(name, id)");
       let combinedVocab = [...MOCK_VOCAB.map(v => ({...v, lesson_id: "mock"}))];
 
       if (!error && dbVocab) {
@@ -92,127 +81,12 @@ export default function VocabList() {
       }
 
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-      combinedVocab = [...combinedVocab, ...localVocab];
-
-      setVocab(combinedVocab);
+      setVocab([...combinedVocab, ...localVocab]);
     } catch (err) {
-      console.log("Error fetching data:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddLesson = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newLessonName) return;
-
-    const newLesson = { 
-      id: `local-lesson-${Date.now()}`, 
-      name: newLessonName,
-      created_at: new Date().toISOString()
-    };
-    
-    const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-    localStorage.setItem("user_lessons", JSON.stringify([...localLessons, newLesson]));
-    
-    setLessons(prev => [...prev, newLesson]);
-    setNewLessonName("");
-    setShowAddLessonModal(false);
-  };
-
-  const translateText = async (text: string) => {
-    if (!text) return { primary: "", dict: [] };
-    try {
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&dt=bd&q=${encodeURIComponent(text)}`);
-      const data = await res.json();
-      
-      const primary = data[0][0][0];
-      const dictArr: any[] = [];
-      
-      // Parse dictionary meanings (dt=bd)
-      if (data[1]) {
-        data[1].forEach((posGroup: any) => {
-          const pos = posGroup[0]; // e.g. "noun", "verb"
-          const terms = posGroup[1] || [];
-          dictArr.push({ pos, terms });
-        });
-      }
-      
-      return { primary, dict: dictArr };
-    } catch (err) {
-      console.error("Translation error:", err);
-      return { primary: "", dict: [] };
-    }
-  };
-
-  const handleAutoTranslate = async (text: string, isEdit = false) => {
-    if (!text) return;
-    
-    // 1. Get Han-Viet locally
-    const hv = getHanViet(text);
-    
-    // 2. Fetch Rich Translation
-    const { primary, dict } = await translateText(text);
-    
-    // 3. Process Suggestions (Hanzii style)
-    const allSuggestions: string[] = [];
-    if (primary) allSuggestions.push(primary);
-    if (hv && hv !== text) allSuggestions.push(hv);
-    dict.forEach((group: any) => {
-      group.terms.forEach((t: string) => {
-        if (!allSuggestions.includes(t)) allSuggestions.push(t);
-      });
-    });
-    
-    setSuggestions(allSuggestions.slice(0, 8)); // Max 8 suggestions
-
-    // 4. Set default meaning if empty
-    const suggestedMeaning = (hv && hv !== text) ? hv : primary;
-
-    if (isEdit) {
-      setEditingWord((prev: any) => ({ ...prev, meaning: prev.meaning || suggestedMeaning }));
-    } else {
-      setNewWord(prev => ({ ...prev, meaning: prev.meaning || suggestedMeaning }));
-    }
-  };
-
-  // Auto-translate for new word
-  useEffect(() => {
-    if (!showAddModal || !newWord.word) return;
-    
-    const timer = setTimeout(() => {
-      // Only auto-translate if meaning is empty or user just changed the word significantly
-      handleAutoTranslate(newWord.word, false);
-    }, 1000); // 1s debounce
-
-    return () => clearTimeout(timer);
-  }, [newWord.word, showAddModal]);
-
-  // Auto-translate for editing word
-  useEffect(() => {
-    if (!showEditModal || !editingWord?.word) return;
-
-    const timer = setTimeout(() => {
-      handleAutoTranslate(editingWord.word, true);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [editingWord?.word, showEditModal]);
-
-  const handleManualTranslate = async () => {
-    if (!newWord.word) {
-      alert("Vui lòng nhập Hán tự trước khi dịch!");
-      return;
-    }
-    handleAutoTranslate(newWord.word, false);
-  };
-
-  const handleManualEditTranslate = async () => {
-    if (!editingWord?.word) {
-      alert("Vui lòng nhập Hán tự trước khi dịch!");
-      return;
-    }
-    handleAutoTranslate(editingWord.word, true);
   };
 
   const handleAddWord = (e: React.FormEvent) => {
@@ -230,141 +104,26 @@ export default function VocabList() {
     
     setVocab(prev => [...prev, newEntry]);
     setShowAddModal(false);
-    setNewWord({ 
-      word: "", 
-      pinyin: "", 
-      meaning: "", 
-      lesson_id: selectedLessonId !== "all" ? selectedLessonId : "",
-      example_cn: "",
-      example_py: "",
-      example_vi: ""
-    });
   };
 
   const handleDeleteWord = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm("Xóa từ vựng này?")) return;
-    
-    // Remote delete if applicable, or just local
     const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
     const updatedLocal = localVocab.filter((v: any) => v.id !== id);
     localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
-    
     setVocab(prev => prev.filter(v => v.id !== id));
   };
 
-  const openEditModal = (word: any, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingWord({ ...word });
-    setShowEditModal(true);
-  };
-
-  const handleUpdateWord = (e: React.FormEvent) => {
-    e.preventDefault();
-    const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-    const updatedLocal = localVocab.map((v: any) => v.id === editingWord.id ? editingWord : v);
-    localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
-    
-    setVocab(prev => prev.map(v => v.id === editingWord.id ? editingWord : v));
-    setShowEditModal(false);
-  };
-
-  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!newWord.lesson_id) {
-      alert("Vui lòng chọn Buổi học trước khi import!");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const lines = text.split("\n");
-      const newEntries: any[] = [];
-      const lessonObj = lessons.find(l => l.id === newWord.lesson_id);
-
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        const [word, pinyin, meaning] = line.split(",").map(s => s.trim());
-        if (word && pinyin && meaning) {
-          newEntries.push({
-            id: `local-word-${Date.now()}-${i}`,
-            word,
-            pinyin,
-            meaning,
-            lesson_id: newWord.lesson_id,
-            lesson: lessonObj?.name || "Imported"
-          });
-        }
-      }
-
-      if (newEntries.length > 0) {
-        const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-        localStorage.setItem("user_vocab", JSON.stringify([...localVocab, ...newEntries]));
-        setVocab(prev => [...prev, ...newEntries]);
-        setShowImportModal(false);
-        alert(`Đã nhập thành công ${newEntries.length} từ!`);
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const downloadTemplate = () => {
-    const csvContent = "hanzi,pinyin,meaning\n学习,xuéxí,Học tập\n老师,lǎoshī,Giáo viên";
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "vocab_template.csv");
-    link.click();
-  };
-
-  useEffect(() => {
-    if (selectedWord) {
-      const target = document.getElementById("hanzi-target");
-      if (target) target.innerHTML = "";
-      writerRef.current = [];
-
-      const chars = selectedWord.word.split("");
-      chars.forEach((char: string) => {
-        const writer = HanziWriter.create("hanzi-target", char, {
-          width: 150,
-          height: 150,
-          padding: 5,
-          strokeAnimationSpeed: 1,
-          delayBetweenStrokes: 200,
-          strokeColor: "#0ea5e9",
-          outlineColor: "#e2e8f0",
-        });
-        writerRef.current.push(writer);
-      });
-    }
-  }, [selectedWord]);
-
-  const animateHanzi = () => {
-    writerRef.current.forEach((writer, index) => {
-      setTimeout(() => {
-        writer.animateCharacter();
-      }, index * 1000);
-    });
-  };
-
   const filteredVocab = vocab.filter(item => {
-    if (selectedLessonId === "all") return false; // Hien tai khong hien thi gi o trang 'Tat ca'
-    
-    const matchesSearch = item.word.includes(search) ||
-                          item.pinyin.toLowerCase().includes(search.toLowerCase()) ||
-                          item.meaning.toLowerCase().includes(search.toLowerCase());
-    const matchesLesson = item.lesson_id === selectedLessonId;
+    const matchesSearch = item.word.includes(search) || item.meaning.toLowerCase().includes(search.toLowerCase());
+    const matchesLesson = selectedLessonId === "all" || item.lesson_id === selectedLessonId;
     return matchesSearch && matchesLesson;
   });
 
   return (
     <div className={styles.listContainer}>
-      {/* Lesson Filter Sidebar/Tabs */}
+      {/* Sidebar Lesson Filter */}
       <div className={styles.lessonFilter}>
         <div className={styles.lessonHeader}>
           <h3>Buổi học</h3>
@@ -377,7 +136,7 @@ export default function VocabList() {
             className={selectedLessonId === "all" ? styles.activeTab : ""}
             onClick={() => setSelectedLessonId("all")}
           >
-            Tất cả
+            Tất cả bài học
           </button>
           {lessons.map(lesson => (
             <button 
@@ -397,391 +156,159 @@ export default function VocabList() {
             <Search className={styles.searchIcon} size={20} />
             <input
               type="text"
-              placeholder="Tìm kiếm từ vựng..."
+              placeholder="Hán tự, pinyin hoặc nghĩa..."
               className={styles.searchInput}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {selectedLessonId !== "all" && (
-            <div className={styles.buttonGroup}>
-              <button className={styles.actionBtn} onClick={() => {
-                setNewWord(prev => ({...prev, lesson_id: selectedLessonId}));
-                setShowImportModal(true);
-              }}>
-                <FileUp size={18} /> Nhập CSV
-              </button>
-              <button className={`${styles.actionBtn} ${styles.primaryBtn}`} onClick={() => {
-                setNewWord(prev => ({...prev, lesson_id: selectedLessonId}));
-                setShowAddModal(true);
-              }}>
-                <Plus size={18} /> Thêm từ mới
-              </button>
-            </div>
-          )}
+          <div className={styles.buttonGroup}>
+            <button className={`${styles.actionBtn} ${styles.primaryBtn}`} onClick={() => setShowAddModal(true)}>
+              <Plus size={18} /> Thêm từ mới
+            </button>
+          </div>
         </div>
 
-        <div className={styles.grid}>
-          {loading ? (
-            <div className={styles.loader}>Đang tải dữ liệu...</div>
-          ) : selectedLessonId === "all" ? (
-            <div className={styles.empty}>Vui lòng chọn một buổi học ở bên trái để bắt đầu.</div>
-          ) : filteredVocab.length === 0 ? (
-            <div className={styles.empty}>Chưa có từ vựng nào trong buổi này.</div>
-          ) : (
-            filteredVocab.map((item) => (
-              <div
-                key={item.id}
-                className={`card ${styles.vocabCard}`}
-                onClick={() => setSelectedWord(item)}
-              >
-                <div className={styles.cardHeader}>
-                  <div className={styles.leftActions}>
-                    <button 
-                      className={styles.audioBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        speak(item.word);
-                      }}
+        {/* Vocab Table Content */}
+        {loading ? (
+          <div className={styles.loader}>Đang tải kho từ vựng...</div>
+        ) : (
+          <div className={styles.tableWrapper}>
+            <table className={styles.vocabTable}>
+              <thead>
+                <tr>
+                  <th className={styles.sttCell}>STT</th>
+                  <th>Hán tự (Thư pháp)</th>
+                  <th>Pinyin</th>
+                  <th>Nghĩa</th>
+                  <th>Ví dụ hướng dẫn</th>
+                  <th className={styles.actionCell}>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredVocab.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className={styles.sttCell}>{index + 1}</td>
+                    <td 
+                      className={`${styles.wordCell} hanzi`}
+                      onClick={() => setFullScreenWord(item.word)}
+                      title="Nhấn để phóng to chữ Hán"
                     >
-                      <Play size={16} fill="currentColor" />
-                    </button>
-                  </div>
-                  <div className={styles.rightActions}>
-                    <button className={styles.iconBtn} onClick={(e) => openEditModal(item, e)}>
-                      <Edit2 size={14} />
-                    </button>
-                    <button className={styles.iconBtn} onClick={(e) => handleDeleteWord(item.id, e)}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-                <div className={styles.cardMain}>
-                  <span className={`${styles.word} hanzi`}>{item.word}</span>
-                  <div className={styles.readingRow}>
-                    <span className={styles.pinyin}>{item.pinyin}</span>
-                  </div>
-                  <span className={styles.meaning}>{item.meaning}</span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+                      {item.word}
+                    </td>
+                    <td className={styles.pinyinCell}>{item.pinyin}</td>
+                    <td className={styles.meaningCell}>{item.meaning}</td>
+                    <td className={styles.exampleCell}>
+                      {item.example_cn ? (
+                        <div className={styles.exampleItem}>
+                          <p className={`${styles.exampleCn} hanzi`} onClick={() => setFullScreenWord(item.example_cn)}>{item.example_cn}</p>
+                          <p className={styles.examplePy}>{item.example_py}</p>
+                          <p className={styles.exampleVi}>{item.example_vi}</p>
+                        </div>
+                      ) : <span style={{color:'var(--text-muted)', fontSize:'0.8rem'}}>Chưa cập nhật ví dụ</span>}
+                    </td>
+                    <td className={styles.actionCell}>
+                      <div className={styles.iconBtnGroup}>
+                        <button className={styles.iconBtn} onClick={() => speak(item.word)} title="Phát âm">
+                          <Play size={16} fill="currentColor" />
+                        </button>
+                        <button className={styles.iconBtn} onClick={() => { setEditingWord(item); setShowEditModal(true); }} title="Sửa">
+                          <Edit2 size={16} />
+                        </button>
+                        <button className={styles.iconBtn} onClick={(e) => handleDeleteWord(item.id, e)} title="Xóa">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredVocab.length === 0 && (
+              <div className={styles.empty}>Không tìm thấy từ vựng nào.</div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Modal Detail */}
-      {selectedWord && (
-        <div className={styles.modalOverlay} onClick={() => setSelectedWord(null)}>
-          <div className={`card ${styles.modal}`} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setSelectedWord(null)}>×</button>
-            <div className={styles.modalContent}>
-              <div className={styles.modalLeft}>
-                <div className={styles.modalHeader}>
-                  <div className={styles.modalReading}>
-                    <span className={styles.modalPinyin}>{selectedWord.pinyin}</span>
-                  </div>
-                  <p className={styles.modalMeaning}>{selectedWord.meaning}</p>
-                </div>
-                
-                <div className={styles.hanziContainer}>
-                  <div id="hanzi-target" className={`${styles.hanziBox} hanzi`}></div>
-                  <button className={styles.animateBtn} onClick={animateHanzi}>
-                    <RefreshCw size={18} /> Viết lại
-                  </button>
-                </div>
-              </div>
-              <div className={styles.modalRight}>
-                <h3>Ví dụ & Ngữ pháp</h3>
-                <div className={styles.exampleList}>
-                  {selectedWord.example_cn ? (
-                    <div className={styles.exampleItem}>
-                      <p className={`${styles.exampleCn} hanzi`}>{selectedWord.example_cn}</p>
-                      <p className={styles.examplePy}>{selectedWord.example_py}</p>
-                      <p className={styles.exampleVi}>{selectedWord.example_vi}</p>
-                    </div>
-                  ) : (
-                    <div className={styles.emptyExample}>Chưa có ví dụ cho từ này. Bạn có thể tự thêm ở phần Sửa.</div>
-                  )}
-                </div>
-                <button className={styles.aiGenBtn}>
-                  <BookOpen size={16} /> Sinh ví dụ với AI
-                </button>
-              </div>
-            </div>
+      {/* Fullscreen Hanzi View Overlay */}
+      {fullScreenWord && (
+        <div className={styles.fullscreenOverlay} onClick={() => setFullScreenWord(null)}>
+          <div className={`${styles.fullscreenHanzi} hanzi`}>
+            {fullScreenWord.match(/[\u4e00-\u9fa5]+/g)?.[0] || fullScreenWord}
           </div>
+          <p style={{marginTop:'2rem', fontSize:'1.5rem', fontWeight:600}}>Phóng to chữ Hán thư pháp (Ma Shan Zheng)</p>
+          <p>Nhấp vào bất kỳ đâu để đóng</p>
         </div>
       )}
 
-      {/* Add Word Modal */}
+      {/* Simplified Modal Structure for Add/Edit Word */}
       {showAddModal && (
         <div className={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
-          <div className={`card ${styles.smallModal}`} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeaderRow}>
-              <h2>Thêm từ mới</h2>
+          <div className={`card ${styles.modal}`} style={{maxWidth:'550px'}} onClick={e => e.stopPropagation()}>
+            <div style={{display:'flex', justifyContent:'space-between', marginBottom:'1.5rem'}}>
+              <h2 style={{margin:0}}>Thêm từ mới</h2>
               <button onClick={() => setShowAddModal(false)}><X size={24} /></button>
             </div>
-            <form onSubmit={handleAddWord} className={styles.addForm}>
-              <div className={styles.formGroup}>
-                <label>Buổi học</label>
-                <select 
-                  value={newWord.lesson_id} 
-                  onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}
-                  required
-                >
-                  <option value="">Chọn buổi học</option>
-                  {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Pinyin</label>
+            <form onSubmit={handleAddWord} style={{display:'flex', flexDirection:'column', gap:'1.2rem'}}>
+              <select 
+                value={newWord.lesson_id} 
+                onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}
+                required
+                style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
+              >
+                <option value="">Chọn buổi học</option>
+                {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </select>
+              <input 
+                type="text" 
+                placeholder="Hán tự (Ví dụ: 你)" 
+                value={newWord.word}
+                onChange={e => setNewWord({...newWord, word: e.target.value})}
+                required
+                style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
+              />
+              <input 
+                type="text" 
+                placeholder="Pinyin" 
+                value={newWord.pinyin}
+                onChange={e => setNewWord({...newWord, pinyin: e.target.value})}
+                style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
+              />
+              <input 
+                type="text" 
+                placeholder="Nghĩa tiếng Việt" 
+                value={newWord.meaning}
+                onChange={e => setNewWord({...newWord, meaning: e.target.value})}
+                required
+                style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
+              />
+              <div style={{borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
+                <p style={{fontSize:'0.9rem', fontWeight:700, marginBottom:'0.5rem'}}>Ví dụ (Tùy chọn)</p>
                 <input 
                   type="text" 
-                  value={newWord.pinyin} 
-                  onChange={e => setNewWord({...newWord, pinyin: e.target.value})}
-                  placeholder="Ví dụ: xuéxí" 
-                  required 
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Hán tự</label>
-                <input 
-                  type="text" 
-                  value={newWord.word} 
-                  onChange={e => setNewWord({...newWord, word: e.target.value})}
-                  placeholder="Ví dụ: 学习" 
-                  required 
-                />
-                <HanziSuggester 
-                  pinyin={newWord.pinyin} 
-                  onSelect={(char, _) => {
-                    const fullChar = newWord.word + char;
-                    const fullPinyin = getPinyin(fullChar, { toneType: "symbol" }).replace(/\s+/g, '');
-                    setNewWord({...newWord, word: fullChar, pinyin: fullPinyin});
-                  }} 
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <div className={styles.labelRow}>
-                  <label>Nghĩa</label>
-                  <button 
-                    type="button" 
-                    className={styles.translateBtn}
-                    onClick={handleManualTranslate}
-                  >
-                    <RefreshCw size={12} /> Dịch lại
-                  </button>
-                </div>
-                <input 
-                  type="text" 
-                  value={newWord.meaning} 
-                  onChange={e => setNewWord({...newWord, meaning: e.target.value})}
-                  placeholder="Ví dụ: Học tập" 
-                  required 
-                />
-                
-                {suggestions.length > 0 && (
-                  <div className={styles.suggestionsList}>
-                    {suggestions.map((s, i) => (
-                      <button 
-                        key={i} 
-                        type="button" 
-                        onClick={() => setNewWord({...newWord, meaning: s})}
-                        className={styles.suggestionItem}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className={styles.exampleToggle}>
-                <label>Ví dụ (Không bắt buộc)</label>
-                <input 
-                  type="text" 
-                  placeholder="Tiếng Trung"
-                  value={newWord.example_cn || ""}
+                  placeholder="Câu ví dụ Hán tự" 
+                  value={newWord.example_cn}
                   onChange={e => setNewWord({...newWord, example_cn: e.target.value})}
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', width:'100%', marginBottom:'0.5rem'}}
                 />
-                <input 
+                 <input 
                   type="text" 
-                  placeholder="Pinyin"
-                  value={newWord.example_py || ""}
+                  placeholder="Pinyin ví dụ" 
+                  value={newWord.example_py}
                   onChange={e => setNewWord({...newWord, example_py: e.target.value})}
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', width:'100%', marginBottom:'0.5rem'}}
                 />
-                <input 
+                 <input 
                   type="text" 
-                  placeholder="Nghĩa tiếng Việt"
-                  value={newWord.example_vi || ""}
+                  placeholder="Nghĩa ví dụ" 
+                  value={newWord.example_vi}
                   onChange={e => setNewWord({...newWord, example_vi: e.target.value})}
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', width:'100%'}}
                 />
               </div>
-
-              <button type="submit" className="btn-primary">Lưu lại</button>
+              <button type="submit" className="btn-primary" style={{padding:'1rem'}}>Lưu vào từ điển</button>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Lesson Modal */}
-      {showAddLessonModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowAddLessonModal(false)}>
-          <div className={`card ${styles.smallModal}`} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeaderRow}>
-              <h2>Buổi học mới</h2>
-              <button onClick={() => setShowAddLessonModal(false)}><X size={24} /></button>
-            </div>
-            <form onSubmit={handleAddLesson} className={styles.addForm}>
-              <div className={styles.formGroup}>
-                <label>Tên buổi học</label>
-                <input 
-                  type="text" 
-                  value={newLessonName} 
-                  onChange={e => setNewLessonName(e.target.value)}
-                  placeholder="Ví dụ: Buổi 1, Chủ đề Gia đình..." 
-                  required 
-                  autoFocus
-                />
-              </div>
-              <button type="submit" className="btn-primary">Tạo buổi học</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Word Modal */}
-      {showEditModal && editingWord && (
-        <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
-          <div className={`card ${styles.smallModal}`} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeaderRow}>
-              <h2>Sửa từ vựng</h2>
-              <button onClick={() => setShowEditModal(false)}><X size={24} /></button>
-            </div>
-            <form onSubmit={handleUpdateWord} className={styles.addForm}>
-              <div className={styles.formGroup}>
-                <label>Pinyin</label>
-                <input 
-                  type="text" 
-                  value={editingWord.pinyin} 
-                  onChange={e => setEditingWord({...editingWord, pinyin: e.target.value})}
-                  required 
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Hán tự</label>
-                <input 
-                  type="text" 
-                  value={editingWord.word} 
-                  onChange={e => setEditingWord({...editingWord, word: e.target.value})}
-                  required 
-                />
-                <HanziSuggester 
-                  pinyin={editingWord.pinyin} 
-                  onSelect={(char, accented) => {
-                    const fullChar = editingWord.word + char;
-                    const fullPinyin = getPinyin(fullChar, { toneType: "symbol" }).replace(/\s+/g, '');
-                    setEditingWord({...editingWord, word: fullChar, pinyin: fullPinyin});
-                  }} 
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <div className={styles.labelRow}>
-                  <label>Nghĩa</label>
-                  <button 
-                    type="button" 
-                    className={styles.translateBtn}
-                    onClick={handleManualEditTranslate}
-                  >
-                    <RefreshCw size={12} /> Dịch lại
-                  </button>
-                </div>
-                <input 
-                  type="text" 
-                  value={editingWord.meaning} 
-                  onChange={e => setEditingWord({...editingWord, meaning: e.target.value})}
-                  required 
-                />
-                
-                {suggestions.length > 0 && (
-                  <div className={styles.suggestionsList}>
-                    {suggestions.map((s, i) => (
-                      <button 
-                        key={i} 
-                        type="button" 
-                        onClick={() => setEditingWord({...editingWord, meaning: s})}
-                        className={styles.suggestionItem}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className={styles.exampleToggle}>
-                <label>Ví dụ (Không bắt buộc)</label>
-                <input 
-                  type="text" 
-                  placeholder="Tiếng Trung"
-                  value={editingWord.example_cn || ""}
-                  onChange={e => setEditingWord({...editingWord, example_cn: e.target.value})}
-                />
-                <input 
-                  type="text" 
-                  placeholder="Pinyin"
-                  value={editingWord.example_py || ""}
-                  onChange={e => setEditingWord({...editingWord, example_py: e.target.value})}
-                />
-                <input 
-                  type="text" 
-                  placeholder="Nghĩa tiếng Việt"
-                  value={editingWord.example_vi || ""}
-                  onChange={e => setEditingWord({...editingWord, example_vi: e.target.value})}
-                />
-              </div>
-
-              <button type="submit" className="btn-primary">Cập nhật</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Import CSV Modal */}
-      {showImportModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowImportModal(false)}>
-          <div className={`card ${styles.smallModal}`} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeaderRow}>
-              <h2>Nhập từ file CSV</h2>
-              <button onClick={() => setShowImportModal(false)}><X size={24} /></button>
-            </div>
-            <div className={styles.importModalContent}>
-              <div className={styles.formGroup} style={{ textAlign: "left" }}>
-                <label>Chọn buổi học đích</label>
-                <select 
-                  value={newWord.lesson_id} 
-                  onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}
-                  required
-                >
-                  <option value="">Chọn buổi học</option>
-                  {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
-              </div>
-              <div className={styles.importButtons}>
-                <button className={styles.outlineBtn} onClick={downloadTemplate}>
-                  <Download size={18} /> Tải file mẫu
-                </button>
-                <button className={styles.actionBtn} onClick={() => fileInputRef.current?.click()}>
-                  <FileUp size={18} /> Chọn file CSV
-                </button>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleImportCSV} 
-                  style={{ display: "none" }} 
-                  accept=".csv"
-                />
-              </div>
-            </div>
           </div>
         </div>
       )}

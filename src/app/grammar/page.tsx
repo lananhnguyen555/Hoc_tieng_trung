@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, X, Edit2, Trash2, BookOpen, Filter, ChevronDown } from "lucide-react";
+import { Plus, X, Edit2, Trash2, Filter, ChevronDown, Maximize2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import styles from "./grammar.module.css";
 
@@ -10,7 +10,7 @@ interface GrammarItem {
   title: string;
   content: string;
   example: string;
-  lesson: string; // Thêm trường buổi học
+  lesson: string;
 }
 
 export default function GrammarPage() {
@@ -21,6 +21,9 @@ export default function GrammarPage() {
   const [editingItem, setEditingItem] = useState<GrammarItem | null>(null);
   const [newItem, setNewItem] = useState({ title: "", content: "", example: "", lesson: "" });
   const [selectedLesson, setSelectedLesson] = useState<string>("all");
+  
+  // State for Fullscreen Hanzi Display
+  const [fullScreenItem, setFullScreenItem] = useState<GrammarItem | null>(null);
 
   useEffect(() => {
     fetchGrammar();
@@ -36,7 +39,6 @@ export default function GrammarPage() {
       if (error) throw error;
       
       const localData = JSON.parse(localStorage.getItem("user_grammar") || "[]");
-      // Đảm bảo dữ liệu cũ vẫn hoạt động
       const formattedLocal = localData.map((item: any) => ({
         ...item,
         lesson: item.lesson || "Chưa phân loại"
@@ -52,13 +54,11 @@ export default function GrammarPage() {
     }
   };
 
-  // Lấy danh sách các buổi học duy nhất
   const uniqueLessons = useMemo(() => {
     const lessons = Array.from(new Set(grammarList.map(item => item.lesson)));
     return lessons.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   }, [grammarList]);
 
-  // Lọc danh sách theo buổi học được chọn
   const filteredGrammar = useMemo(() => {
     if (selectedLesson === "all") return grammarList;
     return grammarList.filter(item => item.lesson === selectedLesson);
@@ -79,7 +79,8 @@ export default function GrammarPage() {
     setNewItem({ title: "", content: "", example: "", lesson: "" });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!confirm("Xóa cấu trúc ngữ pháp này?")) return;
     const localData = JSON.parse(localStorage.getItem("user_grammar") || "[]");
     const updatedLocal = localData.filter((i: any) => i.id !== id);
@@ -101,7 +102,7 @@ export default function GrammarPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Ngữ pháp tiếng Trung</h1>
-        <p className={styles.subtitle}>Tổng hợp các cấu trúc quan trọng được phân loại theo từng buổi học.</p>
+        <p className={styles.subtitle}>Danh sách cấu trúc ngữ pháp được đánh số và trình bày khoa học.</p>
         
         <div className={styles.toolbar}>
           <div className={styles.filterSection}>
@@ -123,7 +124,7 @@ export default function GrammarPage() {
           </div>
           
           <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
-            <Plus size={20} /> Thêm ngữ pháp
+            <Plus size={20} /> Thêm bài mới
           </button>
         </div>
       </header>
@@ -131,86 +132,131 @@ export default function GrammarPage() {
       {loading ? (
         <div className={styles.loader}>Đang tải dữ liệu...</div>
       ) : (
-        <div className={styles.grid}>
-          {filteredGrammar.map((item) => (
-            <div key={item.id} className={`card ${styles.grammarCard}`}>
-              <div className={styles.cardHeader}>
-                <span className={styles.lessonBadge}>{item.lesson}</span>
-                <div className={styles.cardActions}>
-                  <button onClick={() => { setEditingItem(item); setShowEditModal(true); }}>
-                    <Edit2 size={16} />
-                  </button>
-                  <button onClick={() => handleDelete(item.id)}>
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-              <h2 className="hanzi">{item.title}</h2>
-              <p className={styles.content}>{item.content}</p>
-              {item.example && (
-                <div className={styles.exampleBox}>
-                  <strong>Ví dụ:</strong>
-                  <p className="hanzi">{item.example}</p>
-                </div>
-              )}
-            </div>
-          ))}
+        <div className={styles.tableWrapper}>
+          <table className={styles.grammarTable}>
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Buổi</th>
+                <th>Cấu trúc (Hán tự)</th>
+                <th>Giải thích chi tiết</th>
+                <th>Ví dụ minh họa</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredGrammar.map((item, index) => (
+                <tr key={item.id}>
+                  <td className={styles.sttCell}>{index + 1}</td>
+                  <td><span className={styles.lessonBadge}>{item.lesson}</span></td>
+                  <td 
+                    className={`${styles.titleCell} hanzi`}
+                    onClick={() => setFullScreenItem(item)}
+                    title="Nhấn để phóng to chữ Hán"
+                  >
+                    {item.title}
+                  </td>
+                  <td className={styles.contentCell}>{item.content}</td>
+                  <td className={styles.exampleCell}>
+                    {item.example && (
+                      <div className={styles.exampleBox}>
+                        <div 
+                          className={`${styles.exampleHanzi} hanzi`}
+                          onClick={() => setFullScreenItem({ ...item, title: item.example.split(' ')[0] })}
+                        >
+                          {item.example}
+                        </div>
+                      </div>
+                    )}
+                  </td>
+                  <td className={styles.actionCell}>
+                    <div className={styles.actionGroup}>
+                      <button className={styles.iconBtn} onClick={() => { setEditingItem(item); setShowEditModal(true); }}>
+                        <Edit2 size={16} />
+                      </button>
+                      <button className={styles.iconBtn} onClick={(e) => handleDelete(item.id, e)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           {filteredGrammar.length === 0 && (
             <div className={styles.empty}>
-              {selectedLesson === "all" ? "Chưa có dữ liệu ngữ pháp." : `Không có bài học nào trong ${selectedLesson}.`}
+              Chưa có dữ liệu cho mục này.
             </div>
           )}
         </div>
       )}
 
-      {/* Add Modal */}
+      {/* Fullscreen Hanzi Display Overlay */}
+      {fullScreenItem && (
+        <div className={styles.fullscreenOverlay} onClick={() => setFullScreenItem(null)}>
+          <div className={styles.closeFullscreen}><X size={40} /></div>
+          <div className={`${styles.fullscreenHanzi} hanzi`}>
+            {fullScreenItem.title.match(/[\u4e00-\u9fa5]+/g)?.[0] || fullScreenItem.title}
+          </div>
+          <div className={styles.fullscreenInfo}>
+            <p className={styles.fullscreenTitle}>{fullScreenItem.title}</p>
+            <p>Nhấp vào bất kỳ đâu để đóng</p>
+          </div>
+        </div>
+      )}
+
+      {/* Modals for Add/Edit remain similar structure but integrated into UI */}
       {showAddModal && (
         <div className={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
           <div className={`card ${styles.modal}`} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2>Thêm cấu trúc mới</h2>
+              <h2 style={{margin:0}}>Thêm ngữ pháp mới</h2>
               <button onClick={() => setShowAddModal(false)}><X size={24} /></button>
             </div>
-            <form onSubmit={handleAddItem} className={styles.form}>
-              <div className={styles.formGroup}>
-                <label>Buổi học (Lesson)</label>
+            <form onSubmit={handleAddItem} className={styles.form} style={{marginTop: '1.5rem', display:'flex', flexDirection:'column', gap:'1.2rem'}}>
+              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                <label style={{fontWeight:700}}>Buổi học</label>
                 <input 
                   type="text" 
                   value={newItem.lesson}
                   onChange={e => setNewItem({...newItem, lesson: e.target.value})}
-                  placeholder="Ví dụ: Buổi 1, Lesson 2..."
+                  placeholder="Ví dụ: Buổi 1"
                   required 
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
                 />
               </div>
-              <div className={styles.formGroup}>
-                <label>Tên cấu trúc</label>
+              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                <label style={{fontWeight:700}}>Cấu trúc (Hán tự)</label>
                 <input 
                   type="text" 
                   value={newItem.title}
                   onChange={e => setNewItem({...newItem, title: e.target.value})}
-                  placeholder="Ví dụ: Cấu trúc 正在 (Đang)"
+                  placeholder="Ví dụ: 正在"
                   required 
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
                 />
               </div>
-              <div className={styles.formGroup}>
-                <label>Giải giải thích</label>
+              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                <label style={{fontWeight:700}}>Giải thích</label>
                 <textarea 
                   value={newItem.content}
                   onChange={e => setNewItem({...newItem, content: e.target.value})}
-                  placeholder="Dùng để diễn tả hành động đang diễn ra..."
+                  placeholder="Cách sử dụng..."
                   required 
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'100px'}}
                 />
               </div>
-              <div className={styles.formGroup}>
-                <label>Ví dụ</label>
+              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                <label style={{fontWeight:700}}>Ví dụ</label>
                 <input 
                   type="text" 
                   value={newItem.example}
                   onChange={e => setNewItem({...newItem, example: e.target.value})}
                   placeholder="Hán tự (Pinyin) - Nghĩa"
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
                 />
               </div>
-              <button type="submit" className="btn-primary">Lưu lại</button>
+              <button type="submit" className="btn-primary" style={{marginTop:'1rem'}}>Lưu bài học</button>
             </form>
           </div>
         </div>
@@ -221,45 +267,49 @@ export default function GrammarPage() {
         <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
           <div className={`card ${styles.modal}`} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2>Sửa cấu trúc</h2>
+              <h2 style={{margin:0}}>Sửa bài học</h2>
               <button onClick={() => setShowEditModal(false)}><X size={24} /></button>
             </div>
-            <form onSubmit={handleUpdate} className={styles.form}>
-              <div className={styles.formGroup}>
-                <label>Buổi học (Lesson)</label>
+            <form onSubmit={handleUpdate} className={styles.form} style={{marginTop: '1.5rem', display:'flex', flexDirection:'column', gap:'1.2rem'}}>
+              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                <label style={{fontWeight:700}}>Buổi học</label>
                 <input 
                   type="text" 
                   value={editingItem.lesson}
                   onChange={e => setEditingItem({...editingItem, lesson: e.target.value})}
                   required 
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
                 />
               </div>
-              <div className={styles.formGroup}>
-                <label>Tên cấu trúc</label>
+              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                <label style={{fontWeight:700}}>Cấu trúc (Hán tự)</label>
                 <input 
                   type="text" 
                   value={editingItem.title}
                   onChange={e => setEditingItem({...editingItem, title: e.target.value})}
                   required 
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
                 />
               </div>
-              <div className={styles.formGroup}>
-                <label>Giải thích</label>
+              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                <label style={{fontWeight:700}}>Giải thích</label>
                 <textarea 
                   value={editingItem.content}
                   onChange={e => setEditingItem({...editingItem, content: e.target.value})}
                   required 
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'100px'}}
                 />
               </div>
-              <div className={styles.formGroup}>
-                <label>Ví dụ</label>
+              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                <label style={{fontWeight:700}}>Ví dụ</label>
                 <input 
                   type="text" 
                   value={editingItem.example}
                   onChange={e => setEditingItem({...editingItem, example: e.target.value})}
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
                 />
               </div>
-              <button type="submit" className="btn-primary">Cập nhật</button>
+              <button type="submit" className="btn-primary" style={{marginTop:'1rem'}}>Cập nhật bài học</button>
             </form>
           </div>
         </div>

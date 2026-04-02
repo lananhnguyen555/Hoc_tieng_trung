@@ -1,26 +1,29 @@
 .container {
-  padding: 3rem 1.5rem;
-  max-width: 800px;
+  padding: 3rem 1rem;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 3rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  margin-bottom: 3.5rem;
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 800;
-  margin: 0;
+  margin-bottom: 0.5rem;
 }
 
 .subtitle {
   color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.addBtnWrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2rem;
 }
 
 .addBtn {
@@ -29,145 +32,151 @@
   gap: 0.5rem;
   background: var(--primary);
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.8rem 1.8rem;
   border-radius: var(--radius);
-  font-weight: 600;
-  margin-top: 1rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.addBtn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(14, 165, 233, 0.3);
 }
 
-.ruleCard {
-  padding: 1.5rem 2rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 2rem;
-  border-left: 4px solid var(--primary);
-  position: relative;
+/* Table Styles */
+.tableWrapper {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
-.cardActions {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  gap: 0.5rem;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+.rulesTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
 }
 
-.ruleCard:hover .cardActions {
-  opacity: 1;
+.rulesTable th {
+  background: rgba(14, 165, 233, 0.1);
+  padding: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  border-bottom: 2px solid var(--border);
 }
 
-.cardActions button {
-  padding: 0.4rem;
-  border-radius: 6px;
+.rulesTable td {
+  padding: 1.5rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.rulesTable tr:hover {
+  background: rgba(14, 165, 233, 0.03);
+}
+
+.sttCell {
+  width: 60px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
   color: var(--text-muted);
+}
+
+.ruleTitleCell {
+  min-width: 200px;
+  font-size: 2rem !important; /* Hanzi to as requested */
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.cardActions button:hover {
-  background: rgba(14, 165, 233, 0.1);
+.ruleTitleCell:hover {
   color: var(--primary);
+  transform: translateX(5px);
 }
 
-.icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(14, 165, 233, 0.1);
-  color: var(--primary);
+.contentCell {
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+.actionCell {
+  width: 120px;
+  text-align: right;
+}
+
+.actionGroup {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 0.6rem;
+  justify-content: flex-end;
 }
 
-.content h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+.iconBtn {
+  padding: 0.6rem;
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: rgba(14, 165, 233, 0.05);
+  transition: all 0.2s ease;
 }
 
-.content p {
-  color: var(--foreground);
-  line-height: 1.6;
+.iconBtn:hover {
+  background: rgba(14, 165, 233, 0.15);
+  color: var(--primary);
 }
 
+/* Modal and Loader */
 .loader, .empty {
   text-align: center;
-  padding: 4rem;
+  padding: 5rem;
   color: var(--text-muted);
-  font-style: italic;
 }
 
-/* Modal Styles */
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
+  z-index: 1100;
+  backdrop-filter: blur(8px);
 }
 
 .modal {
-  width: 90%;
-  max-width: 500px;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  width: 95%;
+  max-width: 550px;
+  padding: 2.5rem;
 }
 
-.modalHeader {
+/* Fullscreen Display inherited logic similarly to Grammar */
+.fullscreenOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.98);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: pointer;
 }
 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+.fullscreenHanzi {
+  font-size: 40vh !important;
+  color: var(--primary);
+  text-align: center;
 }
 
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.formGroup label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.formGroup input, .formGroup textarea {
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: var(--foreground);
-  outline: none;
-}
-
-.formGroup textarea {
-  min-height: 150px;
-  resize: vertical;
-}
-
-.formGroup input:focus, .formGroup textarea:focus {
-  border-color: var(--primary);
+@media (max-width: 640px) {
+  .title { font-size: 2rem; }
+  .rulesTable th:nth-child(3), .rulesTable td:nth-child(3) { display: none; } /* Hide content on very small screens for table */
 }

@@ -1,62 +1,40 @@
-.container {
-  padding: 3rem 0;
-}
-
-.header {
-  margin-bottom: 3rem;
-  text-align: center;
-}
-
-.title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: var(--text-muted);
-}
-
 .listContainer {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 3rem;
-  align-items: flex-start;
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  min-height: calc(100vh - 80px);
 }
 
 .lessonFilter {
+  width: 250px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  height: fit-content;
   position: sticky;
   top: 100px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
 }
 
 .lessonHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1.5rem;
 }
 
 .lessonHeader h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
+  margin: 0;
+  font-size: 1.2rem;
 }
 
 .addLessonBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.4rem 0.75rem;
-  background: rgba(14, 165, 233, 0.1);
-  color: var(--primary);
-  border-radius: 20px;
+  padding: 0.4rem 0.8rem;
+  background: var(--primary);
+  color: white;
+  border-radius: 6px;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .lessonTabs {
@@ -67,35 +45,26 @@
 
 .lessonTabs button {
   text-align: left;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius);
-  color: var(--text-muted);
-  font-weight: 500;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
   transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .lessonTabs button:hover {
   background: rgba(14, 165, 233, 0.05);
-  color: var(--primary);
 }
 
-.lessonTabs button.activeTab {
-  background: var(--primary);
-  color: white;
+.activeTab {
+  background: var(--primary) !important;
+  color: white !important;
 }
 
 .mainContent {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2rem;
-}
-
-.loader, .empty {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 4rem;
-  color: var(--text-muted);
-  font-style: italic;
 }
 
 .topActions {
@@ -106,43 +75,8 @@
 }
 
 .searchWrapper {
-  position: relative;
   flex: 1;
-  max-width: 600px;
-}
-
-.buttonGroup {
-  display: flex;
-  gap: 1rem;
-}
-
-.actionBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--foreground);
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.actionBtn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.primaryBtn {
-  background: var(--primary);
-  color: white;
-  border: none;
-}
-
-.primaryBtn:hover {
-  background: var(--primary-hover);
-  color: white;
+  position: relative;
 }
 
 .searchIcon {
@@ -155,470 +89,143 @@
 
 .searchInput {
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  font-size: 1rem;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.primaryBtn {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Table Styles for Vocab */
+.tableWrapper {
+  background: var(--card-bg);
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--foreground);
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.searchInput:focus {
-  border-color: var(--primary);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.vocabCard {
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem !important;
-  transition: all 0.2s ease;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
-.vocabCard:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
+.vocabTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
 }
 
-.cardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.lessonTag {
+.vocabTable th {
   background: rgba(14, 165, 233, 0.1);
+  padding: 1.2rem 1rem;
+  font-weight: 700;
   color: var(--primary);
-  padding: 0.25rem 0.75rem;
-  border-radius: 100px;
-  font-size: 0.75rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.vocabTable td {
+  padding: 1.2rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sttCell {
+  width: 50px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.wordCell {
+  min-width: 150px;
+  font-size: 2.2rem !important; /* HIỂN THỊ CỰC TO THEO YÊU CẦU */
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.wordCell:hover {
+  transform: scale(1.1);
+  color: var(--primary);
+}
+
+.pinyinCell {
   font-weight: 600;
+  color: var(--text-muted);
 }
 
-.leftActions {
+.meaningCell {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.exampleCell {
+  font-size: 0.95rem;
+  max-width: 300px;
+}
+
+.exampleCn { color: var(--primary); font-weight: 600; margin: 0; }
+.examplePy { color: var(--text-muted); font-size: 0.8rem; margin: 2px 0; }
+.exampleVi { font-style: italic; margin: 0; font-size: 0.85rem; }
+
+.actionCell {
+  width: 150px;
+  text-align: right;
+}
+
+.iconBtnGroup {
   display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.rightActions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.vocabCard:hover .rightActions {
-  opacity: 1;
+  gap: 0.4rem;
+  justify-content: flex-end;
 }
 
 .iconBtn {
-  color: var(--text-muted);
-  padding: 0.6rem;
+  padding: 0.5rem;
   border-radius: 8px;
+  background: rgba(14, 165, 233, 0.05);
+  color: var(--text-muted);
   transition: all 0.2s ease;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
 }
 
 .iconBtn:hover {
-  background: rgba(14, 165, 233, 0.1);
+  background: rgba(14, 165, 233, 0.15);
   color: var(--primary);
 }
 
-.iconBtn svg {
-  width: 20px;
-  height: 20px;
-}
-
-.audioBtn {
-  color: var(--text-muted);
-  transition: color 0.2s ease;
-  padding: 0.6rem;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-}
-
-.audioBtn svg {
-  width: 22px;
-  height: 22px;
-}
-
-.cardMain {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.readingRow {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.hanVietTag {
-  font-size: 0.75rem;
-  background: rgba(14, 165, 233, 0.1);
-  color: var(--primary);
-  padding: 0.1rem 0.6rem;
-  border-radius: 100px;
-  font-weight: 600;
-}
-
-.word {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--foreground);
-}
-
-.pinyin {
-  font-size: 1rem;
-  color: var(--text-muted);
-}
-
-.meaning {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
-}
-
-/* Modal Styles */
-.modalOverlay {
+/* Fullscreen and Modals inherited similar to others */
+.fullscreenOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-}
-
-.modal {
-  width: 90%;
-  max-width: 800px;
-  background: var(--background);
-  position: relative;
-  overflow: hidden;
-  padding: 0;
-}
-
-.closeBtn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 1.5rem;
-  z-index: 10;
-}
-
-.modalContent {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 400px;
-}
-
-.modalLeft {
-  padding: 2.5rem;
-  background: var(--card-bg);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255, 255, 255, 0.98);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid var(--border);
-  gap: 2rem;
-}
-
-.modalHeader {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.modalReading {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.modalPinyin {
-  font-size: 1.5rem;
-  color: var(--text-muted);
-}
-
-.modalHanViet {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.modalMeaning {
-  font-size: 1.75rem;
-  font-weight: 700;
-}
-
-.hanziContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.hanziBox {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: white;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-}
-
-[data-theme='dark'] .hanziBox {
-  background: #0f172a;
-}
-
-.animateBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 100px;
-  background: var(--background);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.animateBtn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.hint {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-.exampleList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.exampleItem {
-  background: var(--card-bg);
-  padding: 1rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-}
-
-.exampleCn { font-size: 1.125rem; font-weight: 600; }
-.examplePy { font-size: 0.875rem; color: var(--text-muted); }
-.exampleVi { font-size: 1rem; margin-top: 0.25rem; }
-
-.aiGenBtn {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--primary);
-  color: var(--primary);
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.aiGenBtn:hover {
-  background: var(--primary);
-  color: white;
-}
-
-.smallModal {
-  width: 90%;
-  max-width: 450px;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.modalHeaderRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modalHeaderRow h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.addForm {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.exampleToggle {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-}
-
-.exampleToggle label {
-  font-size: 0.8rem;
-  color: var(--primary);
-  margin-bottom: 0.25rem;
-}
-
-.emptyExample {
-  color: var(--text-muted);
-  font-style: italic;
-  font-size: 0.9rem;
-  text-align: center;
-  padding: 1rem;
-}
-
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.formGroup label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.labelRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.translateBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.75rem;
-  color: var(--primary);
-  background: rgba(14, 165, 233, 0.08);
-  padding: 0.25rem 0.6rem;
-  border-radius: 100px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.translateBtn:hover {
-  background: var(--primary);
-  color: white;
-}
-
-.formGroup input {
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: var(--foreground);
-  outline: none;
-}
-
-.formGroup input:focus {
-  border-color: var(--primary);
-}
-
-.suggestionsList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.suggestionItem {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  background: rgba(14, 165, 233, 0.05);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 100px;
+  z-index: 2000;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.suggestionItem:hover {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-.importModalContent {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  text-align: center;
-}
-
-.importButtons {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.outlineBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.outlineBtn:hover {
-  border-color: var(--primary);
+.fullscreenHanzi {
+  font-size: 45vh !important;
   color: var(--primary);
 }
 
 @media (max-width: 1024px) {
-  .listContainer {
-    grid-template-columns: 1fr;
-  }
-  .lessonFilter {
-    position: static;
-  }
-  .lessonTabs {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-  }
-  .lessonTabs button {
-    white-space: nowrap;
-  }
+  .listContainer { flex-direction: column; }
+  .lessonFilter { width: 100%; position: static; }
 }
