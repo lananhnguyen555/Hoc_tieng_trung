@@ -9,6 +9,7 @@
   --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
   --radius: 12px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --nav-bg: #f0f9ff; /* Pastel Blue nhạt */
 }
 
 [data-theme='dark'] {
@@ -20,6 +21,7 @@
   --border: #334155;
   --text-muted: #94a3b8;
   --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --nav-bg: #0f172a;
 }
 
 * {
@@ -37,6 +39,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   line-height: 1.6;
+  scroll-behavior: smooth;
 }
 
 a {
@@ -55,8 +58,9 @@ button {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-  padding-top: 70px;
+  padding-top: 80px; /* Bù cho chiều cao Navbar fixed là 70px */
 }
+
 
 .card {
   background: var(--card-bg);
@@ -81,12 +85,17 @@ button {
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
 
-[data-theme='dark'] .glass {
-  background: rgba(15, 23, 42, 0.7);
+[data-theme='light'] .glass {
+  background: rgba(240, 249, 255, 0.85); /* Pastel Blue với độ mờ nhẹ */
 }
+
+[data-theme='dark'] .glass {
+  background: rgba(15, 23, 42, 0.85);
+}
+

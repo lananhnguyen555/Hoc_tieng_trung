@@ -18,8 +18,10 @@ const VOWEL_PRIORITY = ['a', 'o', 'e', 'ü', 'i', 'u'];
 
 const addToneMark = (syllable: string, tone: number): string => {
   if (!tone) return syllable;
+  // Xử lý trường hợp đặc biệt: ui, iu (thanh điệu đặt ở âm sau)
   if (syllable.endsWith('ui')) return syllable.slice(0,-1) + (TONE_MARKS.i?.[tone] ?? 'i');
   if (syllable.endsWith('iu')) return syllable.slice(0,-1) + (TONE_MARKS.u?.[tone] ?? 'u');
+  
   for (const v of VOWEL_PRIORITY) {
     if (syllable.includes(v)) {
       const marks = TONE_MARKS[v];
@@ -31,7 +33,7 @@ const addToneMark = (syllable: string, tone: number): string => {
 
 /**
  * Bảng chữ Hán đại diện cho 4 thanh điệu của các âm tiết phổ biến.
- * Ưu tiên cao nhất cho Google TTS zh-CN để giọng chuẩn 100%.
+ * Hệ thống sẽ ưu tiên dùng những chữ này để Google TTS phát âm chuẩn nhất.
  */
 const CHAR_MAP: Record<string, string[]> = {
   // b-
@@ -99,78 +101,30 @@ const CHAR_MAP: Record<string, string[]> = {
   'gen': ['根','','','亘'], 'gang':['刚','','港','杠'],
   'geng':['更','耕','耿','更'], 'gong':['工','弓','巩','共'],
   // k-
-  'ka':  ['咖','','卡',''], 'ke':  ['科','壳','可','客'],
-  'ku':  ['哭','','苦','库'], 'kai': ['开','','凯',''],
-  'kao': ['','','考','靠'], 'kou': ['口','','口','扣'],
-  'kan': ['刊','','砍','看'], 'ken': ['','','','恳'],
-  'kang':['康','扛','慷','抗'], 'keng':['坑','','',''],
-  'kong':['空','','空','控'],
+  'ka':  ['卡', '咔', '咖', '咯'], 'ke':  ['科', '颗', '渴', '刻'],
+  'ku':  ['哭', '库', '苦', '裤'], 'kai': ['开', '凯', '慨', '楷'],
+  'kao': ['烤', '考', '考', '靠'], 'kou': ['扣', '扣', '口', '扣'],
+  'kan': ['看', '看', '看', '看'], 'ken': ['肯', '肯', '肯', '肯'],
+  'kang':['康', '康', '康', '康'], 'keng':['坑', '坑', '坑', '坑'],
+  'kong':['空', '空', '空', '空'],
   // h-
-  'ha':  ['哈','蛤','哈',''], 'he':  ['喝','河','何','褐'],
-  'hu':  ['呼','胡','虎','护'], 'hai': ['咳','孩','海','害'],
-  'hei': ['黑','','',''], 'hao': ['毫', '豪','好','号'],
-  'hou': ['齁','侯','吼','后'], 'han': ['憨','寒','罕','汉'],
-  'hen': ['','痕','很','恨'], 'hang':['夯','航','','巷'],
-  'heng':['哼','恒','',''], 'hong':['轰','红','哄','哄'],
-  // j-
-  'ji':  ['鸡','极','己','记'], 'jie': ['接','洁','姐','解'],
-  'jiu': ['纠','','久','旧'], 'jin': ['今','','紧','进'],
-  'jian':['肩','','拣','见'], 'jing':['京','','景','竟'],
-  // q-
-  'qi':  ['七','齐','起','气'], 'qie': ['切','茄','且','窃'],
-  'qiu': ['丘','球','',''], 'qin': ['亲','琴','寝','沁'],
-  'qian':['千','钱','浅','欠'], 'qing':['青','晴','请','庆'],
-  // x-
-  'xi':  ['西','习','喜','系'], 'xie': ['些','邪','写','谢'],
-  'xiu': ['休','','羞','秀'], 'xin': ['心','','','信'],
-  'xian':['先','咸','险','现'], 'xing':['星','行','醒','性'],
-  // zh-
-  'zha': ['扎','闸','眨','榨'], 'zhe': ['遮','哲','者','这'],
-  'zhi': ['之','直','指','至'], 'zhu': ['猪','竹','主','助'],
-  'zhai':['摘','宅','窄','债'], 'zhao':['招','','找','照'],
-  'zhou':['周','轴','帚','咒'], 'zhan':['占','粘','斩','站'],
-  'zhen':['真','','枕','镇'], 'zhang':['张','','掌','帐'],
-  'zheng':['蒸','','整','正'], 'zhong':['中','','肿','众'],
-  // ch-
-  'cha': ['插','查','','差'], 'che': ['车','','扯','撤'],
-  'chi': ['吃','迟','尺','赤'], 'chu': ['出','厨','楚','处'],
-  'chao':['抄','朝','','炒'], 'chou':['抽','畴','丑','臭'],
-  'chan':['搀','缠','产','颤'], 'chen':['抻','沉','碜','衬'],
-  'chang':['昌','长','场','唱'], 'cheng':['称','成','逞','秤'],
-  'chong':['充','崇','宠','冲'],
-  // sh-
-  'sha': ['杀','啥','傻','霎'], 'she': ['奢','蛇','舍','设'],
-  'shi': ['失','时','使','是'], 'shu': ['书','熟','鼠','树'],
-  'shao':['烧','勺','少','哨'], 'shou':['收','熟','手','受'],
-  'shan':['山','','闪','善'], 'shen':['深','什','哂','慎'],
-  'shang':['商','','赏','上'], 'sheng':['声','','省','胜'],
-  // r-
-  're':  ['','','惹','热'], 'ri':  ['','','','日'],
-  'ru':  ['','如','乳','入'], 'rao': ['','饶','扰','绕'],
-  'rou': ['','柔','','肉'], 'ran': ['','然','染','然'],
-  'ren': ['','人', '忍','认'], 'rang':['','瓤','嚷','让'],
-  'reng':['扔','仍','',''], 'rong':['','容','','绒'],
-  // z-
-  'za':  ['匝','杂','',''], 'ze':  ['','则','责','泽'],
-  'zi':  ['姿','','子','字'], 'zu':  ['租','族','阻',''],
-  'zai': ['灾','','宰','再'], 'zao': ['遭','凿','早','造'],
-  'zou': ['邹','','走','奏'], 'zan': ['簪','咱','昝','赞'],
-  'zen': ['','','怎',''], 'zang':['赃','','臧','葬'],
-  'zeng':['增','','','赠'], 'zong':['综','','总','纵'],
-  // c-
-  'ca':  ['嚓','','',''], 'ce':  ['','','','策'],
-  'ci':  ['疵','词','此','刺'], 'cu':  ['粗','','','促'],
-  'cai': ['猜','才','采','菜'], 'cao': ['操','曹','草','糙'],
-  'cou': ['凑','','','凑'], 'can': ['餐','残','惨','灿'],
-  'cen': ['','岑','',''], 'cang':['苍','藏','','仓'],
-  'ceng':['','层','','蹭'], 'cong':['聪','从','',''],
-  // s-
-  'sa':  ['撒','','洒','萨'], 'se':  ['涩','','','色'],
-  'si':  ['丝','','死','四'], 'su':  ['苏','','素','速'],
-  'sai': ['腮','','','赛'], 'sao': ['嫂','扫','搔','扫'],
-  'sou': ['飕','搜','擞','嗽'], 'san': ['三','','伞','散'],
-  'sen': ['森','','',''], 'sang':['嗓','','颡','丧'],
-  'seng':['僧','','',''], 'song':['忪','怂','耸','诵'],
+  'ha':  ['哈', '哈', '哈', '哈'], 'he':  ['喝', '何', '河', '贺'],
+  'hu':  ['呼', '胡', '虎', '护'], 'hai': ['还', '海', '还', '害'],
+  'hei': ['黑', '黑', '黑', '黑'], 'hao': ['好', '好', '好', '号'],
+  'hou': ['后', '后', '吼', '后'], 'han': ['汉', '喊', '汉', '汉'],
+  'hen': ['很', '很', '很', '恨'], 'hang':['行', '行', '行', '行'],
+  'heng':['横', '横', '横', '横'], 'hong':['红', '红', '红', '红'],
+  // j, q, x xử lý với âm u (thực tế là ü)
+  'ju':  ['居','局','举','据'], 'qu':  ['屈','渠','取','去'], 'xu':  ['虚','徐','许','绪'],
+  'ji':  ['机','极','几','记'], 'jie': ['结','洁','解','界'],
+  'jiu': ['九','久','久','旧'], 'jin': ['今','近','仅','进'],
+  'jian':['间','建','减','见'], 'jing':['京','惊','井','竟'],
+  'qi':  ['期','齐','起','气'], 'qie': ['切','且','且','切'],
+  'qiu': ['秋','球','秋','求'], 'qin': ['亲','勤','寝','庆'],
+  'qian':['前','钱','浅','欠'], 'qing':['请','清','情','庆'],
+  'xi':  ['西','习','喜','细'], 'xie': ['写','邪','写','谢'],
+  'xiu': ['修','修','朽','秀'], 'xin': ['新','新','新','信'],
+  'xian':['先','闲','险','现'], 'xing':['性','行','性','兴'],
 };
 
 const TONE_INFO = [
@@ -194,12 +148,16 @@ const playTone = (syllable: string, tone: number) => {
   // Nếu không có trong CHAR_MAP, tìm bất kỳ chữ nào trong pinyin-data để ép giọng chuẩn
   if (!char || char === '') {
     const chars = PINYIN_TO_HANZI[key];
-    if (chars && chars.length > 0) char = chars[0];
+    if (chars && chars.length > 0) {
+        // May mắn: nếu pinyin-data có đủ chữ, ta có thể dùng thuật toán để tìm đúng chữ theo thanh điệu
+        // Nhưng tạm thời ta chọn chữ đầu tiên để đảm bảo giọng đọc CHUẨN người Trung.
+        char = chars[0];
+    }
   }
 
   const tonedPinyin = addToneMark(syllable, tone);
   
-  // Stop any previous speech
+  // Dừng bất kỳ giọng nói nào đang phát
   window.speechSynthesis.cancel();
 
   // 2. Ưu tiên Google TTS với chữ Hán hoặc toned pinyin
@@ -234,6 +192,11 @@ export default function PinyinCombinationTable() {
     }
   }, []);
 
+  const isSyllableValid = (initial: string, final: string) => {
+    const syllable = initial + final;
+    return !!PINYIN_TO_HANZI[syllable];
+  };
+
   return (
     <div className={styles.section} id="combination-table">
       <h2 className={styles.sectionTitle}>Bảng Ghép Âm &amp; Thanh Điệu</h2>
@@ -251,15 +214,20 @@ export default function PinyinCombinationTable() {
             {INITIALS.map(initial => (
               <tr key={initial}>
                 <th className={styles.initialHeaderEdge}>{initial}</th>
-                {FINALS_SAMPLE.map(final => (
-                  <td
-                    key={final}
-                    className={styles.pinyinCellClickable}
-                    onClick={() => setActiveSyllable(initial + final)}
-                  >
-                    <div className={styles.pinyinCellInner}>{initial}{final}</div>
-                  </td>
-                ))}
+                {FINALS_SAMPLE.map(final => {
+                  const isValid = isSyllableValid(initial, final);
+                  return (
+                    <td
+                      key={final}
+                      className={isValid ? styles.pinyinCellClickable : styles.pinyinCellInvalid}
+                      onClick={() => isValid && setActiveSyllable(initial + final)}
+                    >
+                      <div className={styles.pinyinCellInner}>
+                        {isValid ? initial + final : '-'}
+                      </div>
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
