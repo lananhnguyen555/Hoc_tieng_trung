@@ -1,10 +1,13 @@
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   height: 70px;
   display: flex;
   align-items: center;
+  box-shadow: var(--shadow);
 }
 
 .nav {
