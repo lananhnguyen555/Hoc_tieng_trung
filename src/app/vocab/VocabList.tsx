@@ -170,7 +170,14 @@ export default function VocabList() {
 
         for (let i = startIdx; i < data.length; i++) {
           const row = data[i];
-          const hanzi = String(row[0] || "").trim();
+          if (!row || row.length === 0) continue;
+
+          // Tự động tìm ô nào trong hàng có chứa chữ Hán (Smart Column Detection)
+          const hanzi = row.find(val => {
+            const str = String(val || "").trim();
+            return /[\u4e00-\u9fa5]/.test(str);
+          })?.toString().trim();
+
           if (!hanzi || hanzi === "undefined") continue;
 
           // Khử trùng: Nếu đã có Hán tự này rồi thì bỏ qua
@@ -188,7 +195,7 @@ export default function VocabList() {
             const transData = await res.json();
             meaning = transData?.[0]?.[0]?.[0] || "";
           } catch (err) {
-            meaning = hanzi.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+            meaning = hanzi.split('').map((c: string) => HAN_VIET_DATA[c] || c).join(' ');
           }
 
           const newWord: Word = {
