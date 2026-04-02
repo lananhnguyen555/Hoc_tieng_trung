@@ -88,9 +88,16 @@ export default function VocabList() {
       writerContainerRef.current.innerHTML = '';
       const characters = detailedWord.word.split('');
       const charToDraw = characters[currentCharIndex] || characters[0];
+      const width = writerContainerRef.current.clientWidth;
       writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
-        width: 250, height: 250, padding: 5, strokeColor: '#0ea5e9', outlineColor: '#eee', drawingColor: '#333',
-        showOutline: true, delayBetweenLoops: 1000
+        width: width,
+        height: width,
+        padding: 5,
+        strokeColor: '#0ea5e9',
+        outlineColor: '#eee',
+        drawingColor: '#333',
+        showOutline: true,
+        delayBetweenLoops: 1000
       });
       writerInstance.current.animateCharacter({
         onComplete: () => {

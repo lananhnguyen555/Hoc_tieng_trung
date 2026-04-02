@@ -349,8 +349,9 @@ export default function PhrasesList() {
       writerContainerRef.current.innerHTML = '';
       const characters = detailedPhrase.word.split('');
       const charToDraw = characters[currentCharIndex] || characters[0];
+      const width = writerContainerRef.current.clientWidth;
       writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
-        width: 250, height: 250, padding: 5, strokeColor: '#0ea5e9', showOutline: true
+        width: width, height: width, padding: 5, strokeColor: '#0ea5e9', showOutline: true
       });
       writerInstance.current.animateCharacter();
     }
