@@ -99,32 +99,21 @@ export default function RulesPage() {
                 <th className={styles.sttCell}>STT</th>
                 <th>Nội dung (Bao gồm Hán tự)</th>
                 <th>Ghi chú</th>
-                <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {rules.map((rule, index) => (
-                <tr key={rule.id}>
+                <tr key={rule.id} onClick={() => { setEditingItem(rule); setShowEditModal(true); }} style={{cursor:'pointer'}}>
                    <td className={styles.sttCell}>{index + 1}</td>
                    <td 
                     className={`${styles.ruleTitleCell} hanzi`}
                     style={{fontSize:'1.8rem', fontWeight:600}}
-                    onClick={() => setFullScreenItem(rule)}
+                    onClick={(e) => { e.stopPropagation(); setFullScreenItem(rule); }}
                     title="Nhấn để phóng to"
                   >
                     {rule.title}
                   </td>
                   <td className={styles.contentCell}>{rule.content}</td>
-                  <td className={styles.actionCell}>
-                    <div className={styles.actionGroup}>
-                      <button className={styles.iconBtn} onClick={() => { setEditingItem(rule); setShowEditModal(true); }}>
-                        <Edit2 size={18} />
-                      </button>
-                      <button className={styles.iconBtn} onClick={(e) => handleDelete(rule.id, e)}>
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -208,7 +197,17 @@ export default function RulesPage() {
                   style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'100px'}}
                 />
               </div>
-              <button type="submit" className="btn-primary" style={{marginTop:'1rem', padding:'1rem'}}>Cập nhật quy tắc</button>
+              <div style={{display:'flex', gap:'1rem', marginTop:'1.5rem'}}>
+                <button type="submit" className="btn-primary" style={{flex:1}}>Cập nhật quy tắc</button>
+                <button 
+                  type="button" 
+                  className={styles.iconBtn} 
+                  style={{background:'#ef4444', color:'white', width:'auto', padding:'0 1rem', display:'flex', alignItems:'center', gap:'0.5rem'}}
+                  onClick={(e) => { handleDelete(editingItem.id, e); setShowEditModal(false); }}
+                >
+                  <Trash2 size={20} /> Xóa
+                </button>
+              </div>
             </form>
           </div>
         </div>

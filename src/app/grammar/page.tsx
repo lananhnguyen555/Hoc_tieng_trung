@@ -138,31 +138,20 @@ export default function GrammarPage() {
                 <th className={styles.sttCell}>STT</th>
                 <th>Nội dung (Bao gồm Hán tự)</th>
                 <th>Ghi chú</th>
-                <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {filteredGrammar.map((item, index) => (
-                <tr key={item.id}>
+                <tr key={item.id} onClick={() => { setEditingItem(item); setShowEditModal(true); }} style={{cursor:'pointer'}}>
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td 
                     className={`${styles.titleCell} hanzi`}
                     style={{fontSize:'1.8rem', fontWeight:600}}
-                    onClick={() => setFullScreenItem(item)}
+                    onClick={(e) => { e.stopPropagation(); setFullScreenItem(item); }}
                   >
                     {item.title}
                   </td>
                   <td className={styles.contentCell}>{item.content}</td>
-                  <td className={styles.actionCell}>
-                    <div className={styles.actionGroup}>
-                      <button className={styles.iconBtn} onClick={() => { setEditingItem(item); setShowEditModal(true); }}>
-                        <Edit2 size={16} />
-                      </button>
-                      <button className={styles.iconBtn} onClick={(e) => handleDelete(item.id, e)}>
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -270,7 +259,17 @@ export default function GrammarPage() {
                   style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'80px'}}
                 />
               </div>
-              <button type="submit" className="btn-primary" style={{marginTop:'1rem'}}>Cập nhật bài học</button>
+              <div style={{display:'flex', gap:'1rem', marginTop:'1rem'}}>
+                <button type="submit" className="btn-primary" style={{flex:1}}>Cập nhật bài học</button>
+                <button 
+                  type="button" 
+                  className={styles.iconBtn} 
+                  style={{background:'#ef4444', color:'white', width:'auto', padding:'0 1rem'}} 
+                  onClick={(e) => { handleDelete(editingItem.id, e); setShowEditModal(false); }}
+                >
+                  <Trash2 size={20} /> Xóa
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -383,27 +383,19 @@ export default function PhrasesList() {
         <div className={styles.tableWrapper}>
           <table className={styles.vocabTable}>
             <thead>
-              <tr><th className={styles.sttCell}>STT</th><th>Nội dung</th><th>Ghi chú</th><th className={styles.actionCell}>Thao tác</th></tr>
+              <tr><th className={styles.sttCell}>STT</th><th>Nội dung</th><th>Ghi chú</th></tr>
             </thead>
             <tbody>
               {filteredPhrases.map((item, index) => (
-                <tr key={item.id}>
+                <tr key={item.id} onClick={() => handleOpenDetailed(item)} style={{cursor:'pointer'}}>
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td 
                     className={`${styles.wordCell} hanzi`} 
-                    style={{fontSize:'1.8rem', fontWeight:600}} 
-                    onClick={() => handleOpenDetailed(item)}
+                    style={{fontSize:'1.8rem', fontWeight:600}}
                   >
                     {item.word}
                   </td>
                   <td className={styles.meaningCell}>{item.meaning}</td>
-                  <td className={styles.actionCell}>
-                    <div className={styles.iconGroup}>
-                      <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>
-                      <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
-                      <button className={styles.iconBtn} onClick={() => handleDeletePhrase(item.id)}><Trash2 size={16} /></button>
-                    </div>
-                  </td>
                 </tr>
               ))}
             </tbody>

@@ -63,7 +63,12 @@ export default function VocabList() {
   };
 
   const handleSelectSuggestion = async (char: string, accented: string) => {
-    setNewWord(prev => ({ ...prev, word: char, pinyin: accented.replace(/\s+/g, '') }));
+    setNewWord(prev => ({ 
+      ...prev, 
+      word: char, 
+      pinyin: accented.replace(/\s+/g, ''),
+      word_type: prev.word_type // Đảm bảo giữ lại word_type đang nhập
+    }));
     
     try {
       const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(char)}`);
@@ -304,8 +309,15 @@ export default function VocabList() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       const { data, error } = await supabase.from("vocab").insert({
-        ...newWord,
-        user_id: session.user.id
+        word: newWord.word,
+        pinyin: newWord.pinyin,
+        meaning: newWord.meaning,
+        word_type: newWord.word_type, // Đảm bảo lưu đúng word_type
+        lesson_id: newWord.lesson_id,
+        user_id: session.user.id,
+        example_cn: newWord.example_cn,
+        example_py: newWord.example_py,
+        example_vi: newWord.example_vi
       }).select().single();
 
       if (!error && data) {
