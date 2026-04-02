@@ -103,25 +103,7 @@ export default function GrammarPage() {
         <h1 className={styles.title}>Ngữ pháp tiếng Trung</h1>
         <p className={styles.subtitle}>Danh sách cấu trúc ngữ pháp được đánh số và trình bày khoa học.</p>
         
-        <div className={styles.toolbar}>
-          <div className={styles.filterSection}>
-            <label htmlFor="lesson-filter"><Filter size={18} /> Buổi học:</label>
-            <div className={styles.selectWrapper}>
-              <select 
-                id="lesson-filter"
-                value={selectedLesson}
-                onChange={(e) => setSelectedLesson(e.target.value)}
-                className={styles.lessonSelect}
-              >
-                <option value="all">Tất cả bài học</option>
-                {uniqueLessons.map(lesson => (
-                  <option key={lesson} value={lesson}>{lesson}</option>
-                ))}
-              </select>
-              <ChevronDown className={styles.selectIcon} size={16} />
-            </div>
-          </div>
-          
+        <div className={styles.toolbar} style={{justifyContent: 'flex-end'}}>
           <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
             <Plus size={20} /> Thêm bài mới
           </button>
@@ -188,17 +170,6 @@ export default function GrammarPage() {
             </div>
             <form onSubmit={handleAddItem} className={styles.form} style={{marginTop: '1.5rem', display:'flex', flexDirection:'column', gap:'1.2rem'}}>
               <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Buổi học</label>
-                <input 
-                  type="text" 
-                  value={newItem.lesson}
-                  onChange={e => setNewItem({...newItem, lesson: e.target.value})}
-                  placeholder="Ví dụ: Buổi 1"
-                  required 
-                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
-                />
-              </div>
-              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
                 <label style={{fontWeight:700}}>Nội dung (Chữ Hán, cấu trúc...)</label>
                 <textarea 
                   value={newItem.title}
@@ -232,16 +203,6 @@ export default function GrammarPage() {
               <button onClick={() => setShowEditModal(false)}><X size={24} /></button>
             </div>
             <form onSubmit={handleUpdate} className={styles.form} style={{marginTop: '1.5rem', display:'flex', flexDirection:'column', gap:'1.2rem'}}>
-              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Buổi học</label>
-                <input 
-                  type="text" 
-                  value={editingItem.lesson}
-                  onChange={e => setEditingItem({...editingItem, lesson: e.target.value})}
-                  required 
-                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
-                />
-              </div>
               <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
                 <label style={{fontWeight:700}}>Nội dung</label>
                 <textarea 
