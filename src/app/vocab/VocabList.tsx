@@ -59,20 +59,25 @@ export default function VocabList() {
     setShowAddModal(true);
   };
 
-  const handleSelectSuggestion = (char: string, accented: string) => {
-    let meaning = "";
-    if (char.length === 1) {
-      meaning = HAN_VIET_DATA[char] || "";
-    } else {
-      meaning = HAN_VIET_DATA[char] || char.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+  const handleSelectSuggestion = async (char: string, accented: string) => {
+    setNewWord(prev => ({ ...prev, word: char, pinyin: accented.replace(/\s+/g, '') }));
+    
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(char)}`);
+      const data = await res.json();
+      
+      if (data && data[0] && data[0][0] && data[0][0][0]) {
+        const translation = data[0][0][0];
+        setNewWord(prev => ({ ...prev, meaning: translation }));
+      } else {
+        const hv = char.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+        setNewWord(prev => ({ ...prev, meaning: hv }));
+      }
+    } catch (err) {
+      console.error("Dịch Google lỗi:", err);
+      const hv = char.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+      setNewWord(prev => ({ ...prev, meaning: hv }));
     }
-
-    setNewWord(prev => ({
-      ...prev,
-      word: char,
-      pinyin: accented.replace(/\s+/g, ''),
-      meaning: meaning
-    }));
   };
 
   // ... (HanziWriter effect remains same) ...
