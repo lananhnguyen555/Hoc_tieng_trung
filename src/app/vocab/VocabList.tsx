@@ -135,6 +135,25 @@ export default function VocabList() {
     reader.readAsText(file);
   };
 
+  const handleSaveNewWord = () => {
+    if (!newWord.word || !newWord.meaning || !newWord.lesson_id) {
+      alert("Vui lòng nhập đầy đủ Hán tự, Nghĩa và chọn Buổi học!");
+      return;
+    }
+
+    const wordToAdd: Word = {
+      ...newWord,
+      id: `local-${Date.now()}`
+    };
+
+    const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+    localStorage.setItem("user_vocab", JSON.stringify([...localVocab, wordToAdd]));
+    setVocab(prev => [...prev, wordToAdd]);
+    setShowAddModal(false);
+    setNewWord({ word: "", pinyin: "", meaning: "", lesson_id: "", example_cn: "", example_py: "", example_vi: "" });
+    alert("Đã thêm từ mới thành công!");
+  };
+
   const handleSaveExample = () => {
     if (!detailedWord) return;
     const updatedWord = { ...detailedWord, example_cn: editingExample.cn, example_py: editingExample.py, example_vi: editingExample.vi };
@@ -162,6 +181,7 @@ export default function VocabList() {
 
   return (
     <div className={styles.container}>
+      {/* ... (Header and Toolbar remains same) ... */}
       <header className={styles.header}>
         <h1 className={styles.title}>Từ vựng Tiếng Trung</h1>
         <p className={styles.subtitle}>Sử dụng hệ thống bảng và hướng dẫn viết sinh động.</p>
@@ -265,7 +285,52 @@ export default function VocabList() {
         </div>
       )}
 
-      {/* Detailed Word Modal remains same... */}
+      {/* Add Word Modal */}
+      {showAddModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
+          <div className={styles.detailModal} style={{maxWidth:'600px', padding:'2rem'}} onClick={e => e.stopPropagation()}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}>
+              <h2>Thêm từ vựng mới</h2>
+              <X className={styles.closeBtn} onClick={() => setShowAddModal(false)} />
+            </div>
+            
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem'}}>
+              <div className={styles.formGroup}>
+                <label>Hán tự *</label>
+                <input type="text" className={styles.formInput} value={newWord.word} onChange={e => setNewWord({...newWord, word: e.target.value})} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Pinyin</label>
+                <input type="text" className={styles.formInput} value={newWord.pinyin} onChange={e => setNewWord({...newWord, pinyin: e.target.value})} />
+              </div>
+            </div>
+
+            <div className={styles.formGroup} style={{marginTop:'1rem'}}>
+              <label>Nghĩa tiếng Việt *</label>
+              <input type="text" className={styles.formInput} value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} />
+            </div>
+
+            <div className={styles.formGroup} style={{marginTop:'1rem'}}>
+              <label>Thuộc buổi học *</label>
+              <select className={styles.formInput} value={newWord.lesson_id} onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}>
+                <option value="">-- Chọn buổi học --</option>
+                {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </select>
+            </div>
+
+            <div style={{marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
+              <p style={{fontWeight:700, fontSize:'0.9rem', marginBottom:'0.5rem'}}>Ví dụ đi kèm (Tùy chọn):</p>
+              <input type="text" placeholder="Ví dụ Hán tự" className={styles.formInput} style={{marginBottom:'0.5rem'}} value={newWord.example_cn} onChange={e => setNewWord({...newWord, example_cn: e.target.value})} />
+              <input type="text" placeholder="Ví dụ Pinyin" className={styles.formInput} style={{marginBottom:'0.5rem'}} value={newWord.example_py} onChange={e => setNewWord({...newWord, example_py: e.target.value})} />
+              <input type="text" placeholder="Ví dụ Nghĩa Việt" className={styles.formInput} value={newWord.example_vi} onChange={e => setNewWord({...newWord, example_vi: e.target.value})} />
+            </div>
+
+            <button className={styles.saveBtn} style={{marginTop:'2rem', width:'100%'}} onClick={handleSaveNewWord}>Lưu từ vựng</button>
+          </div>
+        </div>
+      )}
+
+      {/* Detailed Word Modal */}
       {detailedWord && (
         <div className={styles.modalOverlay} onClick={() => setDetailedWord(null)}>
           <div className={styles.detailModal} onClick={e => e.stopPropagation()}>
