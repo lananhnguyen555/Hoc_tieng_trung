@@ -113,11 +113,14 @@
 }
 
 .vocabTable th {
-  background: rgba(14, 165, 233, 0.1);
+  background: #f1f5f9; /* Màu nền đục để che nội dung khi cuộn */
   padding: 1.2rem 1rem;
   font-weight: 700;
   color: var(--primary);
   border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .vocabTable td {

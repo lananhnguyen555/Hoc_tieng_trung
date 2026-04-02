@@ -2,36 +2,35 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 250px;
+  height: 100vh;
   z-index: 1000;
-  height: 80px; /* Tăng chiều cao để chữ menu to hơn vẫn thoải mái */
   display: flex;
-  align-items: center;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background-color: #00FFCC !important; /* Ép mã màu Neon Cyan đục */
+  flex-direction: column;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #00FFCC !important;
+  padding: 2rem 0;
 }
-
 
 .nav {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
+  height: 100%;
   width: 100%;
-  max-width: 1200px; /* Thêm max-width trực tiếp tại đây */
-  margin: 0 auto; /* Căn giữa container */
-  padding: 0 2rem; /* Thêm padding ngang */
-  height: 100%; /* Đảm bảo các khối chiếm hết chiều cao 80px của Navbar */
+  padding: 0 1.5rem;
 }
 
-
 .logo {
-  flex: 0 0 220px;
+  flex: 0 0 auto;
+  margin-bottom: 3rem;
   font-weight: 800;
   font-size: 1.6rem;
-  color: #0f172a; /* Màu đậm hơn trên nền sáng */
+  color: #0f172a;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 0.5rem;
 }
 
@@ -43,106 +42,65 @@
 .links {
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2.5rem;
-}
-
-.rightSection {
-  flex: 0 0 220px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 1.2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 .link {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-weight: 700; /* Đậm hơn */
-  font-size: 1.1rem; /* To hơn */
-  color: #0f172a; /* Màu đậm để tương phản với #00FFCC */
+  gap: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #0f172a;
   transition: all 0.2s ease;
-  opacity: 1; /* Không trong suốt */
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  width: 100%;
 }
 
 .link:hover {
+  background: rgba(14, 165, 233, 0.1);
   color: #0284c7;
-  transform: translateY(-2px);
+  transform: translateX(5px);
 }
 
+.rightSection {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.1);
+}
 
 .userSection {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding-left: 1rem;
-  border-left: 1px solid var(--border);
+  gap: 0.8rem;
+  width: 100%;
 }
 
 .userEmail {
-  font-size: 0.95rem; /* To hơn một chút cho dễ đọc */
+  font-size: 0.9rem;
   font-weight: 700;
-  color: #0f172a; /* Đổi tên sang màu đen đồng bộ */
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  color: #0f172a;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-
-.logoutBtn {
-  padding: 0.4rem;
-  border-radius: 6px;
-  color: #0f172a; /* Màu đen đồng bộ */
-  font-weight: 700;
-  transition: all 0.2s ease;
-}
-
-.logoutBtn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
-
-.loginLink {
-  display: flex !important;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  color: #0f172a !important; /* Đổi sang màu đen đồng bộ */
-  font-weight: 800 !important;
-  transition: all 0.2s ease;
-}
-
-.loginLink:hover {
-  background: rgba(14, 165, 233, 0.1);
-}
-
-
-.betaBadge {
-  font-size: 0.65rem;
-  background: var(--primary);
-  color: white;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  vertical-align: middle;
-  margin-left: 0.5rem;
-}
-
-.themeToggle {
-  color: var(--foreground);
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
+.logoutBtn, .themeToggle, .loginLink {
+  width: 100%;
   justify-content: center;
-}
-
-.themeToggle:hover {
-  background: var(--card-bg);
-  color: var(--primary);
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.05);
 }
 
 @media (max-width: 768px) {
