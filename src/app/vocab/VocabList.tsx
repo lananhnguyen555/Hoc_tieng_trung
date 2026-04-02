@@ -36,6 +36,7 @@ export default function VocabList() {
   });
   const [editingExample, setEditingExample] = useState({ cn: "", py: "", vi: "" });
 
+  const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const writerContainerRef = useRef<HTMLDivElement>(null);
   const writerInstance = useRef<any>(null);
 
@@ -43,16 +44,16 @@ export default function VocabList() {
     fetchData();
   }, []);
 
-  // Effect to initialize HanziWriter when Detailed Modal opens
+  // Effect to initialize HanziWriter when Detailed Modal opens or currentCharIndex changes
   useEffect(() => {
     if (detailedWord && writerContainerRef.current) {
       // Clear previous
       writerContainerRef.current.innerHTML = '';
       
-      // Get first character if multiple
-      const char = detailedWord.word.charAt(0);
+      const characters = detailedWord.word.split('');
+      const charToDraw = characters[currentCharIndex] || characters[0];
       
-      writerInstance.current = HanziWriter.create(writerContainerRef.current, char, {
+      writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
         width: 250,
         height: 250,
         padding: 5,
@@ -63,17 +64,34 @@ export default function VocabList() {
         delayBetweenLoops: 1000
       });
       
-      // Auto-animate immediately as requested
-      writerInstance.current.animateCharacter();
-      
-      // Load current example into edit form
-      setEditingExample({
-        cn: detailedWord.example_cn || "",
-        py: detailedWord.example_py || "",
-        vi: detailedWord.example_vi || ""
+      // Auto-animate immediately
+      writerInstance.current.animateCharacter({
+        onComplete: () => {
+          // If there are more characters, wait 1s then move to next
+          if (currentCharIndex < characters.length - 1) {
+            setTimeout(() => {
+              setCurrentCharIndex(prev => prev + 1);
+            }, 1000);
+          }
+        }
       });
+      
+      // Load current example into edit form (only once when modal opens)
+      if (currentCharIndex === 0) {
+        setEditingExample({
+          cn: detailedWord.example_cn || "",
+          py: detailedWord.example_py || "",
+          vi: detailedWord.example_vi || ""
+        });
+      }
     }
-  }, [detailedWord]);
+  }, [detailedWord, currentCharIndex]);
+
+  // Reset index when changing word
+  const handleOpenDetailed = (word: Word) => {
+    setCurrentCharIndex(0);
+    setDetailedWord(word);
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -204,7 +222,7 @@ export default function VocabList() {
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td 
                     className={`${styles.wordCell} hanzi`}
-                    onClick={() => setDetailedWord(item)}
+                    onClick={() => handleOpenDetailed(item)}
                   >
                     {item.word}
                   </td>
@@ -213,7 +231,7 @@ export default function VocabList() {
                   <td className={styles.exampleCell}>
                     {item.example_cn ? (
                       <div>
-                        <p className={`${styles.exampleCn} hanzi`}>{item.example_cn}</p>
+                        <p className={`${styles.exampleCn} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.example_cn}</p>
                         <p className={styles.examplePy}>{item.example_py}</p>
                         <p className={styles.exampleVi}>{item.example_vi}</p>
                       </div>
@@ -222,7 +240,7 @@ export default function VocabList() {
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
                       <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>
-                      <button className={styles.iconBtn}><Edit2 size={16} /></button>
+                      <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
                       <button className={styles.iconBtn}><Trash2 size={16} /></button>
                     </div>
                   </td>
@@ -244,9 +262,28 @@ export default function VocabList() {
               {/* Left: Hanzi Animation (250x250) */}
               <div className={styles.hanziSection}>
                 <div ref={writerContainerRef} className={styles.writerContainer}></div>
-                <button className={styles.iconBtn} onClick={() => writerInstance.current?.animateCharacter()}>
-                  Vẽ lại nét chữ
-                </button>
+                
+                {/* Character Selector */}
+                <div className={styles.charTabs}>
+                  {detailedWord.word.split('').map((char, index) => (
+                    <button 
+                      key={index}
+                      className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`}
+                      onClick={() => setCurrentCharIndex(index)}
+                    >
+                      {char}
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.modalControls}>
+                  <button className={styles.iconBtn} onClick={() => {
+                    setCurrentCharIndex(0);
+                    writerInstance.current?.animateCharacter();
+                  }}>
+                    Vẽ lại từ đầu
+                  </button>
+                </div>
               </div>
 
               {/* Right: Info & Example Form */}
