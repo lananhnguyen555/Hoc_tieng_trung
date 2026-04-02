@@ -339,7 +339,109 @@
 }
 
 @media (max-width: 768px) {
-  .detailContent { flex-direction: column; align-items: center; padding: 1.5rem; }
-  .toolbar { flex-direction: column; align-items: stretch; }
+  .container { padding: 1rem; }
+  .title { font-size: 1.8rem; }
+  .subtitle { font-size: 0.9rem; }
+
+  .toolbar { 
+    flex-direction: column; 
+    align-items: stretch;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .filterSection { flex-direction: column; align-items: stretch; }
+  .lessonSelect { min-width: 0; }
   .searchWrapper { min-width: 0; }
+  .actionBtns { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 0.5rem; 
+  }
+  .addBtn { padding: 0.6rem; font-size: 0.85rem; justify-content: center; }
+
+  /* CARD VIEW FOR TABLE */
+  .tableWrapper { border: none; background: transparent; box-shadow: none; }
+  .vocabTable, .vocabTable thead, .vocabTable tbody, .vocabTable th, .vocabTable td, .vocabTable tr { 
+    display: block; 
+  }
+  
+  .vocabTable thead { display: none; } /* Hide headers on mobile */
+  
+  .vocabTable tr {
+    background: var(--card-bg);
+    margin-bottom: 1.5rem;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sttCell {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: auto;
+    background: rgba(14, 165, 233, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  .wordCell {
+    font-size: 2.2rem !important;
+    text-align: center;
+    margin: 0.5rem 0;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  .pinyinCell {
+    text-align: center;
+    color: var(--primary);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  .meaningCell {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: 0.5rem 0 !important;
+    border-top: 1px dashed var(--border) !important;
+    border-bottom: 1px dashed var(--border) !important;
+  }
+
+  .actionCell {
+    width: 100% !important;
+    text-align: center;
+    padding-top: 1rem !important;
+    border: none !important;
+  }
+
+  .iconGroup {
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .iconBtn {
+    padding: 0.8rem 1.2rem;
+    background: rgba(14, 165, 233, 0.1);
+  }
+
+  /* MODAL MOBILE */
+  .detailModal { height: 90vh; border-radius: 20px 20px 0 0; align-self: flex-end; }
+  .detailContent { 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 1.5rem; 
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+  .hanziSection { flex: 0 0 auto; width: 100%; }
+  .writerContainer { width: 200px; height: 200px; }
+  .charTab { width: 45px; height: 45px; font-size: 1.5rem !important; }
 }

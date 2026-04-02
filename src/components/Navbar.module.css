@@ -146,10 +146,59 @@
 }
 
 @media (max-width: 768px) {
-  .links span {
-    display: none;
+  .header {
+    top: auto;
+    bottom: 0;
+    height: 65px;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
   }
+
+  .nav {
+    padding: 0 1rem;
+    max-width: 100%;
+    justify-content: space-around;
+  }
+
+  .logo { display: none; }
+
   .links {
-    gap: 1.5rem;
+    flex: 1;
+    gap: 0;
+    justify-content: space-around;
+    width: 100%;
   }
+
+  .link {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.7rem;
+    padding: 5px;
+    min-width: 60px;
+    justify-content: center;
+  }
+
+  .link span {
+    display: block;
+    font-size: 0.65rem;
+    white-space: nowrap;
+  }
+
+  .rightSection {
+    flex: 0 0 auto;
+    gap: 0.5rem;
+  }
+
+  .userSection {
+    border: none;
+    padding: 0;
+  }
+
+  .userEmail { display: none; }
+
+  .logoutBtn, .themeToggle, .loginLink {
+    padding: 8px;
+  }
+  
+  .loginLink span { display: none; }
 }

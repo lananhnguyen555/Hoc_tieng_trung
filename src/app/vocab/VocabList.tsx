@@ -113,23 +113,81 @@ export default function VocabList() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user;
+
+      // 1. Fetch Lessons
       const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
       const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-      setLessons([...(dbLessons || []), ...localLessons]);
-
+      
+      // 2. Fetch Vocab
       const { data: dbVocab, error } = await supabase.from("vocab").select("*, lessons(name, id)");
-      let combinedVocab: Word[] = [];
+      const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+
+      let finalLessons = [...(dbLessons || [])];
+      let finalVocab: Word[] = [];
 
       if (!error && dbVocab) {
-        combinedVocab = dbVocab.map((item: any) => ({
+        finalVocab = dbVocab.map((item: any) => ({
           ...item,
           lesson: item.lessons?.name || "Kho chung",
           lesson_id: item.lesson_id
         }));
       }
 
-      const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-      setVocab([...combinedVocab, ...localVocab]);
+      // 3. MIGRATION LOGIC (Only if logged in)
+      if (currentUser) {
+        let migrationHappened = false;
+
+        // Migrate Lessons
+        for (const localL of localLessons) {
+          if (!finalLessons.some(dbL => dbL.name === localL.name)) {
+            const { data: newL } = await supabase.from("lessons").insert({ name: localL.name, user_id: currentUser.id }).select().single();
+            if (newL) {
+              finalLessons.push(newL);
+              // Update vocab lesson_id for this migrated lesson
+              localVocab.forEach((v: any) => { if (v.lesson_id === localL.id) v.lesson_id = newL.id; });
+              migrationHappened = true;
+            }
+          }
+        }
+
+        // Migrate Vocab
+        for (const localV of localVocab) {
+          if (!finalVocab.some(dbV => dbV.word === localV.word)) {
+            const { error: vErr } = await supabase.from("vocab").insert({
+              word: localV.word,
+              pinyin: localV.pinyin,
+              meaning: localV.meaning,
+              lesson_id: localV.lesson_id,
+              user_id: currentUser.id,
+              example_cn: localV.example_cn,
+              example_py: localV.example_py,
+              example_vi: localV.example_vi
+            });
+            if (!vErr) migrationHappened = true;
+          }
+        }
+
+        if (migrationHappened) {
+          localStorage.removeItem("user_lessons");
+          localStorage.removeItem("user_vocab");
+          // Re-fetch to get clean IDs from DB
+          const { data: refreshedVocab } = await supabase.from("vocab").select("*, lessons(name, id)");
+          finalVocab = (refreshedVocab || []).map((item: any) => ({
+            ...item,
+            lesson: item.lessons?.name || "Kho chung",
+            lesson_id: item.lesson_id
+          }));
+        }
+      } else {
+        // Not logged in: Show local + public
+        finalLessons = [...finalLessons, ...localLessons];
+        finalVocab = [...finalVocab, ...localVocab];
+      }
+
+      setLessons(finalLessons);
+      setVocab(finalVocab);
     } catch (err) {
       console.error(err);
     } finally {
@@ -225,34 +283,77 @@ export default function VocabList() {
     reader.readAsArrayBuffer(file);
   };
 
-  const handleSaveNewWord = () => {
+  const handleSaveNewWord = async () => {
     if (!newWord.word || !newWord.meaning || !newWord.lesson_id) {
       alert("Vui lòng nhập đầy đủ Hán tự, Nghĩa và chọn Buổi học!");
       return;
     }
 
-    const wordToAdd: Word = {
-      ...newWord,
-      id: `local-${Date.now()}`
-    };
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { data, error } = await supabase.from("vocab").insert({
+        ...newWord,
+        user_id: session.user.id
+      }).select().single();
 
-    const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-    localStorage.setItem("user_vocab", JSON.stringify([...localVocab, wordToAdd]));
-    setVocab(prev => [...prev, wordToAdd]);
-    setShowAddModal(false);
-    setNewWord({ word: "", pinyin: "", meaning: "", lesson_id: "", example_cn: "", example_py: "", example_vi: "" });
-    alert("Đã thêm từ mới thành công!");
+      if (!error && data) {
+        setVocab(prev => [...prev, { ...data, lesson: lessons.find(l => l.id === data.lesson_id)?.name }]);
+        setShowAddModal(false);
+        setNewWord({ word: "", pinyin: "", meaning: "", lesson_id: "", example_cn: "", example_py: "", example_vi: "" });
+        alert("Đã lưu lên Cloud thành công!");
+      } else if (error) {
+        alert("Lỗi khi lưu lên Cloud: " + error.message);
+      }
+    } else {
+      const wordToAdd: Word = { ...newWord, id: `local-${Date.now()}` };
+      const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+      localStorage.setItem("user_vocab", JSON.stringify([...localVocab, wordToAdd]));
+      setVocab(prev => [...prev, wordToAdd]);
+      setShowAddModal(false);
+      setNewWord({ word: "", pinyin: "", meaning: "", lesson_id: "", example_cn: "", example_py: "", example_vi: "" });
+      alert("Đã lưu tạm trên máy (Hãy đăng nhập để đồng bộ)!");
+    }
   };
 
-  const handleSaveExample = () => {
+  const handleUpdateWordInfo = async () => {
     if (!detailedWord) return;
-    const updatedWord = { ...detailedWord, example_cn: editingExample.cn, example_py: editingExample.py, example_vi: editingExample.vi };
-    const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-    const updatedLocal = localVocab.map((v: any) => v.id === detailedWord.id ? updatedWord : v);
-    localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
-    setVocab(prev => prev.map(v => v.id === detailedWord.id ? updatedWord : v));
-    setDetailedWord(updatedWord);
-    alert("Đã lưu ví dụ thành công!");
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user && !detailedWord.id.startsWith("local-") && !detailedWord.id.startsWith("excel-")) {
+      const { error } = await supabase.from("vocab")
+        .update({ 
+          word: detailedWord.word, 
+          pinyin: detailedWord.pinyin, 
+          meaning: detailedWord.meaning,
+          example_cn: editingExample.cn,
+          example_py: editingExample.py,
+          example_vi: editingExample.vi
+        })
+        .eq("id", detailedWord.id);
+
+      if (error) {
+        alert("Lỗi cập nhật Cloud: " + error.message);
+        return;
+      }
+    } else {
+      // Local/Excel update
+      const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+      const updatedLocal = localVocab.map((v: any) => v.id === detailedWord.id ? {
+        ...detailedWord,
+        example_cn: editingExample.cn,
+        example_py: editingExample.py,
+        example_vi: editingExample.vi
+      } : v);
+      localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
+    }
+
+    setVocab(prev => prev.map(v => v.id === detailedWord.id ? {
+      ...detailedWord,
+      example_cn: editingExample.cn,
+      example_py: editingExample.py,
+      example_vi: editingExample.vi
+    } : v));
+    alert("Đã cập nhật thông tin thành công!");
   };
 
   const speak = (text: string) => {
@@ -515,16 +616,25 @@ export default function VocabList() {
               </div>
               <div className={styles.infoSection}>
                 <div className={styles.mainInfo}>
-                  <h2 className="hanzi">{detailedWord.word}</h2>
-                  <p style={{color:'var(--primary)'}}>Pinyin: {detailedWord.pinyin}</p>
-                  <p>Nghĩa: {detailedWord.meaning}</p>
+                  <div className={styles.formGroup}>
+                    <label>Hán tự</label>
+                    <input type="text" className={`${styles.formInput} hanzi`} style={{fontSize:'1.8rem', fontWeight:700}} value={detailedWord.word} onChange={e => setDetailedWord({...detailedWord, word: e.target.value})} />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Pinyin</label>
+                    <input type="text" className={styles.formInput} value={detailedWord.pinyin} onChange={e => setDetailedWord({...detailedWord, pinyin: e.target.value})} />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Nghĩa Việt</label>
+                    <input type="text" className={styles.formInput} value={detailedWord.meaning} onChange={e => setDetailedWord({...detailedWord, meaning: e.target.value})} />
+                  </div>
                 </div>
                 <div className={styles.exampleForm}>
-                  <p style={{fontWeight:700, margin:0}}>Tự thêm ví dụ học tập:</p>
+                  <p style={{fontWeight:700, margin:0}}>Ví dụ học tập:</p>
                   <div className={styles.formGroup}><label>Ví dụ (Hán tự)</label><input type="text" className={styles.formInput} value={editingExample.cn} onChange={e => setEditingExample({...editingExample, cn: e.target.value})} /></div>
                   <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={editingExample.py} onChange={e => setEditingExample({...editingExample, py: e.target.value})} /></div>
                   <div className={styles.formGroup}><label>Nghĩa Việt</label><input type="text" className={styles.formInput} value={editingExample.vi} onChange={e => setEditingExample({...editingExample, vi: e.target.value})} /></div>
-                  <button className={styles.saveBtn} onClick={handleSaveExample}><Save size={18} style={{marginRight:'0.5rem'}} /> Lưu ví dụ</button>
+                  <button className={styles.saveBtn} onClick={handleUpdateWordInfo}><Save size={18} style={{marginRight:'0.5rem'}} /> Lưu tất cả thay đổi</button>
                 </div>
               </div>
             </div>

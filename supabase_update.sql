@@ -85,5 +85,21 @@ CREATE POLICY "Admins/Owners can manage rules" ON rules FOR ALL USING (
 DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
 CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (auth.uid() = id);
 
--- Command to set a specific user as admin (Run this ONLY AFTER signing up in the app)
--- UPDATE profiles SET role = 'admin' WHERE email = 'admin@admin.com';
+
+-- 6. Create Phrases Table
+CREATE TABLE IF NOT EXISTS phrases (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  word TEXT NOT NULL,
+  pinyin TEXT NOT NULL,
+  meaning TEXT NOT NULL,
+  lesson_id UUID REFERENCES lessons(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+ALTER TABLE phrases ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read-only accessibility" ON phrases;
+DROP POLICY IF EXISTS "Users can manage their own phrases" ON phrases;
+CREATE POLICY "Public read-only accessibility" ON phrases FOR SELECT USING (true);
+CREATE POLICY "Users can manage their own phrases" ON phrases FOR ALL USING (auth.uid() = user_id);
