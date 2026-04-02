@@ -15,11 +15,15 @@
 }
 
 .suggestion {
-  width: 36px;
-  height: 36px;
+  min-width: 40px;
+  width: auto;
+  height: 40px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
+  font-family: 'Noto Serif TC', 'SimSun', serif;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--card-bg);
