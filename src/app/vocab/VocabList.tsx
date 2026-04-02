@@ -5,6 +5,8 @@ import { Search, Play, Plus, X, Edit2, Trash2, ChevronDown, BookOpen, Save, File
 import styles from "./vocab.module.css";
 import HanziWriter from "hanzi-writer";
 import { supabase } from "@/lib/supabase";
+import HanziSuggester from "@/components/HanziSuggester";
+import { HAN_VIET_DATA } from "@/lib/han-viet";
 
 interface Word {
   id: string;
@@ -35,6 +37,7 @@ export default function VocabList() {
     word: "", pinyin: "", meaning: "", lesson_id: "", 
     example_cn: "", example_py: "", example_vi: "" 
   });
+  const [pinyinInput, setPinyinInput] = useState("");
   const [editingExample, setEditingExample] = useState({ cn: "", py: "", vi: "" });
 
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
@@ -45,6 +48,32 @@ export default function VocabList() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleOpenAddModal = () => {
+    setNewWord({ 
+      word: "", pinyin: "", meaning: "", 
+      lesson_id: selectedLessonId === "all" ? "" : selectedLessonId, 
+      example_cn: "", example_py: "", example_vi: "" 
+    });
+    setPinyinInput("");
+    setShowAddModal(true);
+  };
+
+  const handleSelectSuggestion = (char: string, accented: string) => {
+    let meaning = "";
+    if (char.length === 1) {
+      meaning = HAN_VIET_DATA[char] || "";
+    } else {
+      meaning = HAN_VIET_DATA[char] || char.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+    }
+
+    setNewWord(prev => ({
+      ...prev,
+      word: char,
+      pinyin: accented.replace(/\s+/g, ''),
+      meaning: meaning
+    }));
+  };
 
   // ... (HanziWriter effect remains same) ...
   useEffect(() => {
@@ -117,7 +146,8 @@ export default function VocabList() {
         const [word, pinyin, meaning, ex_cn, ex_py, ex_vi] = row.split(",").map(s => s.trim());
         return {
           id: `csv-${Date.now()}-${Math.random()}`,
-          word, pinyin, meaning,
+          word, pinyin: (pinyin || "").replace(/\s+/g, ''),
+          meaning: meaning || "",
           lesson_id: selectedLessonId,
           example_cn: ex_cn || "",
           example_py: ex_py || "",
@@ -205,7 +235,7 @@ export default function VocabList() {
           <button className={styles.addBtn} style={{background:'var(--foreground)', color:'white'}} onClick={() => setShowImportModal(true)}>
             <FileUp size={20} /> Nhập CSV
           </button>
-          <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
+          <button className={styles.addBtn} onClick={handleOpenAddModal}>
             <Plus size={20} /> Thêm từ mới
           </button>
         </div>
@@ -294,13 +324,27 @@ export default function VocabList() {
               <X className={styles.closeBtn} onClick={() => setShowAddModal(false)} />
             </div>
             
+            <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
+              <label>Gõ Pinyin để lấy Hán tự gợi ý</label>
+              <input 
+                type="text" 
+                className={styles.formInput} 
+                placeholder="Ví dụ: xuexi" 
+                value={pinyinInput} 
+                onChange={e => setPinyinInput(e.target.value)} 
+              />
+            </div>
+            {pinyinInput && (
+              <HanziSuggester pinyin={pinyinInput} onSelect={handleSelectSuggestion} />
+            )}
+
             <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem'}}>
               <div className={styles.formGroup}>
                 <label>Hán tự *</label>
                 <input type="text" className={styles.formInput} value={newWord.word} onChange={e => setNewWord({...newWord, word: e.target.value})} />
               </div>
               <div className={styles.formGroup}>
-                <label>Pinyin</label>
+                <label>Pinyin *</label>
                 <input type="text" className={styles.formInput} value={newWord.pinyin} onChange={e => setNewWord({...newWord, pinyin: e.target.value})} />
               </div>
             </div>
