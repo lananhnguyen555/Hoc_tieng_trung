@@ -124,7 +124,7 @@
   border-bottom: 2px solid var(--border);
   position: sticky;
   top: 85px; /* Dưới toolbar khi sticky */
-  z-index: 10;
+  z-index: 100; /* Tăng z-index để không bị nội dung đè lên */
 }
 
 .vocabTable td {
@@ -163,13 +163,16 @@
 }
 
 .typeCell {
-  font-size: 0.85rem;
-  color: var(--primary);
-  background: rgba(14, 165, 233, 0.1);
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-weight: 700;
+  font-size: 0.9rem;
+  color: #ffffff;
+  background: #f59e0b; /* Màu cam hổ phách nổi bật */
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 800;
   display: inline-block;
+  min-width: 80px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .exampleCell {
