@@ -18,8 +18,12 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  height: 100%;
+  max-width: 1200px; /* Thêm max-width trực tiếp tại đây */
+  margin: 0 auto; /* Căn giữa container */
+  padding: 0 2rem; /* Thêm padding ngang */
+  height: 100%; /* Đảm bảo các khối chiếm hết chiều cao 80px của Navbar */
 }
+
 
 .logo {
   flex: 0 0 220px;

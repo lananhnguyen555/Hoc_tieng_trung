@@ -42,8 +42,8 @@ export default function Navbar() {
   };
 
   return (
-    <header className={`${styles.header} glass`}>
-      <nav className={`${styles.nav} container`}>
+    <header className={styles.header}>
+      <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
           <span className={styles.logoText}> Học Tiếng Trung <span className={styles.betaBadge}>BETA</span></span>
         </Link>
