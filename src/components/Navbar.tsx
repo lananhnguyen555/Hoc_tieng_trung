@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Moon, Sun, BookOpen, GraduationCap, Scale, Home, LogIn, LogOut, User } from "lucide-react";
+import { Moon, Sun, BookOpen, GraduationCap, Scale, Home, LogIn, LogOut, User, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import styles from "./Navbar.module.css";
@@ -54,6 +54,9 @@ export default function Navbar() {
           </Link>
           <Link href="/vocab" className={styles.link}>
             <BookOpen size={20} /> <span>Từ vựng</span>
+          </Link>
+          <Link href="/phrases" className={styles.link}>
+            <MessageCircle size={20} /> <span>Giao tiếp</span>
           </Link>
           <Link href="/grammar" className={styles.link}>
             <GraduationCap size={20} /> <span>Ngữ pháp</span>

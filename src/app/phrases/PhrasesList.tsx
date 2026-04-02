@@ -1,0 +1,293 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { Search, Play, Plus, X, Edit2, Trash2, BookOpen, MessageCircle } from "lucide-react";
+import styles from "../vocab/vocab.module.css";
+import HanziWriter from "hanzi-writer";
+import { supabase } from "@/lib/supabase";
+import HanziSuggester from "@/components/HanziSuggester";
+import { HAN_VIET_DATA } from "@/lib/han-viet";
+
+interface Phrase {
+  id: string;
+  word: string;
+  pinyin: string;
+  meaning: string;
+  lesson_id: string;
+}
+
+export default function PhrasesList() {
+  const [search, setSearch] = useState("");
+  const [phrases, setPhrases] = useState<Phrase[]>([]);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [detailedPhrase, setDetailedPhrase] = useState<Phrase | null>(null);
+  
+  const [newPhrase, setNewPhrase] = useState({ 
+    word: "", pinyin: "", meaning: "", lesson_id: ""
+  });
+  const [pinyinInput, setPinyinInput] = useState("");
+
+  const [currentCharIndex, setCurrentCharIndex] = useState(0);
+  const writerContainerRef = useRef<HTMLDivElement>(null);
+  const writerInstance = useRef<any>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleOpenAddModal = () => {
+    setNewPhrase({ 
+      word: "", pinyin: "", meaning: "", 
+      lesson_id: selectedLessonId === "all" ? "" : selectedLessonId
+    });
+    setPinyinInput("");
+    setShowAddModal(true);
+  };
+
+  const handleSelectSuggestion = async (char: string, accented: string) => {
+    setNewPhrase(prev => ({ ...prev, word: char, pinyin: accented.replace(/\s+/g, '') }));
+    
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(char)}`);
+      const data = await res.json();
+      
+      if (data && data[0] && data[0][0] && data[0][0][0]) {
+        const translation = data[0][0][0];
+        setNewPhrase(prev => ({ ...prev, meaning: translation }));
+      }
+    } catch (err) {
+      console.error("Dịch Google lỗi:", err);
+      const hv = char.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+      setNewPhrase(prev => ({ ...prev, meaning: hv }));
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
+      const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
+      setLessons([...(dbLessons || []), ...localLessons]);
+
+      // Using a separate key for phrases
+      const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
+      setPhrases([...localPhrases]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveNewPhrase = () => {
+    if (!newPhrase.word || !newPhrase.meaning || !newPhrase.lesson_id) {
+      alert("Vui lòng nhập đầy đủ câu Hán tự, Nghĩa và chọn Buổi học!");
+      return;
+    }
+
+    const phraseToAdd: Phrase = {
+      ...newPhrase,
+      id: `phrase-${Date.now()}`
+    };
+
+    const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
+    localStorage.setItem("user_phrases", JSON.stringify([...localPhrases, phraseToAdd]));
+    setPhrases(prev => [...prev, phraseToAdd]);
+    setShowAddModal(false);
+    alert("Đã thêm câu giao tiếp mới thành công!");
+  };
+
+  const handleDeletePhrase = (id: string) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa câu giao tiếp này?")) return;
+    const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
+    const updated = localPhrases.filter((p: any) => p.id !== id);
+    localStorage.setItem("user_phrases", JSON.stringify(updated));
+    setPhrases(prev => prev.filter(p => p.id !== id));
+  };
+
+  const speak = (text: string) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "zh-CN"; utterance.rate = 0.8;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const filteredPhrases = phrases.filter(item => {
+    if (selectedLessonId === "all") return false;
+    const matchesSearch = item.word.includes(search) || item.meaning.toLowerCase().includes(search.toLowerCase());
+    return matchesSearch && item.lesson_id === selectedLessonId;
+  });
+
+  const handleOpenDetailed = (p: Phrase) => {
+    setCurrentCharIndex(0);
+    setDetailedPhrase(p);
+  };
+
+  useEffect(() => {
+    if (detailedPhrase && writerContainerRef.current) {
+      writerContainerRef.current.innerHTML = '';
+      const characters = detailedPhrase.word.split('');
+      const charToDraw = characters[currentCharIndex] || characters[0];
+      writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
+        width: 250, height: 250, padding: 5, strokeColor: '#0ea5e9', outlineColor: '#eee', drawingColor: '#333',
+        showOutline: true, delayBetweenLoops: 1000
+      });
+      writerInstance.current.animateCharacter({
+        onComplete: () => {
+          if (currentCharIndex < characters.length - 1) {
+            setTimeout(() => setCurrentCharIndex(prev => prev + 1), 1000);
+          }
+        }
+      });
+    }
+  }, [detailedPhrase, currentCharIndex]);
+
+  return (
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>Câu Giao Tiếp Tiếng Trung</h1>
+        <p className={styles.subtitle}>Tập trung vào các mẫu câu ngắn, thông dụng trong đời sống.</p>
+      </header>
+
+      <div className={styles.toolbar}>
+        <div className={styles.filterSection}>
+          <label style={{fontWeight:700}}>Buổi học:</label>
+          <select className={styles.lessonSelect} value={selectedLessonId} onChange={(e) => setSelectedLessonId(e.target.value)}>
+            <option value="all">--- Chọn buổi học ---</option>
+            {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+        </div>
+
+        <div className={styles.searchWrapper}>
+          <Search className={styles.searchIcon} size={20} />
+          <input type="text" placeholder="Tìm kiếm mẫu câu..." className={styles.searchInput} value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+
+        <div className={styles.actionBtns}>
+          <button className={styles.addBtn} onClick={handleOpenAddModal}>
+            <Plus size={20} /> Thêm mẫu câu
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className={styles.emptyState}>Đang tải dữ liệu...</div>
+      ) : selectedLessonId === "all" ? (
+        <div className={styles.emptyState}>
+          <MessageCircle size={48} style={{opacity:0.2, marginBottom:'1rem'}} />
+          <p>Hãy chọn một bài học từ Menu để bắt đầu luyện tập giao tiếp nhé!</p>
+        </div>
+      ) : (
+        <div className={styles.tableWrapper}>
+          <table className={styles.vocabTable}>
+            <thead>
+              <tr>
+                <th className={styles.sttCell}>STT</th>
+                <th>Hán tự (Click Zoom)</th>
+                <th>Pinyin</th>
+                <th>Nghĩa Việt</th>
+                <th className={styles.actionCell}>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPhrases.map((item, index) => (
+                <tr key={item.id}>
+                  <td className={styles.sttCell}>{index + 1}</td>
+                  <td className={`${styles.wordCell} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.word}</td>
+                  <td className={styles.pinyinCell}>{item.pinyin}</td>
+                  <td className={styles.meaningCell}>{item.meaning}</td>
+                  <td className={styles.actionCell}>
+                    <div className={styles.iconGroup}>
+                      <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>
+                      <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
+                      <button className={styles.iconBtn} onClick={() => handleDeletePhrase(item.id)}><Trash2 size={16} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredPhrases.length === 0 && <div className={styles.emptyState}>Buổi học này hiện chưa có mẫu câu nào.</div>}
+        </div>
+      )}
+
+      {/* Add Phrase Modal */}
+      {showAddModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
+          <div className={styles.detailModal} style={{maxWidth:'600px', padding:'2rem'}} onClick={e => e.stopPropagation()}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}>
+              <h2>Thêm mẫu câu mới</h2>
+              <X className={styles.closeBtn} onClick={() => setShowAddModal(false)} />
+            </div>
+            
+            <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
+              <label>Gõ Pinyin gợi ý</label>
+              <input type="text" className={styles.formInput} placeholder="Ví dụ: nihao" value={pinyinInput} onChange={e => setPinyinInput(e.target.value)} />
+            </div>
+            {pinyinInput && <HanziSuggester pinyin={pinyinInput} onSelect={handleSelectSuggestion} />}
+
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem'}}>
+              <div className={styles.formGroup}>
+                <label>Hán tự *</label>
+                <input type="text" className={styles.formInput} value={newPhrase.word} onChange={e => setNewPhrase({...newPhrase, word: e.target.value})} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Pinyin *</label>
+                <input type="text" className={styles.formInput} value={newPhrase.pinyin} onChange={e => setNewPhrase({...newPhrase, pinyin: e.target.value})} />
+              </div>
+            </div>
+
+            <div className={styles.formGroup} style={{marginTop:'1rem'}}>
+              <label>Nghĩa Việt *</label>
+              <input type="text" className={styles.formInput} value={newPhrase.meaning} onChange={e => setNewPhrase({...newPhrase, meaning: e.target.value})} />
+            </div>
+
+            <div className={styles.formGroup} style={{marginTop:'1rem', marginBottom:'2rem'}}>
+              <label>Thuộc buổi học *</label>
+              <select className={styles.formInput} value={newPhrase.lesson_id} onChange={e => setNewPhrase({...newPhrase, lesson_id: e.target.value})}>
+                <option value="">-- Chọn buổi học --</option>
+                {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </select>
+            </div>
+
+            <button className={styles.saveBtn} style={{width:'100%'}} onClick={handleSaveNewPhrase}>Lưu mẫu câu</button>
+          </div>
+        </div>
+      )}
+
+      {/* Detailed Phrase Modal */}
+      {detailedPhrase && (
+        <div className={styles.modalOverlay} onClick={() => setDetailedPhrase(null)}>
+          <div className={styles.detailModal} onClick={e => e.stopPropagation()}>
+            <div className={styles.detailContent}>
+              <div className={styles.hanziSection}>
+                <div ref={writerContainerRef} className={styles.writerContainer}></div>
+                <div className={styles.charTabs}>
+                  {detailedPhrase.word.split('').map((char, index) => (
+                    <button key={index} className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`} onClick={(e) => { e.stopPropagation(); setCurrentCharIndex(index); }}>{char}</button>
+                  ))}
+                </div>
+                <div className={styles.modalControls}>
+                  <button className={styles.iconBtn} onClick={(e) => { e.stopPropagation(); setCurrentCharIndex(0); writerInstance.current?.animateCharacter(); }}><Play size={14} style={{marginRight: '5px'}} /> Vẽ lại</button>
+                </div>
+              </div>
+              <div className={styles.infoSection}>
+                <div className={styles.mainInfo}>
+                  <h2 className="hanzi" style={{fontSize:'2.5rem', color:'var(--primary)'}}>{detailedPhrase.word}</h2>
+                  <p style={{fontSize:'1.5rem', color:'var(--text-muted)'}}>{detailedPhrase.pinyin}</p>
+                  <p style={{fontSize:'1.25rem'}}>{detailedPhrase.meaning}</p>
+                </div>
+              </div>
+            </div>
+            <button style={{padding:'1rem', background:'rgba(0,0,0,0.05)', fontWeight:700}} onClick={() => setDetailedPhrase(null)}>Đóng</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

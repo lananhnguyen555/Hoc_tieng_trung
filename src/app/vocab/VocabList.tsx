@@ -262,7 +262,6 @@ export default function VocabList() {
                 <th>Hán tự (Click Zoom)</th>
                 <th>Pinyin</th>
                 <th>Nghĩa Việt</th>
-                <th>Ví dụ tiêu biểu</th>
                 <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
@@ -273,15 +272,6 @@ export default function VocabList() {
                   <td className={`${styles.wordCell} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.word}</td>
                   <td className={styles.pinyinCell}>{item.pinyin}</td>
                   <td className={styles.meaningCell}>{item.meaning}</td>
-                  <td className={styles.exampleCell}>
-                    {item.example_cn ? (
-                      <div>
-                        <p className={`${styles.exampleCn} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.example_cn}</p>
-                        <p className={styles.examplePy}>{item.example_py}</p>
-                        <p className={styles.exampleVi}>{item.example_vi}</p>
-                      </div>
-                    ) : <span style={{color:'var(--text-muted)', fontSize:'0.8rem'}}>Click vào chữ để thêm ví dụ</span>}
-                  </td>
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
                       <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>
