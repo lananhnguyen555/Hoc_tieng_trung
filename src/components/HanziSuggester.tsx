@@ -41,8 +41,9 @@ export default function HanziSuggester({ pinyin, onSelect }: Props) {
       const data = await response.json();
 
       if (data[0] === "SUCCESS") {
-        const rawResults = data[1][0][1];
-        setSuggestions(rawResults || []);
+        const rawResults: string[] = data[1][0][1];
+        const uniqueResults = Array.from(new Set(rawResults || []));
+        setSuggestions(uniqueResults);
       }
     } catch (err) {
       console.error("Gợi ý Google lỗi:", err);
