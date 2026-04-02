@@ -107,8 +107,8 @@
   background: var(--card-bg);
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  overflow: hidden;
   box-shadow: var(--shadow);
+  /* Loại bỏ overflow: hidden để sticky header hoạt động */
 }
 
 .vocabTable {
@@ -125,7 +125,7 @@
   border-bottom: 2px solid var(--border);
   position: sticky;
   top: 165px; /* Dưới Navbar + Toolbar */
-  z-index: 99;
+  z-index: 50; /* Giảm z-index để không đè lên Modal nhưng vẫn trên hàng thường */
 }
 
 .vocabTable td {
