@@ -1,3 +1,11 @@
+/* Định nghĩa font-face riêng cho chữ Hán để tự động phóng to */
+@font-face {
+  font-family: 'ChineseAdjusted';
+  src: local('Microsoft YaHei'), local('PingFang SC'), local('Hiragino Sans GB'), local('Noto Sans CJK SC'), local('sans-serif');
+  unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF; /* Các dải ký tự Hán tự */
+  size-adjust: 160%; /* Phóng to chữ Hán 1.6 lần so với chữ Việt */
+}
+
 :root {
   --primary: #0ea5e9;
   --primary-hover: #0284c7;
@@ -6,13 +14,11 @@
   --card-bg: #f8fafc;
   --border: #e2e8f0;
   --text-muted: #64748b;
-  --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
+  --font-sans: 'ChineseAdjusted', var(--font-geist-sans), Inter, system-ui, sans-serif;
   --radius: 12px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --nav-bg: #00FFCC; /* Màu Xanh Neon/Cyan đậm theo yêu cầu */
+  --nav-bg: #00FFCC; /* Màu Xanh Neon/Cyan đậm đục theo yêu cầu */
 }
-
-
 
 [data-theme='dark'] {
   --primary: #38bdf8;
@@ -40,7 +46,7 @@ body {
   font-family: var(--font-sans);
   background: var(--background);
   color: var(--foreground);
-  line-height: 1.6;
+  line-height: 1.8; /* Tăng khoảng cách dòng để phù hợp với chữ Hán to */
   scroll-behavior: smooth;
 }
 
@@ -60,9 +66,8 @@ button {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-  padding-top: 80px; /* Bù cho chiều cao Navbar fixed là 70px */
+  padding-top: 90px; /* Bù cho chiều cao Navbar */
 }
-
 
 .card {
   background: var(--card-bg);
@@ -87,17 +92,10 @@ button {
 }
 
 .glass {
-  background: var(--nav-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--nav-bg) !important; /* Đảm bảo màu đục và không bị ghi đè */
   border-bottom: 1px solid var(--border);
+  z-index: 1000;
 }
+/* Loại bỏ tất cả các pseudo-alpha trong theme sáng/tối để màu sắc nhất quán chói lóa */
 
-[data-theme='light'] .glass {
-  background: rgba(240, 249, 255, 0.85); /* Pastel Blue với độ mờ nhẹ */
-}
-
-[data-theme='dark'] .glass {
-  background: rgba(15, 23, 42, 0.85);
-}
 

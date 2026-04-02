@@ -4,14 +4,13 @@
   left: 0;
   width: 100%;
   z-index: 1000;
-  height: 70px;
+  height: 80px; /* Tăng chiều cao để chữ menu to hơn vẫn thoải mái */
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  transition: all 0.3s ease;
-  background-color: var(--nav-bg); /* Đảm bảo có màu nền cố định */
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: #00FFCC !important; /* Ép mã màu Neon Cyan đục */
 }
-
 
 
 .nav {
@@ -19,58 +18,56 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  height: 100%; /* Đảm bảo các khối chiếm hết chiều cao Navbar để căn giữa */
+  height: 100%;
 }
 
-
 .logo {
-  flex: 0 0 200px;
+  flex: 0 0 220px;
   font-weight: 800;
-  font-size: 1.5rem;
-  color: var(--primary);
+  font-size: 1.6rem;
+  color: #0f172a; /* Màu đậm hơn trên nền sáng */
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .logoText {
-  background: linear-gradient(135deg, var(--primary), #a855f7);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #0f172a;
+  font-weight: 900;
 }
 
 .links {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center; /* Đảm bảo các mục menu không bị lệch lên/xuống */
-  gap: 2rem;
+  align-items: center;
+  gap: 2.5rem;
 }
 
 .rightSection {
-  flex: 0 0 200px;
+  flex: 0 0 220px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 1rem;
+  gap: 1.2rem;
 }
-
 
 .link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  color: var(--foreground);
-  transition: color 0.2s ease;
-  opacity: 0.8;
+  gap: 0.6rem;
+  font-weight: 700; /* Đậm hơn */
+  font-size: 1.1rem; /* To hơn */
+  color: #0f172a; /* Màu đậm để tương phản với #00FFCC */
+  transition: all 0.2s ease;
+  opacity: 1; /* Không trong suốt */
 }
 
 .link:hover {
-  color: var(--primary);
-  opacity: 1;
+  color: #0284c7;
+  transform: translateY(-2px);
 }
+
 
 .userSection {
   display: flex;
