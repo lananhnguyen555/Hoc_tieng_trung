@@ -165,28 +165,40 @@ export default function PhrasesList() {
     reader.onload = async (evt) => {
       setLoading(true);
       try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
+        const dataBuffer = evt.target?.result;
+        const wb = XLSX.read(dataBuffer, { type: 'array' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+
+        if (!data || data.length === 0) {
+          alert("File Excel không có dữ liệu!");
+          return;
+        }
 
         const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
         let updatedPhrases = [...localPhrases];
         let addedCount = 0;
 
-        // Skip header if it exists
-        const startIdx = data[0]?.[0]?.toString().toLowerCase().includes("hán") ? 1 : 0;
+        // Logic thông minh: Chỉ bỏ qua hàng đầu nếu nó chứa chữ "Hán" hoặc "Câu" (tiêu đề)
+        const firstCell = String(data[0]?.[0] || "").toLowerCase();
+        const startIdx = (firstCell.includes("hán") || firstCell.includes("câu") || firstCell.includes("word") || firstCell.includes("phrase")) ? 1 : 0;
 
         for (let i = startIdx; i < data.length; i++) {
           const row = data[i];
           const hanzi = String(row[0] || "").trim();
-          if (!hanzi) continue;
+          if (!hanzi || hanzi === "undefined") continue;
 
           // Khử trùng
           if (updatedPhrases.some(p => p.word === hanzi)) continue;
 
-          const py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
+          let py = "";
+          try {
+            py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
+          } catch (e) {
+            py = hanzi;
+          }
+
           let meaning = "";
           try {
             const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(hanzi)}`);
@@ -214,12 +226,12 @@ export default function PhrasesList() {
         alert(`Thành công! Đã thêm ${addedCount} câu giao tiếp mới (Đã tự động bỏ qua các câu trùng lặp).`);
       } catch (err) {
         console.error("Lỗi nhập Excel Giao tiếp:", err);
-        alert("Có lỗi xảy ra khi xử lý file Excel!");
+        alert("Có lỗi xảy ra khi xử lý file Excel! Vui lòng kiểm tra lại định dạng file.");
       } finally {
         setLoading(false);
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const handleExportExcel = () => {

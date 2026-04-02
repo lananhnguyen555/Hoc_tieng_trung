@@ -148,29 +148,40 @@ export default function VocabList() {
     reader.onload = async (evt) => {
       setLoading(true);
       try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
+        const dataBuffer = evt.target?.result;
+        const wb = XLSX.read(dataBuffer, { type: 'array' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+
+        if (!data || data.length === 0) {
+          alert("File Excel không có dữ liệu!");
+          return;
+        }
 
         const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
         let currentVocab = [...vocab, ...localVocab];
         let updatedLocal = [...localVocab];
         let addedCount = 0;
 
-        // Skip header if it exists
-        const startIdx = data[0]?.[0]?.toString().toLowerCase().includes("hán") ? 1 : 0;
+        // Logic thông minh: Chỉ bỏ qua hàng đầu nếu nó chứa chữ "Hán" hoặc "Từ" (tiêu đề)
+        const firstCell = String(data[0]?.[0] || "").toLowerCase();
+        const startIdx = (firstCell.includes("hán") || firstCell.includes("từ") || firstCell.includes("word")) ? 1 : 0;
 
         for (let i = startIdx; i < data.length; i++) {
           const row = data[i];
           const hanzi = String(row[0] || "").trim();
-          if (!hanzi) continue;
+          if (!hanzi || hanzi === "undefined") continue;
 
           // Khử trùng: Nếu đã có Hán tự này rồi thì bỏ qua
           if (currentVocab.some(v => v.word === hanzi)) continue;
 
-          const py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
+          let py = "";
+          try {
+            py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
+          } catch (e) {
+            py = hanzi; // Fallback nếu lỗi pinyin
+          }
           let meaning = "";
           try {
             const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(hanzi)}`);
@@ -199,12 +210,12 @@ export default function VocabList() {
         alert(`Thành công! Đã thêm ${addedCount} từ mới (Đã tự động lọc bỏ các từ trùng lặp).`);
       } catch (err) {
         console.error("Lỗi nhập Excel:", err);
-        alert("Có lỗi xảy ra khi xử lý file Excel!");
+        alert("Có lỗi xảy ra khi xử lý file Excel! Vui lòng kiểm tra lại định dạng file.");
       } finally {
         setLoading(false);
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const handleSaveNewWord = () => {
