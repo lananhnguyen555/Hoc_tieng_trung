@@ -263,13 +263,17 @@ export default function VocabList() {
               <div className={styles.hanziSection}>
                 <div ref={writerContainerRef} className={styles.writerContainer}></div>
                 
-                {/* Character Selector */}
+                {/* Character Selector - Clear Buttons */}
                 <div className={styles.charTabs}>
                   {detailedWord.word.split('').map((char, index) => (
                     <button 
                       key={index}
                       className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`}
-                      onClick={() => setCurrentCharIndex(index)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentCharIndex(index);
+                      }}
+                      title={`Xem cách viết chữ ${char}`}
                     >
                       {char}
                     </button>
@@ -277,11 +281,14 @@ export default function VocabList() {
                 </div>
 
                 <div className={styles.modalControls}>
-                  <button className={styles.iconBtn} onClick={() => {
+                  <button className={styles.iconBtn} onClick={(e) => {
+                    e.stopPropagation();
                     setCurrentCharIndex(0);
-                    writerInstance.current?.animateCharacter();
+                    if (writerInstance.current) {
+                      writerInstance.current.animateCharacter();
+                    }
                   }}>
-                    Vẽ lại từ đầu
+                    <Play size={14} style={{marginRight: '5px'}} /> Vẽ lại từ đầu
                   </button>
                 </div>
               </div>
