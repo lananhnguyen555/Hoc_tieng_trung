@@ -183,7 +183,7 @@ export default function VocabList() {
       ) : selectedLessonId === "all" ? (
         <div className={styles.emptyState}>
           <BookOpen size={48} style={{opacity:0.2, marginBottom:'1rem'}} />
-          <p>Vui lòng chọn bài học từ menu bên trên để bắt đầu xem từ vựng.</p>
+          <p>Hãy chọn một bài học từ Menu thả xuống phía trên để bắt đầu học từ vựng nhé!</p>
         </div>
       ) : (
         <div className={styles.tableWrapper}>
