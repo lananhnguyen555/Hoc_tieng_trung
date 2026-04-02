@@ -82,18 +82,20 @@
 }
 
 .userEmail {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--primary);
+  font-size: 0.95rem; /* To hơn một chút cho dễ đọc */
+  font-weight: 700;
+  color: #0f172a; /* Đổi tên sang màu đen đồng bộ */
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
+
 .logoutBtn {
   padding: 0.4rem;
   border-radius: 6px;
-  color: var(--text-muted);
+  color: #0f172a; /* Màu đen đồng bộ */
+  font-weight: 700;
   transition: all 0.2s ease;
 }
 
@@ -108,14 +110,15 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: var(--radius);
-  color: var(--primary) !important;
-  font-weight: 700 !important;
+  color: #0f172a !important; /* Đổi sang màu đen đồng bộ */
+  font-weight: 800 !important;
   transition: all 0.2s ease;
 }
 
 .loginLink:hover {
   background: rgba(14, 165, 233, 0.1);
 }
+
 
 .betaBadge {
   font-size: 0.65rem;
