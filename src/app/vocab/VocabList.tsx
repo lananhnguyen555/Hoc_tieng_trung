@@ -138,7 +138,7 @@ export default function VocabList() {
       if (!error && dbVocab) {
         finalVocab = dbVocab.map((item: any) => ({
           ...item,
-          word_type: item.word_type || "", // Đảm bảo lấy đúng cột loại từ từ DB
+          word_type: item.word_type || "", // Lấy đúng cột word_type từ DB
           lesson: item.lessons?.name || "Kho chung",
           lesson_id: item.lesson_id
         }));
@@ -234,7 +234,8 @@ export default function VocabList() {
 
         // Logic thông minh: Chỉ bỏ qua hàng đầu nếu nó chứa chữ "Hán" hoặc "Từ" (tiêu đề)
         const firstCell = String(data[0]?.[0] || "").toLowerCase();
-        const startIdx = (firstCell.includes("hán") || firstCell.includes("từ") || firstCell.includes("word")) ? 1 : 0;
+        const headerKeywords = ["hán", "từ", "word", "stt", "no."];
+        const startIdx = headerKeywords.some(k => firstCell.includes(k)) ? 1 : 0;
 
         for (let i = startIdx; i < data.length; i++) {
           const row = data[i];
