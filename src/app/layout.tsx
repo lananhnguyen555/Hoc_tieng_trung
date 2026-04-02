@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Ma_Shan_Zheng } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+const maShanZheng = Ma_Shan_Zheng({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-chinese",
 });
 
 const geistMono = Geist_Mono({
@@ -25,10 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${maShanZheng.variable}`}>
         <Navbar />
         <main className="container">{children}</main>
       </body>
     </html>
   );
 }
+

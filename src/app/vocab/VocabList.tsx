@@ -457,7 +457,7 @@ export default function VocabList() {
                   </div>
                 </div>
                 <div className={styles.cardMain}>
-                  <span className={styles.word}>{item.word}</span>
+                  <span className={`${styles.word} hanzi`}>{item.word}</span>
                   <div className={styles.readingRow}>
                     <span className={styles.pinyin}>{item.pinyin}</span>
                   </div>
@@ -484,7 +484,7 @@ export default function VocabList() {
                 </div>
                 
                 <div className={styles.hanziContainer}>
-                  <div id="hanzi-target" className={styles.hanziBox}></div>
+                  <div id="hanzi-target" className={`${styles.hanziBox} hanzi`}></div>
                   <button className={styles.animateBtn} onClick={animateHanzi}>
                     <RefreshCw size={18} /> Viết lại
                   </button>
@@ -495,7 +495,7 @@ export default function VocabList() {
                 <div className={styles.exampleList}>
                   {selectedWord.example_cn ? (
                     <div className={styles.exampleItem}>
-                      <p className={styles.exampleCn}>{selectedWord.example_cn}</p>
+                      <p className={`${styles.exampleCn} hanzi`}>{selectedWord.example_cn}</p>
                       <p className={styles.examplePy}>{selectedWord.example_py}</p>
                       <p className={styles.exampleVi}>{selectedWord.example_vi}</p>
                     </div>

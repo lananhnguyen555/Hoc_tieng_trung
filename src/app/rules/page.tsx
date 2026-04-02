@@ -92,9 +92,10 @@ export default function RulesPage() {
                 <Info size={24} />
               </div>
               <div className={styles.content}>
-                <h3>{rule.title}</h3>
+                <h3 className="hanzi">{rule.title}</h3>
                 <p>{rule.content}</p>
               </div>
+
               <div className={styles.cardActions}>
                 <button onClick={() => { setEditingItem(rule); setShowEditModal(true); }}>
                   <Edit2 size={16} />

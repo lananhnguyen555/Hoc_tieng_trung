@@ -1,11 +1,3 @@
-/* Định nghĩa font-face riêng cho chữ Hán để tự động phóng to */
-@font-face {
-  font-family: 'ChineseAdjusted';
-  src: local('Microsoft YaHei'), local('PingFang SC'), local('Hiragino Sans GB'), local('Noto Sans CJK SC'), local('sans-serif');
-  unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF; /* Các dải ký tự Hán tự */
-  size-adjust: 160%; /* Phóng to chữ Hán 1.6 lần so với chữ Việt */
-}
-
 :root {
   --primary: #0ea5e9;
   --primary-hover: #0284c7;
@@ -15,10 +7,34 @@
   --border: #e2e8f0;
   --text-muted: #64748b;
   --font-sans: 'ChineseAdjusted', var(--font-geist-sans), Inter, system-ui, sans-serif;
+  --font-chinese: var(--font-chinese); 
   --radius: 12px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --nav-bg: #00FFCC; /* Màu Xanh Neon/Cyan đậm đục theo yêu cầu */
+  --chinese-color: #0ea5e9; /* Màu xanh thư pháp theo yêu cầu */
 }
+
+/* Định nghĩa font-face riêng cho chữ Hán để tự động phóng to và dùng font thư pháp */
+@font-face {
+  font-family: 'ChineseAdjusted';
+  src: local('Ma Shan Zheng'), local('PingFang SC'), local('Hiragino Sans GB'), local('Noto Sans CJK SC'), var(--font-chinese), local('sans-serif');
+  unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF; /* Các dải ký tự Hán tự */
+  size-adjust: 140%; /* Điều chỉnh tỷ lệ chữ Hán (Ma Shan Zheng to sẵn nên giảm xuống 140%) */
+}
+
+/* Selector toàn cục cho tất cả chữ Hán */
+/* Lưu ý: Cách tốt nhất là dùng class hoặc font-family phối hợp unicode-range */
+:is(h1, h2, h3, h4, h5, h6, p, span, div, li, td, th) {
+  font-family: inherit;
+}
+
+/* Áp dụng màu sắc cho chữ Hán nếu có thể hoặc qua class */
+.hanzi {
+  font-family: 'ChineseAdjusted', var(--font-chinese), cursive;
+  color: var(--chinese-color);
+  font-weight: 400;
+}
+
 
 [data-theme='dark'] {
   --primary: #38bdf8;

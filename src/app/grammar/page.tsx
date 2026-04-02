@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, X, Edit2, Trash2, BookOpen } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Plus, X, Edit2, Trash2, BookOpen, Filter, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import styles from "./grammar.module.css";
 
@@ -10,6 +10,7 @@ interface GrammarItem {
   title: string;
   content: string;
   example: string;
+  lesson: string; // Thêm trường buổi học
 }
 
 export default function GrammarPage() {
@@ -18,7 +19,8 @@ export default function GrammarPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingItem, setEditingItem] = useState<GrammarItem | null>(null);
-  const [newItem, setNewItem] = useState({ title: "", content: "", example: "" });
+  const [newItem, setNewItem] = useState({ title: "", content: "", example: "", lesson: "" });
+  const [selectedLesson, setSelectedLesson] = useState<string>("all");
 
   useEffect(() => {
     fetchGrammar();
@@ -29,30 +31,52 @@ export default function GrammarPage() {
       const { data, error } = await supabase
         .from("grammar")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("lesson", { ascending: true });
 
       if (error) throw error;
       
       const localData = JSON.parse(localStorage.getItem("user_grammar") || "[]");
-      setGrammarList([...(data || []), ...localData]);
+      // Đảm bảo dữ liệu cũ vẫn hoạt động
+      const formattedLocal = localData.map((item: any) => ({
+        ...item,
+        lesson: item.lesson || "Chưa phân loại"
+      }));
+      
+      setGrammarList([...(data || []), ...formattedLocal]);
     } catch (err) {
       console.error("Error fetching grammar:", err);
       const localData = JSON.parse(localStorage.getItem("user_grammar") || "[]");
-      setGrammarList(localData);
+      setGrammarList(localData.map((i: any) => ({ ...i, lesson: i.lesson || "Chưa phân loại" })));
     } finally {
       setLoading(false);
     }
   };
 
+  // Lấy danh sách các buổi học duy nhất
+  const uniqueLessons = useMemo(() => {
+    const lessons = Array.from(new Set(grammarList.map(item => item.lesson)));
+    return lessons.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  }, [grammarList]);
+
+  // Lọc danh sách theo buổi học được chọn
+  const filteredGrammar = useMemo(() => {
+    if (selectedLesson === "all") return grammarList;
+    return grammarList.filter(item => item.lesson === selectedLesson);
+  }, [grammarList, selectedLesson]);
+
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
-    const entry = { ...newItem, id: `local-g-${Date.now()}` };
+    const entry = { 
+      ...newItem, 
+      lesson: newItem.lesson || "Chưa phân loại",
+      id: `local-g-${Date.now()}` 
+    };
     const localData = JSON.parse(localStorage.getItem("user_grammar") || "[]");
     localStorage.setItem("user_grammar", JSON.stringify([...localData, entry]));
     
     setGrammarList(prev => [entry, ...prev]);
     setShowAddModal(false);
-    setNewItem({ title: "", content: "", example: "" });
+    setNewItem({ title: "", content: "", example: "", lesson: "" });
   };
 
   const handleDelete = (id: string) => {
@@ -77,38 +101,64 @@ export default function GrammarPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Ngữ pháp tiếng Trung</h1>
-        <p className={styles.subtitle}>Tổng hợp các cấu trúc quan trọng từ cơ bản đến nâng cao.</p>
-        <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
-          <Plus size={20} /> Thêm ngữ pháp
-        </button>
+        <p className={styles.subtitle}>Tổng hợp các cấu trúc quan trọng được phân loại theo từng buổi học.</p>
+        
+        <div className={styles.toolbar}>
+          <div className={styles.filterSection}>
+            <label htmlFor="lesson-filter"><Filter size={18} /> Buổi học:</label>
+            <div className={styles.selectWrapper}>
+              <select 
+                id="lesson-filter"
+                value={selectedLesson}
+                onChange={(e) => setSelectedLesson(e.target.value)}
+                className={styles.lessonSelect}
+              >
+                <option value="all">Tất cả bài học</option>
+                {uniqueLessons.map(lesson => (
+                  <option key={lesson} value={lesson}>{lesson}</option>
+                ))}
+              </select>
+              <ChevronDown className={styles.selectIcon} size={16} />
+            </div>
+          </div>
+          
+          <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
+            <Plus size={20} /> Thêm ngữ pháp
+          </button>
+        </div>
       </header>
 
       {loading ? (
         <div className={styles.loader}>Đang tải dữ liệu...</div>
       ) : (
         <div className={styles.grid}>
-          {grammarList.map((item) => (
+          {filteredGrammar.map((item) => (
             <div key={item.id} className={`card ${styles.grammarCard}`}>
-              <div className={styles.cardActions}>
-                <button onClick={() => { setEditingItem(item); setShowEditModal(true); }}>
-                  <Edit2 size={16} />
-                </button>
-                <button onClick={() => handleDelete(item.id)}>
-                  <Trash2 size={16} />
-                </button>
+              <div className={styles.cardHeader}>
+                <span className={styles.lessonBadge}>{item.lesson}</span>
+                <div className={styles.cardActions}>
+                  <button onClick={() => { setEditingItem(item); setShowEditModal(true); }}>
+                    <Edit2 size={16} />
+                  </button>
+                  <button onClick={() => handleDelete(item.id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
-              <h2>{item.title}</h2>
+              <h2 className="hanzi">{item.title}</h2>
               <p className={styles.content}>{item.content}</p>
               {item.example && (
                 <div className={styles.exampleBox}>
                   <strong>Ví dụ:</strong>
-                  <p>{item.example}</p>
+                  <p className="hanzi">{item.example}</p>
                 </div>
               )}
             </div>
           ))}
-          {grammarList.length === 0 && (
-            <div className={styles.empty}>Chưa có dữ liệu ngữ pháp. Hãy thêm cấu trúc đầu tiên!</div>
+          {filteredGrammar.length === 0 && (
+            <div className={styles.empty}>
+              {selectedLesson === "all" ? "Chưa có dữ liệu ngữ pháp." : `Không có bài học nào trong ${selectedLesson}.`}
+            </div>
           )}
         </div>
       )}
@@ -123,6 +173,16 @@ export default function GrammarPage() {
             </div>
             <form onSubmit={handleAddItem} className={styles.form}>
               <div className={styles.formGroup}>
+                <label>Buổi học (Lesson)</label>
+                <input 
+                  type="text" 
+                  value={newItem.lesson}
+                  onChange={e => setNewItem({...newItem, lesson: e.target.value})}
+                  placeholder="Ví dụ: Buổi 1, Lesson 2..."
+                  required 
+                />
+              </div>
+              <div className={styles.formGroup}>
                 <label>Tên cấu trúc</label>
                 <input 
                   type="text" 
@@ -133,7 +193,7 @@ export default function GrammarPage() {
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Giải thích</label>
+                <label>Giải giải thích</label>
                 <textarea 
                   value={newItem.content}
                   onChange={e => setNewItem({...newItem, content: e.target.value})}
@@ -165,6 +225,15 @@ export default function GrammarPage() {
               <button onClick={() => setShowEditModal(false)}><X size={24} /></button>
             </div>
             <form onSubmit={handleUpdate} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label>Buổi học (Lesson)</label>
+                <input 
+                  type="text" 
+                  value={editingItem.lesson}
+                  onChange={e => setEditingItem({...editingItem, lesson: e.target.value})}
+                  required 
+                />
+              </div>
               <div className={styles.formGroup}>
                 <label>Tên cấu trúc</label>
                 <input 
