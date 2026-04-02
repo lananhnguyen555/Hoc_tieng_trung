@@ -15,6 +15,7 @@ interface Word {
   word: string;
   pinyin: string;
   meaning: string;
+  word_type: string;
   lesson_id: string;
   lesson?: string;
   example_cn?: string;
@@ -36,7 +37,7 @@ export default function VocabList() {
   
   // Form states
   const [newWord, setNewWord] = useState({ 
-    word: "", pinyin: "", meaning: "", lesson_id: "", 
+    word: "", pinyin: "", meaning: "", word_type: "", lesson_id: "", 
     example_cn: "", example_py: "", example_vi: "" 
   });
   const [pinyinInput, setPinyinInput] = useState("");
@@ -53,7 +54,7 @@ export default function VocabList() {
 
   const handleOpenAddModal = () => {
     setNewWord({ 
-      word: "", pinyin: "", meaning: "", 
+      word: "", pinyin: "", meaning: "", word_type: "",
       lesson_id: selectedLessonId === "all" ? "" : selectedLessonId, 
       example_cn: "", example_py: "", example_vi: "" 
     });
@@ -166,6 +167,7 @@ export default function VocabList() {
               word: localV.word,
               pinyin: localV.pinyin,
               meaning: localV.meaning,
+              word_type: localV.word_type || "",
               lesson_id: localV.lesson_id,
               user_id: currentUser.id,
               example_cn: localV.example_cn,
@@ -268,6 +270,7 @@ export default function VocabList() {
             word: hanzi,
             pinyin: py,
             meaning: meaning,
+            word_type: "", // Mặc định trống khi nhập Excel
             lesson_id: selectedLessonId
           };
 
@@ -306,7 +309,7 @@ export default function VocabList() {
       if (!error && data) {
         setVocab(prev => [...prev, { ...data, lesson: lessons.find(l => l.id === data.lesson_id)?.name }]);
         setShowAddModal(false);
-        setNewWord({ word: "", pinyin: "", meaning: "", lesson_id: "", example_cn: "", example_py: "", example_vi: "" });
+        setNewWord({ word: "", pinyin: "", meaning: "", word_type: "", lesson_id: "", example_cn: "", example_py: "", example_vi: "" });
         alert("Đã lưu lên Cloud thành công!");
       } else if (error) {
         alert("Lỗi khi lưu lên Cloud: " + error.message);
@@ -317,7 +320,7 @@ export default function VocabList() {
       localStorage.setItem("user_vocab", JSON.stringify([...localVocab, wordToAdd]));
       setVocab(prev => [...prev, wordToAdd]);
       setShowAddModal(false);
-      setNewWord({ word: "", pinyin: "", meaning: "", lesson_id: "", example_cn: "", example_py: "", example_vi: "" });
+      setNewWord({ word: "", pinyin: "", meaning: "", word_type: "", lesson_id: "", example_cn: "", example_py: "", example_vi: "" });
       alert("Đã lưu tạm trên máy (Hãy đăng nhập để đồng bộ)!");
     }
   };
@@ -332,6 +335,7 @@ export default function VocabList() {
           word: detailedWord.word, 
           pinyin: detailedWord.pinyin, 
           meaning: detailedWord.meaning,
+          word_type: detailedWord.word_type,
           example_cn: editingExample.cn,
           example_py: editingExample.py,
           example_vi: editingExample.vi
@@ -427,6 +431,7 @@ export default function VocabList() {
       "Hán tự": item.word,
       "Pinyin": item.pinyin,
       "Nghĩa Việt": item.meaning,
+      "Loại từ": item.word_type || "",
       "Ví dụ (Hán)": item.example_cn || "",
       "Ví dụ (Pinyin)": item.example_py || "",
       "Ví dụ (Nghĩa)": item.example_vi || ""
@@ -505,6 +510,7 @@ export default function VocabList() {
                 <th className={styles.sttCell}>STT</th>
                 <th>Hán tự (Click Zoom)</th>
                 <th>Pinyin</th>
+                <th>Loại từ</th>
                 <th>Nghĩa Việt</th>
                 <th className={styles.actionCell}>Thao tác</th>
               </tr>
@@ -515,6 +521,7 @@ export default function VocabList() {
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td className={`${styles.wordCell} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.word}</td>
                   <td className={styles.pinyinCell}>{item.pinyin}</td>
+                  <td className={styles.typeCell}>{item.word_type}</td>
                   <td className={styles.meaningCell}>{item.meaning}</td>
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
@@ -590,9 +597,15 @@ export default function VocabList() {
               </div>
             </div>
 
-            <div className={styles.formGroup} style={{marginTop:'1rem'}}>
-              <label>Nghĩa tiếng Việt *</label>
-              <input type="text" className={styles.formInput} value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} />
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginTop:'1rem'}}>
+              <div className={styles.formGroup}>
+                <label>Loại từ</label>
+                <input type="text" className={styles.formInput} placeholder="Danh từ, Động từ..." value={newWord.word_type} onChange={e => setNewWord({...newWord, word_type: e.target.value})} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Nghĩa tiếng Việt *</label>
+                <input type="text" className={styles.formInput} value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} />
+              </div>
             </div>
 
             <div className={styles.formGroup} style={{marginTop:'1rem'}}>
@@ -644,6 +657,10 @@ export default function VocabList() {
                   <div className={styles.formGroup}>
                     <label>Nghĩa Việt</label>
                     <input type="text" className={styles.formInput} value={detailedWord.meaning} onChange={e => setDetailedWord({...detailedWord, meaning: e.target.value})} />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Loại từ</label>
+                    <input type="text" className={styles.formInput} value={detailedWord.word_type} onChange={e => setDetailedWord({...detailedWord, word_type: e.target.value})} />
                   </div>
                 </div>
                 <div className={styles.exampleForm}>

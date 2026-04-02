@@ -155,6 +155,16 @@
   font-weight: 500;
 }
 
+.typeCell {
+  font-size: 0.85rem;
+  color: var(--primary);
+  background: rgba(14, 165, 233, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-block;
+}
+
 .exampleCell {
   max-width: 350px;
   font-size: 0.95rem;
@@ -399,11 +409,18 @@
 
   .pinyinCell {
     text-align: center;
-    color: var(--primary);
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
     padding: 0 !important;
     border: none !important;
+  }
+
+  .typeCell {
+    display: block;
+    width: fit-content;
+    margin: 0 auto 0.8rem;
+    font-size: 0.75rem;
   }
 
   .meaningCell {
