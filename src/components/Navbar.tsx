@@ -61,7 +61,9 @@ export default function Navbar() {
           <Link href="/rules" className={styles.link}>
             <Scale size={20} /> <span>Quy tắc</span>
           </Link>
-          
+        </div>
+
+        <div className={styles.rightSection}>
           {user ? (
             <div className={styles.userSection}>
               <span className={styles.userEmail}><User size={16} /> {user.email?.split('@')[0]}</span>
@@ -74,11 +76,12 @@ export default function Navbar() {
               <LogIn size={20} /> <span>Đăng nhập</span>
             </Link>
           )}
+
+          <button onClick={toggleTheme} className={styles.themeToggle}>
+            {theme === "light" ? <Moon size={22} /> : <Sun size={22} />}
+          </button>
         </div>
 
-        <button onClick={toggleTheme} className={styles.themeToggle}>
-          {theme === "light" ? <Moon size={22} /> : <Sun size={22} />}
-        </button>
       </nav>
     </header>
   );

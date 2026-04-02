@@ -9,8 +9,9 @@
   --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
   --radius: 12px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --nav-bg: #f0f9ff; /* Pastel Blue nhạt */
+  --nav-bg: #e0f2fe; /* Pastel Blue đậm hơn một chút */
 }
+
 
 [data-theme='dark'] {
   --primary: #38bdf8;

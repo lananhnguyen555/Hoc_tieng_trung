@@ -22,6 +22,7 @@
 }
 
 .logo {
+  flex: 0 0 200px;
   font-weight: 800;
   font-size: 1.5rem;
   color: var(--primary);
@@ -38,8 +39,18 @@
 }
 
 .links {
+  flex: 1;
   display: flex;
+  justify-content: center;
   gap: 2rem;
+}
+
+.rightSection {
+  flex: 0 0 200px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
 }
 
 .link {
