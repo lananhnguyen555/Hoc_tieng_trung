@@ -138,6 +138,7 @@ export default function VocabList() {
       if (!error && dbVocab) {
         finalVocab = dbVocab.map((item: any) => ({
           ...item,
+          word_type: item.word_type || "", // Đảm bảo lấy đúng cột loại từ từ DB
           lesson: item.lessons?.name || "Kho chung",
           lesson_id: item.lesson_id
         }));
