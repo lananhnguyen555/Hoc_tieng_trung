@@ -2,35 +2,36 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 250px;
-  height: 100vh;
+  width: 100%;
   z-index: 1000;
+  height: 80px; /* Tăng chiều cao để chữ menu to hơn vẫn thoải mái */
   display: flex;
-  flex-direction: column;
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #00FFCC !important;
-  padding: 2rem 0;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: #00FFCC !important; /* Ép mã màu Neon Cyan đục */
 }
+
 
 .nav {
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  height: 100%;
+  align-items: center;
   width: 100%;
-  padding: 0 1.5rem;
+  max-width: 1200px; /* Thêm max-width trực tiếp tại đây */
+  margin: 0 auto; /* Căn giữa container */
+  padding: 0 2rem; /* Thêm padding ngang */
+  height: 100%; /* Đảm bảo các khối chiếm hết chiều cao 80px của Navbar */
 }
 
+
 .logo {
-  flex: 0 0 auto;
-  margin-bottom: 3rem;
+  flex: 0 0 220px;
   font-weight: 800;
   font-size: 1.6rem;
-  color: #0f172a;
+  color: #0f172a; /* Màu đậm hơn trên nền sáng */
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: 0.5rem;
 }
 
@@ -42,121 +43,113 @@
 .links {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.5rem;
-  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.rightSection {
+  flex: 0 0 220px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.2rem;
 }
 
 .link {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #0f172a;
+  gap: 0.6rem;
+  font-weight: 700; /* Đậm hơn */
+  font-size: 1.1rem; /* To hơn */
+  color: #0f172a; /* Màu đậm để tương phản với #00FFCC */
   transition: all 0.2s ease;
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  width: 100%;
+  opacity: 1; /* Không trong suốt */
 }
 
 .link:hover {
-  background: rgba(14, 165, 233, 0.1);
   color: #0284c7;
-  transform: translateX(5px);
+  transform: translateY(-2px);
 }
 
-.rightSection {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(15, 23, 42, 0.1);
-}
 
 .userSection {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.8rem;
-  width: 100%;
+  gap: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border);
 }
 
 .userEmail {
-  font-size: 0.9rem;
+  font-size: 0.95rem; /* To hơn một chút cho dễ đọc */
   font-weight: 700;
-  color: #0f172a;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #0f172a; /* Đổi tên sang màu đen đồng bộ */
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-.logoutBtn, .themeToggle, .loginLink {
-  width: 100%;
+
+.logoutBtn {
+  padding: 0.4rem;
+  border-radius: 6px;
+  color: #0f172a; /* Màu đen đồng bộ */
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.loginLink {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  color: #0f172a !important; /* Đổi sang màu đen đồng bộ */
+  font-weight: 800 !important;
+  transition: all 0.2s ease;
+}
+
+.loginLink:hover {
+  background: rgba(14, 165, 233, 0.1);
+}
+
+
+.betaBadge {
+  font-size: 0.65rem;
+  background: var(--primary);
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
+.themeToggle {
+  color: var(--foreground);
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 0.8rem;
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.05);
+}
+
+.themeToggle:hover {
+  background: var(--card-bg);
+  color: var(--primary);
 }
 
 @media (max-width: 768px) {
-  .header {
-    top: auto;
-    bottom: 0;
-    height: 65px;
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+  .links span {
+    display: none;
   }
-
-  .nav {
-    padding: 0 1rem;
-    max-width: 100%;
-    justify-content: space-around;
-  }
-
-  .logo { display: none; }
-
   .links {
-    flex: 1;
-    gap: 0;
-    justify-content: space-around;
-    width: 100%;
+    gap: 1.5rem;
   }
-
-  .link {
-    flex-direction: column;
-    gap: 4px;
-    font-size: 0.7rem;
-    padding: 5px;
-    min-width: 60px;
-    justify-content: center;
-  }
-
-  .link span {
-    display: block;
-    font-size: 0.65rem;
-    white-space: nowrap;
-  }
-
-  .rightSection {
-    flex: 0 0 auto;
-    gap: 0.5rem;
-  }
-
-  .userSection {
-    border: none;
-    padding: 0;
-  }
-
-  .userEmail { display: none; }
-
-  .logoutBtn, .themeToggle, .loginLink {
-    padding: 8px;
-  }
-  
-  .loginLink span { display: none; }
 }

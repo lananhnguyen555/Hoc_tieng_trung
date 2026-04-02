@@ -85,16 +85,8 @@ button {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  margin-left: 250px; /* Lùi sang phải để nhường chỗ cho Sidebar */
-}
-
-@media (max-width: 768px) {
-  .container {
-    margin-left: 0;
-    padding: 1rem;
-    padding-bottom: 80px; /* Bù cho Tab Bar ở dưới */
-  }
+  padding: 0 2rem;
+  padding-top: 90px; /* Bù cho chiều cao Navbar */
 }
 
 .card {

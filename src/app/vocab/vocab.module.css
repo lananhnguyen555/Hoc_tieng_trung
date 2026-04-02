@@ -2,8 +2,8 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  margin-left: 250px; /* Đảm bảo lùi đúng khoảng cách Sidebar */
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
+  padding-top: 100px; /* Bù cho Navbar ngang */
 }
 
 .header {
@@ -34,7 +34,7 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   position: sticky;
-  top: 1rem;
+  top: 80px; /* Dưới Navbar ngang */
   z-index: 100;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
@@ -124,7 +124,7 @@
   color: var(--primary);
   border-bottom: 2px solid var(--border);
   position: sticky;
-  top: 105px; /* Chiều cao Toolbar + margin + offset */
+  top: 165px; /* Dưới Navbar + Toolbar */
   z-index: 99;
 }
 
