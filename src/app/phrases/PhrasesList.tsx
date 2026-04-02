@@ -13,9 +13,8 @@ import { pinyin } from "pinyin-pro";
 
 interface Phrase {
   id: string;
-  word: string;
-  pinyin: string;
-  meaning: string;
+  word: string; // Nội dung
+  meaning: string; // Ghi chú
   lesson_id: string;
 }
 
@@ -31,9 +30,8 @@ export default function PhrasesList() {
   const [detailedPhrase, setDetailedPhrase] = useState<Phrase | null>(null);
   
   const [newPhrase, setNewPhrase] = useState({ 
-    word: "", pinyin: "", meaning: "", lesson_id: ""
+    word: "", meaning: "", lesson_id: ""
   });
-  const [pinyinInput, setPinyinInput] = useState("");
 
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const writerContainerRef = useRef<HTMLDivElement>(null);
@@ -46,29 +44,11 @@ export default function PhrasesList() {
 
   const handleOpenAddModal = () => {
     setNewPhrase({ 
-      word: "", pinyin: "", meaning: "", 
+      word: "", 
+      meaning: "", 
       lesson_id: selectedLessonId === "all" ? "" : selectedLessonId
     });
-    setPinyinInput("");
     setShowAddModal(true);
-  };
-
-  const handleSelectSuggestion = async (char: string, accented: string) => {
-    setNewPhrase(prev => ({ ...prev, word: char, pinyin: accented.replace(/\s+/g, '') }));
-    
-    try {
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(char)}`);
-      const data = await res.json();
-      
-      if (data && data[0] && data[0][0] && data[0][0][0]) {
-        const translation = data[0][0][0];
-        setNewPhrase(prev => ({ ...prev, meaning: translation }));
-      }
-    } catch (err) {
-      console.error("Dịch Google lỗi:", err);
-      const hv = char.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
-      setNewPhrase(prev => ({ ...prev, meaning: hv }));
-    }
   };
 
   const fetchData = async () => {
@@ -137,22 +117,24 @@ export default function PhrasesList() {
   };
 
   const handleSaveNewPhrase = async () => {
-    if (!newPhrase.word || !newPhrase.meaning || !newPhrase.lesson_id) {
-      alert("Vui lòng nhập đầy đủ câu Hán tự, Nghĩa và chọn Buổi học!");
+    if (!newPhrase.word || !newPhrase.lesson_id) {
+      alert("Vui lòng nhập Nội dung và chọn Buổi học!");
       return;
     }
 
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       const { data, error } = await supabase.from("phrases").insert({
-        ...newPhrase,
+        word: newPhrase.word,
+        meaning: newPhrase.meaning,
+        lesson_id: newPhrase.lesson_id,
         user_id: session.user.id
       }).select().single();
 
       if (!error && data) {
         setPhrases(prev => [...prev, data]);
         setShowAddModal(false);
-        setNewPhrase({ word: "", pinyin: "", meaning: "", lesson_id: "" });
+        setNewPhrase({ word: "", meaning: "", lesson_id: "" });
         alert("Đã lưu lên Cloud!");
       }
     } else {
@@ -171,7 +153,6 @@ export default function PhrasesList() {
     if (session?.user && !detailedPhrase.id.startsWith("phrase-")) {
       const { error } = await supabase.from("phrases").update({
         word: detailedPhrase.word,
-        pinyin: detailedPhrase.pinyin,
         meaning: detailedPhrase.meaning
       }).eq("id", detailedPhrase.id);
       if (error) alert(error.message);
@@ -325,7 +306,7 @@ export default function PhrasesList() {
   const handleExportExcel = () => {
     if (filteredPhrases.length === 0) return;
     const dataToExport = filteredPhrases.map((item, index) => ({
-      "STT": index + 1, "Hán tự": item.word, "Pinyin": item.pinyin, "Nghĩa Việt": item.meaning
+      "STT": index + 1, "Nội dung": item.word, "Ghi chú": item.meaning
     }));
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
@@ -402,14 +383,19 @@ export default function PhrasesList() {
         <div className={styles.tableWrapper}>
           <table className={styles.vocabTable}>
             <thead>
-              <tr><th className={styles.sttCell}>STT</th><th>Hán tự</th><th>Pinyin</th><th>Nghĩa</th><th className={styles.actionCell}>Thao tác</th></tr>
+              <tr><th className={styles.sttCell}>STT</th><th>Nội dung</th><th>Ghi chú</th><th className={styles.actionCell}>Thao tác</th></tr>
             </thead>
             <tbody>
               {filteredPhrases.map((item, index) => (
                 <tr key={item.id}>
                   <td className={styles.sttCell}>{index + 1}</td>
-                  <td className={`${styles.wordCell} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.word}</td>
-                  <td className={styles.pinyinCell}>{item.pinyin}</td>
+                  <td 
+                    className={`${styles.wordCell} hanzi`} 
+                    style={{fontSize:'1.8rem', fontWeight:600}} 
+                    onClick={() => handleOpenDetailed(item)}
+                  >
+                    {item.word}
+                  </td>
                   <td className={styles.meaningCell}>{item.meaning}</td>
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
@@ -435,16 +421,26 @@ export default function PhrasesList() {
             </div>
             
             <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
-              <label>Gõ Pinyin gợi ý</label>
-              <input type="text" className={styles.formInput} placeholder="Ví dụ: nihao" value={pinyinInput} onChange={e => setPinyinInput(e.target.value)} />
+              <label>Nội dung *</label>
+              <textarea 
+                className={styles.formInput} 
+                rows={3} 
+                placeholder="Nhập chữ Hán, Pinyin hoặc câu tùy ý..." 
+                value={newPhrase.word} 
+                onChange={e => setNewPhrase({...newPhrase, word: e.target.value})} 
+              />
             </div>
-            {pinyinInput && <HanziSuggester pinyin={pinyinInput} onSelect={(char, acc) => setNewPhrase({...newPhrase, word: char, pinyin: acc.replace(/\s+/g, '')})} />}
 
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem'}}>
-              <div className={styles.formGroup}><label>Hán tự *</label><input type="text" className={styles.formInput} value={newPhrase.word} onChange={e => setNewPhrase({...newPhrase, word: e.target.value})} /></div>
-              <div className={styles.formGroup}><label>Pinyin *</label><input type="text" className={styles.formInput} value={newPhrase.pinyin} onChange={e => setNewPhrase({...newPhrase, pinyin: e.target.value})} /></div>
+            <div className={styles.formGroup} style={{marginTop:'1rem'}}>
+              <label>Ghi chú</label>
+              <textarea 
+                className={styles.formInput} 
+                rows={2} 
+                placeholder="Giải thích nghĩa, cấu trúc..." 
+                value={newPhrase.meaning} 
+                onChange={e => setNewPhrase({...newPhrase, meaning: e.target.value})} 
+              />
             </div>
-            <div className={styles.formGroup} style={{marginTop:'1rem'}}><label>Nghĩa Việt *</label><input type="text" className={styles.formInput} value={newPhrase.meaning} onChange={e => setNewPhrase({...newPhrase, meaning: e.target.value})} /></div>
             <div className={styles.formGroup} style={{marginTop:'1rem', marginBottom:'2rem'}}>
               <label>Thuộc buổi học *</label>
               <select className={styles.formInput} value={newPhrase.lesson_id} onChange={e => setNewPhrase({...newPhrase, lesson_id: e.target.value})}>
@@ -475,26 +471,38 @@ export default function PhrasesList() {
       {/* Detailed Modal (Edit Info) */}
       {detailedPhrase && (
         <div className={styles.modalOverlay} onClick={() => setDetailedPhrase(null)}>
-          <div className={styles.detailModal} onClick={e => e.stopPropagation()}>
-            <div className={styles.detailContent}>
-              <div className={styles.hanziSection}>
-                <div ref={writerContainerRef} className={styles.writerContainer}></div>
-                <div className={styles.charTabs}>
-                  {detailedPhrase.word.split('').map((char, index) => (
-                    <button key={index} className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`} onClick={() => setCurrentCharIndex(index)}>{char}</button>
-                  ))}
-                </div>
+          <div className={styles.detailModal} style={{maxWidth:'600px'}} onClick={e => e.stopPropagation()}>
+            <div style={{padding:'2rem'}}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}>
+                <h2 style={{margin:0}}>Chỉnh sửa thông tin</h2>
+                <X style={{cursor:'pointer'}} onClick={() => setDetailedPhrase(null)} />
               </div>
-              <div className={styles.infoSection}>
-                <div className={styles.mainInfo}>
-                  <div className={styles.formGroup}><label>Hán tự</label><input type="text" className={`${styles.formInput} hanzi`} style={{fontSize:'1.8rem'}} value={detailedPhrase.word} onChange={e => setDetailedPhrase({...detailedPhrase, word: e.target.value})} /></div>
-                  <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={detailedPhrase.pinyin} onChange={e => setDetailedPhrase({...detailedPhrase, pinyin: e.target.value})} /></div>
-                  <div className={styles.formGroup}><label>Nghĩa Việt</label><input type="text" className={styles.formInput} value={detailedPhrase.meaning} onChange={e => setDetailedPhrase({...detailedPhrase, meaning: e.target.value})} /></div>
-                  <button className={styles.saveBtn} style={{marginTop:'1rem'}} onClick={handleUpdatePhraseInfo}><Save size={18} style={{marginRight:'0.5rem'}} /> Lưu thay đổi</button>
+              
+              <div className={styles.infoSection} style={{padding:0}}>
+                <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
+                  <label>Nội dung</label>
+                  <textarea 
+                    className={`${styles.formInput} hanzi`} 
+                    style={{fontSize:'1.8rem', minHeight:'120px'}} 
+                    value={detailedPhrase.word} 
+                    onChange={e => setDetailedPhrase({...detailedPhrase, word: e.target.value})} 
+                  />
                 </div>
+                <div className={styles.formGroup}>
+                  <label>Ghi chú</label>
+                  <textarea 
+                    className={styles.formInput} 
+                    style={{minHeight:'80px'}} 
+                    value={detailedPhrase.meaning} 
+                    onChange={e => setDetailedPhrase({...detailedPhrase, meaning: e.target.value})} 
+                  />
+                </div>
+                <button className={styles.saveBtn} style={{width:'100%', marginTop:'2rem'}} onClick={handleUpdatePhraseInfo}>
+                  <Save size={18} style={{marginRight:'0.5rem'}} /> Lưu thay đổi
+                </button>
               </div>
             </div>
-            <button style={{padding:'1rem', width:'100%', fontWeight:700}} onClick={() => setDetailedPhrase(null)}>Đóng</button>
+            <button style={{padding:'1rem', width:'100%', borderTop:'1px solid var(--border)', fontWeight:700}} onClick={() => setDetailedPhrase(null)}>Đóng</button>
           </div>
         </div>
       )}

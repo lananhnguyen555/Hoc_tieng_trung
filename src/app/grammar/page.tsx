@@ -7,9 +7,8 @@ import styles from "./grammar.module.css";
 
 interface GrammarItem {
   id: string;
-  title: string;
-  content: string;
-  example: string;
+  title: string; // Nội dung
+  content: string; // Ghi chú
   lesson: string;
 }
 
@@ -19,7 +18,7 @@ export default function GrammarPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingItem, setEditingItem] = useState<GrammarItem | null>(null);
-  const [newItem, setNewItem] = useState({ title: "", content: "", example: "", lesson: "" });
+  const [newItem, setNewItem] = useState({ title: "", content: "", lesson: "" });
   const [selectedLesson, setSelectedLesson] = useState<string>("all");
   
   // State for Fullscreen Hanzi Display
@@ -76,7 +75,7 @@ export default function GrammarPage() {
     
     setGrammarList(prev => [entry, ...prev]);
     setShowAddModal(false);
-    setNewItem({ title: "", content: "", example: "", lesson: "" });
+    setNewItem({ title: "", content: "", lesson: "" });
   };
 
   const handleDelete = (id: string, e: React.MouseEvent) => {
@@ -136,39 +135,24 @@ export default function GrammarPage() {
           <table className={styles.grammarTable}>
             <thead>
               <tr>
-                <th>STT</th>
-                <th>Buổi</th>
-                <th>Cấu trúc (Hán tự)</th>
-                <th>Giải thích chi tiết</th>
-                <th>Ví dụ minh họa</th>
-                <th>Thao tác</th>
+                <th className={styles.sttCell}>STT</th>
+                <th>Nội dung (Bao gồm Hán tự)</th>
+                <th>Ghi chú</th>
+                <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {filteredGrammar.map((item, index) => (
                 <tr key={item.id}>
                   <td className={styles.sttCell}>{index + 1}</td>
-                  <td><span className={styles.lessonBadge}>{item.lesson}</span></td>
                   <td 
                     className={`${styles.titleCell} hanzi`}
+                    style={{fontSize:'1.8rem', fontWeight:600}}
                     onClick={() => setFullScreenItem(item)}
-                    title="Nhấn để phóng to chữ Hán"
                   >
                     {item.title}
                   </td>
                   <td className={styles.contentCell}>{item.content}</td>
-                  <td className={styles.exampleCell}>
-                    {item.example && (
-                      <div className={styles.exampleBox}>
-                        <div 
-                          className={`${styles.exampleHanzi} hanzi`}
-                          onClick={() => setFullScreenItem({ ...item, title: item.example.split(' ')[0] })}
-                        >
-                          {item.example}
-                        </div>
-                      </div>
-                    )}
-                  </td>
                   <td className={styles.actionCell}>
                     <div className={styles.actionGroup}>
                       <button className={styles.iconBtn} onClick={() => { setEditingItem(item); setShowEditModal(true); }}>
@@ -226,34 +210,22 @@ export default function GrammarPage() {
                 />
               </div>
               <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Cấu trúc (Hán tự)</label>
-                <input 
-                  type="text" 
+                <label style={{fontWeight:700}}>Nội dung (Chữ Hán, cấu trúc...)</label>
+                <textarea 
                   value={newItem.title}
                   onChange={e => setNewItem({...newItem, title: e.target.value})}
-                  placeholder="Ví dụ: 正在"
-                  required 
-                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
-                />
-              </div>
-              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Giải thích</label>
-                <textarea 
-                  value={newItem.content}
-                  onChange={e => setNewItem({...newItem, content: e.target.value})}
-                  placeholder="Cách sử dụng..."
+                  placeholder="Nhập bất kỳ nội dung gì bạn muốn..."
                   required 
                   style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'100px'}}
                 />
               </div>
               <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Ví dụ</label>
-                <input 
-                  type="text" 
-                  value={newItem.example}
-                  onChange={e => setNewItem({...newItem, example: e.target.value})}
-                  placeholder="Hán tự (Pinyin) - Nghĩa"
-                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
+                <label style={{fontWeight:700}}>Ghi chú</label>
+                <textarea 
+                  value={newItem.content}
+                  onChange={e => setNewItem({...newItem, content: e.target.value})}
+                  placeholder="Giải thích, ví dụ..."
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'80px'}}
                 />
               </div>
               <button type="submit" className="btn-primary" style={{marginTop:'1rem'}}>Lưu bài học</button>
@@ -282,31 +254,20 @@ export default function GrammarPage() {
                 />
               </div>
               <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Cấu trúc (Hán tự)</label>
-                <input 
-                  type="text" 
+                <label style={{fontWeight:700}}>Nội dung</label>
+                <textarea 
                   value={editingItem.title}
                   onChange={e => setEditingItem({...editingItem, title: e.target.value})}
-                  required 
-                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
-                />
-              </div>
-              <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Giải thích</label>
-                <textarea 
-                  value={editingItem.content}
-                  onChange={e => setEditingItem({...editingItem, content: e.target.value})}
                   required 
                   style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'100px'}}
                 />
               </div>
               <div className="form-group" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Ví dụ</label>
-                <input 
-                  type="text" 
-                  value={editingItem.example}
-                  onChange={e => setEditingItem({...editingItem, example: e.target.value})}
-                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)'}}
+                <label style={{fontWeight:700}}>Ghi chú</label>
+                <textarea 
+                  value={editingItem.content}
+                  onChange={e => setEditingItem({...editingItem, content: e.target.value})}
+                  style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'80px'}}
                 />
               </div>
               <button type="submit" className="btn-primary" style={{marginTop:'1rem'}}>Cập nhật bài học</button>

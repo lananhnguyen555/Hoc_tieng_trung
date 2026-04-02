@@ -97,19 +97,20 @@ export default function RulesPage() {
             <thead>
               <tr>
                 <th className={styles.sttCell}>STT</th>
-                <th>Tiêu đề (Hán tự)</th>
-                <th>Nội dung hướng dẫn</th>
+                <th>Nội dung (Bao gồm Hán tự)</th>
+                <th>Ghi chú</th>
                 <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {rules.map((rule, index) => (
                 <tr key={rule.id}>
-                  <td className={styles.sttCell}>{index + 1}</td>
-                  <td 
+                   <td className={styles.sttCell}>{index + 1}</td>
+                   <td 
                     className={`${styles.ruleTitleCell} hanzi`}
+                    style={{fontSize:'1.8rem', fontWeight:600}}
                     onClick={() => setFullScreenItem(rule)}
-                    title="Nhấn để phóng to chữ Hán"
+                    title="Nhấn để phóng to"
                   >
                     {rule.title}
                   </td>
@@ -157,24 +158,22 @@ export default function RulesPage() {
             </div>
             <form onSubmit={handleAddItem} className="form" style={{display:'flex', flexDirection:'column', gap:'1.5rem'}}>
               <div className="formGroup" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Tiêu đề (Hán tự)</label>
-                <input 
-                  type="text" 
+                <label style={{fontWeight:700}}>Nội dung (Nhập chữ Hán hoặc văn bản...)</label>
+                <textarea 
                   value={newItem.title}
                   onChange={e => setNewItem({...newItem, title: e.target.value})}
-                  placeholder="Ví dụ: Quy tắc biến điệu Bù (不)"
+                  placeholder="Ví dụ: Quy tắc biến điệu Bù (不)..."
                   required 
-                  style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)'}}
+                  style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'120px'}}
                 />
               </div>
               <div className="formGroup" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Nội dung hướng dẫn</label>
+                <label style={{fontWeight:700}}>Ghi chú</label>
                 <textarea 
                   value={newItem.content}
                   onChange={e => setNewItem({...newItem, content: e.target.value})}
-                  placeholder="Cách sử dụng, các trường hợp biến điệu..."
-                  required 
-                  style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'150px'}}
+                  placeholder="Giải thích, lưu ý thêm..."
+                  style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'100px'}}
                 />
               </div>
               <button type="submit" className="btn-primary" style={{marginTop:'1rem', padding:'1rem'}}>Lưu quy tắc</button>
@@ -193,22 +192,20 @@ export default function RulesPage() {
             </div>
             <form onSubmit={handleUpdate} className="form" style={{display:'flex', flexDirection:'column', gap:'1.5rem'}}>
               <div className="formGroup" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Tiêu đề (Hán tự)</label>
-                <input 
-                  type="text" 
+                <label style={{fontWeight:700}}>Nội dung</label>
+                <textarea 
                   value={editingItem.title}
                   onChange={e => setEditingItem({...editingItem, title: e.target.value})}
                   required 
-                  style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)'}}
+                  style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'120px'}}
                 />
               </div>
               <div className="formGroup" style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-                <label style={{fontWeight:700}}>Nội dung hướng dẫn</label>
+                <label style={{fontWeight:700}}>Ghi chú</label>
                 <textarea 
                   value={editingItem.content}
                   onChange={e => setEditingItem({...editingItem, content: e.target.value})}
-                  required 
-                  style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'150px'}}
+                  style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'100px'}}
                 />
               </div>
               <button type="submit" className="btn-primary" style={{marginTop:'1rem', padding:'1rem'}}>Cập nhật quy tắc</button>
