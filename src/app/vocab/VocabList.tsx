@@ -208,6 +208,19 @@ export default function VocabList() {
     window.speechSynthesis.speak(utterance);
   };
 
+  const handleAddLesson = () => {
+    const name = prompt("Nhập tên buổi học mới (Ví dụ: Buổi 4):");
+    if (!name) return;
+    
+    const newLesson = { id: `lesson-${Date.now()}`, name };
+    const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
+    const updated = [...localLessons, newLesson];
+    localStorage.setItem("user_lessons", JSON.stringify(updated));
+    setLessons(prev => [...prev, newLesson]);
+    setSelectedLessonId(newLesson.id);
+    alert(`Đã thêm ${name} thành công!`);
+  };
+
   const filteredVocab = vocab.filter(item => {
     if (selectedLessonId === "all") return false;
     const matchesSearch = item.word.includes(search) || item.meaning.toLowerCase().includes(search.toLowerCase());
@@ -225,10 +238,15 @@ export default function VocabList() {
       <div className={styles.toolbar}>
         <div className={styles.filterSection}>
           <label style={{fontWeight:700}}>Buổi học:</label>
-          <select className={styles.lessonSelect} value={selectedLessonId} onChange={(e) => setSelectedLessonId(e.target.value)}>
-            <option value="all">--- Chọn buổi học ---</option>
-            {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
+          <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
+            <select className={styles.lessonSelect} value={selectedLessonId} onChange={(e) => setSelectedLessonId(e.target.value)}>
+              <option value="all">--- Chọn buổi học ---</option>
+              {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+            </select>
+            <button className={styles.iconBtn} onClick={handleAddLesson} title="Thêm buổi học mới" style={{padding:'5px', background:'var(--primary)', color:'white', borderRadius:'4px', display:'flex'}}>
+              <Plus size={20} />
+            </button>
+          </div>
         </div>
 
         <div className={styles.searchWrapper}>
