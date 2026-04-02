@@ -365,6 +365,7 @@ export default function VocabList() {
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
       const updatedLocal = localVocab.map((v: any) => v.id === detailedWord.id ? {
         ...detailedWord,
+        word_type: detailedWord.word_type, // Thêm dòng này để fix lỗi mất Loại từ
         example_cn: editingExample.cn,
         example_py: editingExample.py,
         example_vi: editingExample.vi
@@ -682,7 +683,22 @@ export default function VocabList() {
                   <div className={styles.formGroup}><label>Ví dụ (Hán tự)</label><input type="text" className={styles.formInput} value={editingExample.cn} onChange={e => setEditingExample({...editingExample, cn: e.target.value})} /></div>
                   <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={editingExample.py} onChange={e => setEditingExample({...editingExample, py: e.target.value})} /></div>
                   <div className={styles.formGroup}><label>Nghĩa Việt</label><input type="text" className={styles.formInput} value={editingExample.vi} onChange={e => setEditingExample({...editingExample, vi: e.target.value})} /></div>
-                  <button className={styles.saveBtn} onClick={handleUpdateWordInfo}><Save size={18} style={{marginRight:'0.5rem'}} /> Lưu tất cả thay đổi</button>
+                  <button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} style={{marginRight:'0.5rem'}} /> Lưu tất cả thay đổi</button>
+                  <button 
+                    className={styles.iconBtn} 
+                    style={{background:'#ef4444', color:'white', width:'100%', marginTop:'0.5rem', justifyContent:'center'}} 
+                    onClick={() => {
+                      if(confirm("Xóa từ này?")) {
+                        const localData = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+                        localStorage.setItem("user_vocab", JSON.stringify(localData.filter((v:any)=>v.id !== detailedWord.id)));
+                        setVocab(prev => prev.filter(v => v.id !== detailedWord.id));
+                        setDetailedWord(null);
+                        alert("Đã xóa!");
+                      }
+                    }}
+                  >
+                    <Trash2 size={16} /> Xóa từ này
+                  </button>
                 </div>
               </div>
             </div>
