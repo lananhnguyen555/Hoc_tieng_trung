@@ -9,6 +9,7 @@ import HanziSuggester from "@/components/HanziSuggester";
 import { HAN_VIET_DATA } from "@/lib/han-viet";
 import * as XLSX from "xlsx";
 import { FileUp, LogIn } from "lucide-react";
+import { pinyin } from "pinyin-pro";
 
 interface Phrase {
   id: string;
@@ -26,6 +27,7 @@ export default function PhrasesList() {
   const [loading, setLoading] = useState(true);
   
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [detailedPhrase, setDetailedPhrase] = useState<Phrase | null>(null);
   
   const [newPhrase, setNewPhrase] = useState({ 
@@ -35,6 +37,7 @@ export default function PhrasesList() {
 
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const writerContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const writerInstance = useRef<any>(null);
 
   useEffect(() => {
@@ -151,6 +154,74 @@ export default function PhrasesList() {
     alert("Đã xóa buổi thành công!");
   };
 
+  const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || selectedLessonId === "all") {
+      alert("Vui lòng chọn một bài học cụ thể trước khi nhập file!");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      setLoading(true);
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+
+        const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
+        let updatedPhrases = [...localPhrases];
+        let addedCount = 0;
+
+        // Skip header if it exists
+        const startIdx = data[0]?.[0]?.toString().toLowerCase().includes("hán") ? 1 : 0;
+
+        for (let i = startIdx; i < data.length; i++) {
+          const row = data[i];
+          const hanzi = String(row[0] || "").trim();
+          if (!hanzi) continue;
+
+          // Khử trùng
+          if (updatedPhrases.some(p => p.word === hanzi)) continue;
+
+          const py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
+          let meaning = "";
+          try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(hanzi)}`);
+            const transData = await res.json();
+            meaning = transData?.[0]?.[0]?.[0] || "";
+          } catch (err) {
+            meaning = hanzi.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+          }
+
+          const newPhrase: Phrase = {
+            id: `phrase-excel-${Date.now()}-${i}`,
+            word: hanzi,
+            pinyin: py,
+            meaning: meaning,
+            lesson_id: selectedLessonId
+          };
+
+          updatedPhrases.push(newPhrase);
+          addedCount++;
+        }
+
+        localStorage.setItem("user_phrases", JSON.stringify(updatedPhrases));
+        setPhrases(updatedPhrases);
+        setShowImportModal(false);
+        alert(`Thành công! Đã thêm ${addedCount} câu giao tiếp mới (Đã tự động bỏ qua các câu trùng lặp).`);
+      } catch (err) {
+        console.error("Lỗi nhập Excel Giao tiếp:", err);
+        alert("Có lỗi xảy ra khi xử lý file Excel!");
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
   const handleExportExcel = () => {
     if (filteredPhrases.length === 0) {
       alert("Không có dữ liệu để xuất!");
@@ -236,6 +307,9 @@ export default function PhrasesList() {
         <div className={styles.actionBtns}>
           <button className={styles.addBtn} style={{background:'#1ea362', color:'white'}} onClick={handleExportExcel}>
             <FileUp size={20} /> Xuất Excel
+          </button>
+          <button className={styles.addBtn} style={{background:'var(--foreground)', color:'white'}} onClick={() => setShowImportModal(true)}>
+            <LogIn size={20} /> Nhập Excel
           </button>
           <button className={styles.addBtn} onClick={handleOpenAddModal}>
             <Plus size={20} /> Thêm mẫu câu
@@ -324,6 +398,31 @@ export default function PhrasesList() {
             </div>
 
             <button className={styles.saveBtn} style={{width:'100%'}} onClick={handleSaveNewPhrase}>Lưu mẫu câu</button>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowImportModal(false)}>
+          <div className={styles.detailModal} style={{maxWidth:'500px', padding:'2rem'}} onClick={e => e.stopPropagation()}>
+            <h2 style={{marginBottom:'1rem'}}>Nhập thông minh câu giao tiếp</h2>
+            <div style={{background:'rgba(14, 165, 233, 0.1)', padding:'1rem', borderRadius:'8px', marginBottom:'1.5rem', borderLeft:'4px solid var(--primary)'}}>
+              <p style={{fontSize:'0.9rem', margin:0}}>
+                <b>Chỉ cần Excel 1 cột:</b> Điền <b>Câu Hán tự</b> ở cột đầu tiên.<br/>
+                <i>Hệ thống tự điền Pinyin và Nghĩa Việt!</i>
+              </p>
+            </div>
+            {selectedLessonId === "all" ? (
+              <p style={{color:'red', fontWeight:700}}>Vui lòng chọn bài tập trước khi nhập!</p>
+            ) : (
+              <div style={{display:'flex', flexDirection:'column', gap:'1rem'}}>
+                <p>Đang nhập vào: <b>{lessons.find(l => l.id === selectedLessonId)?.name}</b></p>
+                <input type="file" accept=".xlsx, .xls" ref={fileInputRef} onChange={handleImportExcel} style={{display:'none'}} />
+                <button className={styles.saveBtn} style={{background:'#1ea362'}} onClick={() => fileInputRef.current?.click()}>Chọn file Excel và Bắt đầu</button>
+              </div>
+            )}
+            <button style={{marginTop:'1.5rem', width:'100%', padding:'0.8rem'}} onClick={() => setShowImportModal(false)}>Hủy bỏ</button>
           </div>
         </div>
       )}

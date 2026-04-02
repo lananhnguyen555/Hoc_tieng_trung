@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import HanziSuggester from "@/components/HanziSuggester";
 import { HAN_VIET_DATA } from "@/lib/han-viet";
 import * as XLSX from "xlsx";
+import { pinyin } from "pinyin-pro";
 
 interface Word {
   id: string;
@@ -136,7 +137,7 @@ export default function VocabList() {
     }
   };
 
-  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || selectedLessonId === "all") {
       alert("Vui lòng chọn một buổi học cụ thể trước khi nhập file!");
@@ -144,31 +145,66 @@ export default function VocabList() {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      const rows = content.split("\n").filter(row => row.trim());
-      
-      const importedVocab: Word[] = rows.slice(1).map(row => {
-        const [word, pinyin, meaning, ex_cn, ex_py, ex_vi] = row.split(",").map(s => s.trim());
-        return {
-          id: `csv-${Date.now()}-${Math.random()}`,
-          word, pinyin: (pinyin || "").replace(/\s+/g, ''),
-          meaning: meaning || "",
-          lesson_id: selectedLessonId,
-          example_cn: ex_cn || "",
-          example_py: ex_py || "",
-          example_vi: ex_vi || ""
-        };
-      });
+    reader.onload = async (evt) => {
+      setLoading(true);
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
 
-      const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-      const updatedLocal = [...localVocab, ...importedVocab];
-      localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
-      setVocab(prev => [...prev, ...importedVocab]);
-      setShowImportModal(false);
-      alert(`Đã nhập thành công ${importedVocab.length} từ!`);
+        const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+        let currentVocab = [...vocab, ...localVocab];
+        let updatedLocal = [...localVocab];
+        let addedCount = 0;
+
+        // Skip header if it exists
+        const startIdx = data[0]?.[0]?.toString().toLowerCase().includes("hán") ? 1 : 0;
+
+        for (let i = startIdx; i < data.length; i++) {
+          const row = data[i];
+          const hanzi = String(row[0] || "").trim();
+          if (!hanzi) continue;
+
+          // Khử trùng: Nếu đã có Hán tự này rồi thì bỏ qua
+          if (currentVocab.some(v => v.word === hanzi)) continue;
+
+          const py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
+          let meaning = "";
+          try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(hanzi)}`);
+            const transData = await res.json();
+            meaning = transData?.[0]?.[0]?.[0] || "";
+          } catch (err) {
+            meaning = hanzi.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+          }
+
+          const newWord: Word = {
+            id: `excel-${Date.now()}-${i}`,
+            word: hanzi,
+            pinyin: py,
+            meaning: meaning,
+            lesson_id: selectedLessonId
+          };
+
+          updatedLocal.push(newWord);
+          currentVocab.push(newWord);
+          addedCount++;
+        }
+
+        localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
+        setVocab(currentVocab);
+        setShowImportModal(false);
+        alert(`Thành công! Đã thêm ${addedCount} từ mới (Đã tự động lọc bỏ các từ trùng lặp).`);
+      } catch (err) {
+        console.error("Lỗi nhập Excel:", err);
+        alert("Có lỗi xảy ra khi xử lý file Excel!");
+      } finally {
+        setLoading(false);
+      }
     };
-    reader.readAsText(file);
+    reader.readAsBinaryString(file);
   };
 
   const handleSaveNewWord = () => {
@@ -363,21 +399,23 @@ export default function VocabList() {
       {showImportModal && (
         <div className={styles.modalOverlay} onClick={() => setShowImportModal(false)}>
           <div className={styles.detailModal} style={{maxWidth:'500px', padding:'2rem'}} onClick={e => e.stopPropagation()}>
-            <h2 style={{marginBottom:'1rem'}}>Nhập từ vựng từ CSV</h2>
-            <p style={{fontSize:'0.9rem', color:'var(--text-muted)', marginBottom:'1.5rem'}}>
-              Định dạng file .csv: <b>Hán tự, Pinyin, Nghĩa, Ví dụ Hán tự, Ví dụ Pinyin, Ví dụ Nghĩa</b>.
-              Dòng đầu tiên sẽ được coi là tiêu đề.
-            </p>
+            <h2 style={{marginBottom:'1rem'}}>Nhập thông minh từ Excel (.xlsx)</h2>
+            <div style={{background:'rgba(14, 165, 233, 0.1)', padding:'1rem', borderRadius:'8px', marginBottom:'1.5rem', borderLeft:'4px solid var(--primary)'}}>
+              <p style={{fontSize:'0.9rem', margin:0}}>
+                <b>Bạn chỉ cần Excel 1 cột:</b> Điền <b>Hán tự</b> ở cột đầu tiên.<br/>
+                <i>Hệ thống sẽ tự điền Pinyin và Nghĩa Việt!</i>
+              </p>
+            </div>
             {selectedLessonId === "all" ? (
               <p style={{color:'red', fontWeight:700}}>Vui lòng chọn bài học ở trang chính trước khi nhấn Nhập!</p>
             ) : (
               <div style={{display:'flex', flexDirection:'column', gap:'1rem'}}>
-                <p>Đang chọn: <b>{lessons.find(l => l.id === selectedLessonId)?.name}</b></p>
-                <input type="file" accept=".csv" ref={fileInputRef} onChange={handleImportCSV} style={{display:'none'}} />
-                <button className={styles.saveBtn} onClick={() => fileInputRef.current?.click()}>Chọn file .csv và Nhập</button>
+                <p>Đang nhập vào: <b>{lessons.find(l => l.id === selectedLessonId)?.name}</b></p>
+                <input type="file" accept=".xlsx, .xls" ref={fileInputRef} onChange={handleImportExcel} style={{display:'none'}} />
+                <button className={styles.saveBtn} style={{background:'#1ea362'}} onClick={() => fileInputRef.current?.click()}>Chọn file Excel và Bắt đầu</button>
               </div>
             )}
-            <button style={{marginTop:'1.5rem', width:'100%', padding:'0.8rem'}} onClick={() => setShowImportModal(false)}>Đóng</button>
+            <button style={{marginTop:'1.5rem', width:'100%', padding:'0.8rem'}} onClick={() => setShowImportModal(false)}>Hủy bỏ</button>
           </div>
         </div>
       )}
