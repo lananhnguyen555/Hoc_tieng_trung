@@ -26,7 +26,7 @@
 
 
 .logo {
-  flex: 0 0 220px;
+  flex: 0 0 160px; /* Nhỏ hơn để menu có chỗ */
   font-weight: 800;
   font-size: 1.6rem;
   color: #0f172a; /* Màu đậm hơn trên nền sáng */
@@ -45,11 +45,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1.2rem; /* Giảm gap để Menu nằm trên 1 hàng */
+  gap: 1.2rem;
+  white-space: nowrap; /* Ép 1 hàng */
 }
 
 .rightSection {
-  flex: 0 0 220px;
+  flex: 0 0 160px; /* Nhỏ hơn để menu có chỗ */
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -68,8 +69,13 @@
 }
 
 .link:hover {
-  color: #0284c7;
+  color: white;
   transform: translateY(-2px);
+}
+
+.link.active {
+  color: white !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 

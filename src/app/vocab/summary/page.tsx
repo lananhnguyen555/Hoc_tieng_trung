@@ -5,6 +5,8 @@ import { Search, BookOpen, GraduationCap, Scale, MessageCircle } from "lucide-re
 import styles from "../vocab.module.css";
 import { supabase } from "@/lib/supabase";
 import { pinyin } from "pinyin-pro";
+import * as XLSX from "xlsx";
+import { Filter, Download } from "lucide-react";
 
 interface Word {
   id: string;
@@ -17,6 +19,8 @@ interface Word {
 
 export default function VocabSummaryPage() {
   const [vocab, setVocab] = useState<Word[]>([]);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -30,6 +34,10 @@ export default function VocabSummaryPage() {
       const { data: dbVocab } = await supabase.from("vocab").select("*");
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
       setVocab([...(dbVocab || []), ...localVocab]);
+
+      const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
+      const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
+      setLessons([...(dbLessons || []), ...localLessons]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -37,11 +45,37 @@ export default function VocabSummaryPage() {
     }
   };
 
-  const filteredVocab = vocab.filter(v => 
+  const handleExportExcel = () => {
+    const dataToExport = filteredVocab.map((v, i) => ({
+      STT: i + 1,
+      "Hán tự": v.word,
+      Pinyin: v.pinyin,
+      "Nghĩa Việt": v.meaning,
+      "Loại từ": v.word_type || "N/A"
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Từ vựng");
+    
+    let fileName = "Tong_hop_tu_vung.xlsx";
+    if (selectedLessonId !== "all") {
+      const lessonName = lessons.find(l => l.id === selectedLessonId)?.name || "Buoi_hoc";
+      fileName = `${lessonName.replace(/\s+/g, '_')}_tu_vung.xlsx`;
+    }
+
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  let filteredVocab = vocab.filter(v => 
     v.word.includes(search) || 
     v.meaning.toLowerCase().includes(search.toLowerCase()) ||
     v.pinyin.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (selectedLessonId !== "all") {
+    filteredVocab = filteredVocab.filter(v => v.lesson_id === selectedLessonId);
+  }
 
   return (
     <div className={styles.container}>
@@ -59,6 +93,28 @@ export default function VocabSummaryPage() {
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
           />
+        </div>
+
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <div className={styles.selectGroup} style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '0.2rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Filter size={18} />
+            <select 
+              value={selectedLessonId} 
+              onChange={e => setSelectedLessonId(e.target.value)}
+              style={{ border: 'none', background: 'none', padding: '0.5rem', fontWeight: 600, outline: 'none' }}
+            >
+              <option value="all">Tất cả bài học</option>
+              {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+            </select>
+          </div>
+
+          <button 
+            className={styles.addBtn} 
+            onClick={handleExportExcel}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <Download size={18} /> Xuất Excel
+          </button>
         </div>
       </div>
 

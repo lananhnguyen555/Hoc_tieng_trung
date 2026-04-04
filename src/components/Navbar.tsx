@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Moon, Sun, BookOpen, GraduationCap, Scale, Home, LogIn, LogOut, User, MessageCircle, Layers, PenTool } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
@@ -49,25 +49,25 @@ export default function Navbar() {
         </Link>
 
         <div className={styles.links}>
-          <Link href="/" className={styles.link}>
+          <Link href="/" className={`${styles.link} ${usePathname() === "/" ? styles.active : ""}`}>
             <Home size={20} /> <span>Trang chủ</span>
           </Link>
-          <Link href="/vocab" className={styles.link}>
+          <Link href="/vocab" className={`${styles.link} ${usePathname() === "/vocab" ? styles.active : ""}`}>
             <BookOpen size={20} /> <span>Từ vựng</span>
           </Link>
-          <Link href="/vocab/summary" className={styles.link}>
+          <Link href="/vocab/summary" className={`${styles.link} ${usePathname() === "/vocab/summary" ? styles.active : ""}`}>
             <Layers size={20} /> <span>Tổng hợp </span>
           </Link>
-          <Link href="/phrases" className={styles.link}>
+          <Link href="/phrases" className={`${styles.link} ${usePathname() === "/phrases" ? styles.active : ""}`}>
             <MessageCircle size={20} /> <span>Giao tiếp</span>
           </Link>
-          <Link href="/grammar" className={styles.link}>
+          <Link href="/grammar" className={`${styles.link} ${usePathname() === "/grammar" ? styles.active : ""}`}>
             <GraduationCap size={20} /> <span>Ngữ pháp</span>
           </Link>
-          <Link href="/rules" className={styles.link}>
+          <Link href="/rules" className={`${styles.link} ${usePathname() === "/rules" ? styles.active : ""}`}>
             <Scale size={20} /> <span>Quy tắc</span>
           </Link>
-          <Link href="/study" className={styles.link}>
+          <Link href="/study" className={`${styles.link} ${usePathname() === "/study" ? styles.active : ""}`}>
             <PenTool size={20} /> <span>Ôn tập</span>
           </Link>
         </div>
