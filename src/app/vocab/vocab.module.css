@@ -143,10 +143,12 @@
 
 .wordCell {
   min-width: 150px;
-  font-size: 2.5rem !important; /* To hơn nữa theo yêu cầu */
+  font-size: 2.5rem !important;
   cursor: pointer;
   transition: all 0.2s ease;
-  line-height: 1;
+  line-height: 1.4;
+  white-space: pre-wrap; /* Quan trọng để Hán tự xuống dòng */
+  text-align: center;
 }
 
 .wordCell:hover {
@@ -290,6 +292,7 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--text-muted);
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  font-family: var(--font-chinese) !important; /* Ép font thư pháp cho các tab chữ Hán */
 }
 
 .charTab:hover {

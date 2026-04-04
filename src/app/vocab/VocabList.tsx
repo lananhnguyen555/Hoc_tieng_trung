@@ -113,7 +113,7 @@ export default function VocabList() {
         writerInstance.current.animateCharacter({
           onComplete: () => {
             if (currentCharIndex < characters.length - 1) {
-              setTimeout(() => setCurrentCharIndex(prev => prev + 1), 1000);
+              setTimeout(() => setCurrentCharIndex(prev => prev + 1), 500); // Giảm xuống 500ms cho mượt
             }
           }
         });
