@@ -155,15 +155,15 @@
 }
 
 .pinyinCell {
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 700;
+  color: #0f172a; /* Màu đen đậm dễ đọc */
 }
 
 .pinyinSub {
   display: block;
   font-size: 1rem !important; /* Bằng với chữ Việt */
-  color: #0f172a; /* Đen đậm như menu */
-  font-weight: 700; /* Đậm hơn cho dễ đọc */
+  color: #0f172a; /* Đen đậm đồng bộ */
+  font-weight: 800; /* Cực đậm dễ đọc */
   margin-top: 4px;
 }
 
