@@ -100,7 +100,7 @@ export default function RulesPage() {
           </span>
         );
       }
-      return <span key={i} style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.2rem' }}>{part}</span>;
+      return <span key={i} style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.05rem' }}>{part}</span>;
     });
   };
 
@@ -145,11 +145,23 @@ export default function RulesPage() {
               ))}
             </tbody>
           </table>
+          <div className={styles.addBtnWrapper} style={{justifyContent: 'center', marginTop: '2rem'}}>
+            <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
+              <Plus size={24} /> Thêm bài mới tại đây
+            </button>
+          </div>
           {rules.length === 0 && (
             <div className={styles.empty}>Chưa có quy tắc nào được lưu.</div>
           )}
         </div>
       )}
+
+      {/* FAB Thêm nhanh */}
+      <button className={styles.floatingAddBtn} onClick={() => setShowAddModal(true)} title="Thêm mới nhanh">
+        <Plus size={28} />
+      </button>
+
+      {/* Edit Modal (Add/Edit) */}
 
       {/* Fullscreen Hanzi display for Rules */}
       {fullScreenItem && (

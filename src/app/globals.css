@@ -31,7 +31,7 @@
   font-family: var(--font-chinese);
   color: var(--chinese-color);
   font-weight: 400;
-  font-size: 3.2rem; /* To hơn nữa theo yêu cầu */
+  font-size: 2.8rem; /* Giảm nhẹ để cân đối hơn */
   line-height: 1.1;
   display: inline-block;
   vertical-align: middle;

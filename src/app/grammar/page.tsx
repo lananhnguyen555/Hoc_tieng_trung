@@ -114,7 +114,7 @@ export default function GrammarPage() {
           </span>
         );
       }
-      return <span key={i} style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.2rem' }}>{part}</span>;
+      return <span key={i} style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.1rem' }}>{part}</span>;
     });
   };
 
@@ -163,8 +163,20 @@ export default function GrammarPage() {
               Chưa có dữ liệu cho mục này.
             </div>
           )}
+          <div style={{padding: '2rem 0', display: 'flex', justifyContent: 'center'}}>
+            <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
+              <Plus size={24} /> Thêm bài mới tại đây
+            </button>
+          </div>
         </div>
       )}
+
+      {/* FAB Thêm nhanh */}
+      <button className={styles.floatingAddBtn} onClick={() => setShowAddModal(true)} title="Thêm mới nhanh">
+        <Plus size={28} />
+      </button>
+
+      {/* Modals remains same */}
 
       {/* Fullscreen Hanzi Display Overlay */}
       {fullScreenItem && (

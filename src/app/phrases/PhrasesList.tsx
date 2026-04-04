@@ -370,8 +370,8 @@ export default function PhrasesList() {
                 <tr key={item.id} onClick={() => handleOpenDetailed(item)} style={{cursor:'pointer'}}>
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td className={styles.wordCell} style={{minWidth: '250px'}}>
-                    <div className="hanzi" style={{lineHeight: 1.1}}>{item.word}</div>
-                    <div className={styles.pinyinSub} style={{fontWeight: 800, color: '#0f172a'}}>
+                    <div className="hanzi" style={{lineHeight: 1.1, fontSize: '2.5rem'}}>{item.word}</div>
+                    <div className={styles.pinyinSub} style={{fontWeight: 800, color: '#0f172a', fontSize: '0.95rem'}}>
                       ({pinyin(item.word, { toneType: 'symbol' })})
                     </div>
                   </td>
@@ -388,6 +388,17 @@ export default function PhrasesList() {
           </table>
         </div>
       )}
+
+      {/* Button Thêm bài mới ở giữa trang */}
+      <div style={{display: 'flex', justifyContent: 'center', padding: '2rem 0'}}>
+        <button className={styles.addBtn} onClick={handleOpenAddModal} style={{padding: '1rem 2.5rem', fontSize: '1.1rem'}}>
+          <Plus size={24} /> Thêm mẫu câu mới tại đây
+        </button>
+      </div>
+
+      <button className={styles.floatingAddBtn} onClick={handleOpenAddModal} title="Thêm mẫu câu mới nhanh">
+        <Plus size={28} />
+      </button>
 
       {/* Add Modal */}
       {showAddModal && (
