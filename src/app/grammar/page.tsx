@@ -153,7 +153,7 @@ export default function GrammarPage() {
                   >
                     {renderTextWithPinyin(item.title)}
                   </td>
-                  <td className={styles.contentCell}>{item.content}</td>
+                  <td className={styles.contentCell}>{renderTextWithPinyin(item.content)}</td>
                 </tr>
               ))}
             </tbody>
