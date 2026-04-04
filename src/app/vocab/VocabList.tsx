@@ -171,8 +171,11 @@ export default function VocabList() {
       const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
       const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
       
-      // 2. Fetch Vocab
-      const { data: dbVocab, error } = await supabase.from("vocab").select("*, lessons(name, id)");
+      // 2. Fetch Vocab - Sắp xếp theo ngày tạo để không bị nhảy thứ tự khi sửa
+      const { data: dbVocab, error } = await supabase
+        .from("vocab")
+        .select("*, lessons(name, id)")
+        .order("created_at", { ascending: true });
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
 
       let finalLessons = [...(dbLessons || [])];
@@ -766,7 +769,7 @@ export default function VocabList() {
                   <p style={{fontWeight:700, margin:0}}>Ví dụ học tập:</p>
                   <div className={styles.formGroup}>
                     <label>Ví dụ (Hán tự)</label>
-                    <textarea className={`${styles.formInput} hanzi`} value={editingExample.cn} onChange={e => setEditingExample({...editingExample, cn: e.target.value})} onKeyDown={e => handleKeyDown(e, (val) => setEditingExample({...editingExample, cn: val}), editingExample.cn)} />
+                    <input type="text" className={`${styles.formInput} hanzi`} value={editingExample.cn} onChange={e => setEditingExample({...editingExample, cn: e.target.value})} />
                   </div>
                   <div className={styles.formGroup}>
                     <label>Pinyin</label>
@@ -774,7 +777,7 @@ export default function VocabList() {
                   </div>
                   <div className={styles.formGroup}>
                     <label>Nghĩa Việt</label>
-                    <textarea className={styles.formInput} value={editingExample.vi} onChange={e => setEditingExample({...editingExample, vi: e.target.value})} onKeyDown={e => handleKeyDown(e, (val) => setEditingExample({...editingExample, vi: val}), editingExample.vi)} />
+                    <input type="text" className={styles.formInput} value={editingExample.vi} onChange={e => setEditingExample({...editingExample, vi: e.target.value})} />
                   </div>
                   <button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} style={{marginRight:'0.5rem'}} /> Lưu tất cả thay đổi</button>
                   <button 
