@@ -95,7 +95,7 @@ export default function RulesPage() {
           <span key={i} style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle', margin: '0 4px' }}>
             <span className="hanzi" style={{ lineHeight: 1 }}>{part}</span>
             <span style={{ fontSize: '1rem', color: '#0f172a', fontWeight: 800, marginTop: '2px' }}>
-              {py}
+              ({py})
             </span>
           </span>
         );

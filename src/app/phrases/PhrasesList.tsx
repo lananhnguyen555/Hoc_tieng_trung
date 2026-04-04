@@ -371,8 +371,8 @@ export default function PhrasesList() {
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td className={styles.wordCell} style={{minWidth: '250px'}}>
                     <div className="hanzi" style={{lineHeight: 1.1}}>{item.word}</div>
-                    <div className={styles.pinyinSub}>
-                      {pinyin(item.word, { toneType: 'symbol' })}
+                    <div className={styles.pinyinSub} style={{fontWeight: 800, color: '#0f172a'}}>
+                      ({pinyin(item.word, { toneType: 'symbol' })})
                     </div>
                   </td>
                   <td className={styles.meaningCell} style={{fontSize: '1rem', fontWeight: 600}}>
