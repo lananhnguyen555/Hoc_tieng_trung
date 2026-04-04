@@ -164,6 +164,10 @@ export default function StudyPage() {
                 <p>Nhóm 5 từ: Đang hiển thị <b>{displayVocab.length}</b> / {filteredVocab.length} từ</p>
                 <div className={styles.checkGroup}>
                   <label className={styles.checkLabel}>
+                    <input type="checkbox" checked={hiddenColumns.includes("word")} onChange={() => toggleHiddenColumn("word")} />
+                    Ẩn Hán tự
+                  </label>
+                  <label className={styles.checkLabel}>
                     <input type="checkbox" checked={hiddenColumns.includes("pinyin")} onChange={() => toggleHiddenColumn("pinyin")} />
                     Ẩn Pinyin
                   </label>
@@ -188,7 +192,14 @@ export default function StudyPage() {
                     {displayVocab.map((item, idx) => (
                       <tr key={item.id}>
                         <td className={styles.stt}>{idx + 1}</td>
-                        <td className="hanzi" style={{fontSize: "2.5rem"}}>{item.word}</td>
+                        <td 
+                          className={`hanzi ${hiddenColumns.includes("word") ? styles.blurred : ""}`} 
+                          style={{fontSize: "2.5rem", cursor: "pointer"}}
+                          onClick={() => speak(item.word)}
+                          title="Nhấn để nghe phát âm"
+                        >
+                          {item.word}
+                        </td>
                         <td className={styles.cellContent}>
                           <span className={`${hiddenColumns.includes("pinyin") ? styles.blurred : ""}`}>
                             {item.pinyin}
