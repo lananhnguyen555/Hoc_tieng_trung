@@ -162,13 +162,14 @@
 .pinyinSub {
   display: block;
   font-size: 1rem !important; /* Bằng với chữ Việt */
-  color: var(--text-muted);
-  font-weight: 500;
+  color: #0f172a; /* Đen đậm như menu */
+  font-weight: 700; /* Đậm hơn cho dễ đọc */
   margin-top: 4px;
 }
 
 .meaningCell {
-  font-weight: 500;
+  font-weight: 600;
+  color: #0f172a;
   min-width: 200px;
 }
 
