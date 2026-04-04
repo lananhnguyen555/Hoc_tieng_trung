@@ -101,20 +101,20 @@ export default function GrammarPage() {
 
 
   const renderTextWithPinyin = (text: string) => {
-    // Tự động tìm các đoạn chữ Hán và thêm Pinyin bên cạnh
+    // Tự động tìm các đoạn chữ Hán và thêm Pinyin bên dưới
     return text.split(/([\u4e00-\u9fa5]+)/g).map((part, i) => {
       if (/[\u4e00-\u9fa5]/.test(part)) {
         const py = pinyin(part, { toneType: 'symbol' });
         return (
-          <span key={i}>
-            {part}
-            <span style={{ fontSize: '1rem', color: 'var(--text-muted)', marginLeft: '4px', fontWeight: 500 }}>
-              ({py})
+          <span key={i} style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle', margin: '0 4px' }}>
+            <span className="hanzi" style={{ lineHeight: 1 }}>{part}</span>
+            <span style={{ fontSize: '1rem', color: '#0f172a', fontWeight: 800, marginTop: '2px' }}>
+              {py}
             </span>
           </span>
         );
       }
-      return <span key={i}>{part}</span>;
+      return <span key={i} style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.2rem' }}>{part}</span>;
     });
   };
 
@@ -148,7 +148,7 @@ export default function GrammarPage() {
                 <tr key={item.id} onClick={() => { setEditingItem(item); setShowEditModal(true); }} style={{cursor:'pointer'}}>
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td 
-                    className={`${styles.titleCell} hanzi`}
+                    className={styles.titleCell}
                     onClick={(e) => { e.stopPropagation(); setFullScreenItem(item); }}
                   >
                     {renderTextWithPinyin(item.title)}
