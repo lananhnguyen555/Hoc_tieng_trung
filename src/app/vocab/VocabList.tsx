@@ -615,11 +615,6 @@ export default function VocabList() {
               ))}
             </tbody>
           </table>
-          <div style={{padding: '1.5rem', display: 'flex', justifyContent: 'center', borderTop: '1px solid var(--border)'}}>
-            <button className={styles.addBtn} onClick={handleOpenAddModal}>
-              <Plus size={20} /> Thêm từ mới ở đây
-            </button>
-          </div>
           {filteredVocab.length === 0 && <div className={styles.emptyState}>Bài học này hiện chưa có từ vựng nào.</div>}
         </div>
       )}
