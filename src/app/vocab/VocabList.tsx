@@ -652,7 +652,8 @@ export default function VocabList() {
       {/* Add Word Modal */}
       {showAddModal && (
         <div className={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
-          <div className={styles.detailModal} style={{maxWidth:'600px', padding:'2rem'}} onClick={e => e.stopPropagation()}>
+          <div className={styles.detailModal} style={{maxWidth:'650px', maxHeight:'90vh', display:'flex', flexDirection:'column'}} onClick={e => e.stopPropagation()}>
+            <div className={styles.detailContent} style={{flexDirection:'column', padding:'2rem', gap:'1rem', overflowY:'auto'}}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}>
               <h2>Thêm từ vựng mới</h2>
               <X className={styles.closeBtn} onClick={() => setShowAddModal(false)} />
@@ -714,7 +715,10 @@ export default function VocabList() {
               <textarea placeholder="Ví dụ Nghĩa Việt" className={styles.formInput} value={newWord.example_vi} onChange={e => setNewWord({...newWord, example_vi: e.target.value})} onKeyDown={e => handleKeyDown(e, (val) => setNewWord({...newWord, example_vi: val}), newWord.example_vi)} />
             </div>
 
-            <button className={styles.saveBtn} style={{marginTop:'2rem', width:'100%'}} onClick={handleSaveNewWord}>Lưu từ vựng</button>
+            </div>
+            <div style={{padding: '1rem 2rem', borderTop: '1px solid var(--border)'}}>
+              <button className={styles.saveBtn} style={{width:'100%'}} onClick={handleSaveNewWord}>Lưu từ vựng</button>
+            </div>
           </div>
         </div>
       )}
