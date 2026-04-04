@@ -6,8 +6,8 @@
   --card-bg: #f8fafc;
   --border: #e2e8f0;
   --text-muted: #64748b;
-  --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
-  --font-chinese: 'ChineseAdjusted', var(--font-chinese), cursive;
+  --font-sans: 'Times New Roman', Times, serif;
+  --font-chinese: 'ChineseCalligraphy', cursive;
   --radius: 12px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --nav-bg: #00FFCC; /* Màu Xanh Neon/Cyan đậm đục theo yêu cầu */
@@ -16,10 +16,8 @@
 
 /* Định nghĩa font-face riêng cho chữ Hán để tự động phóng to và dùng font thư pháp */
 @font-face {
-  font-family: 'ChineseAdjusted';
-  src: local('Ma Shan Zheng'), local('PingFang SC'), local('Hiragino Sans GB'), local('Noto Sans CJK SC'), var(--font-chinese), local('sans-serif');
-  unicode-range: U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF; /* Các dải ký tự Hán tự */
-  size-adjust: 140%; /* Điều chỉnh tỷ lệ chữ Hán (Ma Shan Zheng to sẵn nên giảm xuống 140%) */
+  font-family: 'ChineseCalligraphy';
+  src: local('Ma Shan Zheng'), local('PingFang SC'), local('Hiragino Sans GB'), local('Noto Sans CJK SC'), var(--font-chinese), local('cursive');
 }
 
 /* Selector toàn cục cho tất cả chữ Hán */
