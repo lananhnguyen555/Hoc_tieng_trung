@@ -345,6 +345,25 @@ export default function VocabList() {
     }
   };
 
+  const handleDeleteWord = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Bạn có chắc chắn muốn xóa từ này không?")) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user && !id.startsWith("local-") && !id.startsWith("excel-")) {
+      const { error } = await supabase.from("vocab").delete().eq("id", id);
+      if (error) {
+        alert("Lỗi khi xóa trên Cloud: " + error.message);
+        return;
+      }
+    }
+
+    const localData = JSON.parse(localStorage.getItem("user_vocab") || "[]");
+    localStorage.setItem("user_vocab", JSON.stringify(localData.filter((v: any) => v.id !== id)));
+    setVocab(prev => prev.filter(v => v.id !== id));
+    alert("Đã xóa từ vựng thành công!");
+  };
+
   const handleUpdateWordInfo = async () => {
     if (!detailedWord) return;
     
@@ -546,15 +565,20 @@ export default function VocabList() {
                   <td className={styles.meaningCell}>{item.meaning}</td>
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
-                      <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>
-                      <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
-                      <button className={styles.iconBtn}><Trash2 size={16} /></button>
+                      <button className={styles.iconBtn} onClick={() => speak(item.word)} title="Phát âm"><Play size={16} /></button>
+                      <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)} title="Chỉnh sửa"><Edit2 size={16} /></button>
+                      <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDeleteWord(item.id, e)} title="Xóa"><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <div style={{padding: '1.5rem', display: 'flex', justifyContent: 'center', borderTop: '1px solid var(--border)'}}>
+            <button className={styles.addBtn} onClick={handleOpenAddModal}>
+              <Plus size={20} /> Thêm từ mới ở đây
+            </button>
+          </div>
           {filteredVocab.length === 0 && <div className={styles.emptyState}>Bài học này hiện chưa có từ vựng nào.</div>}
         </div>
       )}
@@ -712,6 +736,11 @@ export default function VocabList() {
           </div>
         </div>
       )}
+
+      {/* Nút Thêm Nhanh (Góc phải dưới) */}
+      <button className={styles.floatingAddBtn} onClick={handleOpenAddModal} title="Thêm từ mới nhanh">
+        <Plus size={28} />
+      </button>
     </div>
   );
 }
