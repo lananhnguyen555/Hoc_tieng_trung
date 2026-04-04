@@ -20,8 +20,7 @@ export default function RulesPage() {
   const [editingItem, setEditingItem] = useState<Rule | null>(null);
   const [newItem, setNewItem] = useState({ title: "", content: "" });
   
-  // State for Fullscreen display
-  const [fullScreenItem, setFullScreenItem] = useState<Rule | null>(null);
+
 
   useEffect(() => {
     fetchRules();
@@ -159,8 +158,6 @@ export default function RulesPage() {
                    <td className={styles.sttCell}>{index + 1}</td>
                    <td 
                     className={styles.ruleTitleCell}
-                    onClick={() => setFullScreenItem(rule)}
-                    title="Nhấn để phóng to"
                   >
                     {renderTitle(rule.title)}
                   </td>
@@ -193,18 +190,7 @@ export default function RulesPage() {
 
       {/* Edit Modal (Add/Edit) */}
 
-      {/* Fullscreen Hanzi display for Rules */}
-      {fullScreenItem && (
-        <div className={styles.fullscreenOverlay} onClick={() => setFullScreenItem(null)}>
-          <div className={`${styles.fullscreenHanzi} hanzi`}>
-            {fullScreenItem.title.match(/[\u4e00-\u9fa5]+/g)?.[0] || fullScreenItem.title}
-          </div>
-          <div style={{marginTop:'2rem', textAlign:'center'}}>
-            <h2 style={{fontSize:'2.5rem'}}>{fullScreenItem.title}</h2>
-            <p>Nhấp vào bất kỳ đâu để đóng</p>
-          </div>
-        </div>
-      )}
+
 
       {/* Add Modal */}
       {showAddModal && (

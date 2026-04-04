@@ -33,10 +33,30 @@ export default function PhrasesList() {
     word: "", meaning: "", lesson_id: ""
   });
 
-  const [currentCharIndex, setCurrentCharIndex] = useState(0);
-  const writerContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const writerInstance = useRef<any>(null);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, setter: (val: string) => void, currentVal: string) => {
+    if (e.key === 'Enter') {
+      const cursorPosition = e.currentTarget.selectionStart;
+      const textBeforeCursor = currentVal.substring(0, cursorPosition);
+      const lines = textBeforeCursor.split('\n');
+      const lastLine = lines[lines.length - 1];
+      
+      const match = lastLine.match(/^(\d+)\.\s/);
+      if (match) {
+        e.preventDefault();
+        const nextNumber = parseInt(match[1]) + 1;
+        const insertText = `\n${nextNumber}. `;
+        const newText = currentVal.substring(0, cursorPosition) + insertText + currentVal.substring(cursorPosition);
+        setter(newText);
+        const newPos = cursorPosition + insertText.length;
+        setTimeout(() => {
+          const textarea = e.target as HTMLTextAreaElement;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+      }
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -320,22 +340,10 @@ export default function PhrasesList() {
   });
 
   const handleOpenDetailed = (p: Phrase) => {
-    setCurrentCharIndex(0);
     setDetailedPhrase(p);
   };
 
-  useEffect(() => {
-    if (detailedPhrase && writerContainerRef.current) {
-      writerContainerRef.current.innerHTML = '';
-      const characters = detailedPhrase.word.split('');
-      const charToDraw = characters[currentCharIndex] || characters[0];
-      const width = writerContainerRef.current.clientWidth;
-      writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
-        width: width, height: width, padding: 5, strokeColor: '#0ea5e9', showOutline: true
-      });
-      writerInstance.current.animateCharacter();
-    }
-  }, [detailedPhrase, currentCharIndex]);
+
 
   return (
     <div className={styles.container}>
@@ -417,6 +425,7 @@ export default function PhrasesList() {
                 placeholder="Nhập chữ Hán..." 
                 value={newPhrase.word} 
                 onChange={e => setNewPhrase({...newPhrase, word: e.target.value})} 
+                onKeyDown={e => handleKeyDown(e, (val) => setNewPhrase({...newPhrase, word: val}), newPhrase.word)}
               />
             </div>
 
@@ -428,6 +437,7 @@ export default function PhrasesList() {
                 placeholder="Nghĩa của câu..." 
                 value={newPhrase.meaning} 
                 onChange={e => setNewPhrase({...newPhrase, meaning: e.target.value})} 
+                onKeyDown={e => handleKeyDown(e, (val) => setNewPhrase({...newPhrase, meaning: val}), newPhrase.meaning)}
               />
             </div>
             <button className={styles.saveBtn} style={{width:'100%'}} onClick={handleSaveNewPhrase}>Lưu mẫu câu</button>
@@ -468,6 +478,7 @@ export default function PhrasesList() {
                     style={{fontSize:'1.8rem', minHeight:'100px'}} 
                     value={detailedPhrase.word} 
                     onChange={e => setDetailedPhrase({...detailedPhrase, word: e.target.value})} 
+                    onKeyDown={e => handleKeyDown(e, (val) => setDetailedPhrase({...detailedPhrase, word: val}), detailedPhrase.word)}
                   />
                 </div>
                 <div className={styles.formGroup}>
@@ -477,6 +488,7 @@ export default function PhrasesList() {
                     style={{minHeight:'60px'}} 
                     value={detailedPhrase.meaning} 
                     onChange={e => setDetailedPhrase({...detailedPhrase, meaning: e.target.value})} 
+                    onKeyDown={e => handleKeyDown(e, (val) => setDetailedPhrase({...detailedPhrase, meaning: val}), detailedPhrase.meaning)}
                   />
                 </div>
                 <button className={styles.saveBtn} style={{width:'100%', marginTop:'2rem'}} onClick={handleUpdatePhraseInfo}>

@@ -21,9 +21,6 @@ export default function GrammarPage() {
   const [editingItem, setEditingItem] = useState<GrammarItem | null>(null);
   const [newItem, setNewItem] = useState({ title: "", content: "", lesson: "" });
   const [selectedLesson, setSelectedLesson] = useState<string>("all");
-  
-  // State for Fullscreen Hanzi Display
-  const [fullScreenItem, setFullScreenItem] = useState<GrammarItem | null>(null);
 
   useEffect(() => {
     fetchGrammar();
@@ -171,11 +168,7 @@ export default function GrammarPage() {
               {filteredGrammar.map((item, index) => (
                 <tr key={item.id}>
                   <td className={styles.sttCell}>{index + 1}</td>
-                  <td 
-                    className={styles.titleCell}
-                    onClick={() => setFullScreenItem(item)}
-                    title="Nhấn để phóng to chữ Hán"
-                  >
+                  <td className={styles.titleCell}>
                     {renderTextWithPinyin(item.title)}
                   </td>
                   <td className={styles.contentCell}>{renderTextWithPinyin(item.content)}</td>
@@ -207,21 +200,7 @@ export default function GrammarPage() {
         <Plus size={28} />
       </button>
 
-      {/* Modals remains same */}
 
-      {/* Fullscreen Hanzi Display Overlay */}
-      {fullScreenItem && (
-        <div className={styles.fullscreenOverlay} onClick={() => setFullScreenItem(null)}>
-          <div className={styles.closeFullscreen}><X size={40} /></div>
-          <div className={`${styles.fullscreenHanzi} hanzi`}>
-            {fullScreenItem.title.match(/[\u4e00-\u9fa5]+/g)?.[0] || fullScreenItem.title}
-          </div>
-          <div className={styles.fullscreenInfo}>
-            <p className={styles.fullscreenTitle}>{fullScreenItem.title}</p>
-            <p>Nhấp vào bất kỳ đâu để đóng</p>
-          </div>
-        </div>
-      )}
 
       {/* Modals for Add/Edit remain similar structure but integrated into UI */}
       {showAddModal && (
