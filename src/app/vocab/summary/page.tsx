@@ -139,7 +139,7 @@ export default function VocabSummaryPage() {
                   <td>
                     <span className="hanzi" style={{fontSize: '2rem'}}>{item.word}</span>
                   </td>
-                  <td style={{fontWeight: '800'}}>({item.pinyin})</td>
+                  <td style={{fontWeight: '800'}}>{item.pinyin}</td>
                   <td style={{fontWeight: '800'}}>{item.meaning}</td>
                   <td>
                     <span className={styles.typeBadge}>{item.word_type || 'N/A'}</span>
