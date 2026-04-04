@@ -358,19 +358,30 @@ export default function PhrasesList() {
         <div className={styles.tableWrapper}>
           <table className={styles.vocabTable}>
             <thead>
-              <tr><th className={styles.sttCell}>STT</th><th>Nội dung</th><th>Ghi chú</th></tr>
+              <tr>
+                <th className={styles.sttCell}>STT</th>
+                <th>Nội dung (Hán tự + Pinyin)</th>
+                <th>Nghĩa tiếng Việt</th>
+                <th>Ghi chú</th>
+              </tr>
             </thead>
             <tbody>
               {filteredPhrases.map((item, index) => (
                 <tr key={item.id} onClick={() => handleOpenDetailed(item)} style={{cursor:'pointer'}}>
                   <td className={styles.sttCell}>{index + 1}</td>
-                  <td 
-                    className={`${styles.wordCell} hanzi`} 
-                    style={{fontSize:'1.8rem', fontWeight:600}}
-                  >
-                    {item.word}
+                  <td className={styles.wordCell}>
+                    <div className="hanzi">{item.word}</div>
+                    <div className={styles.pinyinSub}>
+                      {pinyin(item.word, { toneType: 'symbol' })}
+                    </div>
                   </td>
-                  <td className={styles.meaningCell}>{item.meaning}</td>
+                  <td className={styles.meaningCell} style={{fontSize: '1rem', fontWeight: 600}}>
+                    {item.meaning}
+                  </td>
+                  <td className={styles.contentCell}>
+                    {/* Giả sử meaning ghi chú cũ rơi vào đây, hoặc bạn có thể đổi field */}
+                    -
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -388,22 +399,22 @@ export default function PhrasesList() {
             </div>
             
             <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
-              <label>Nội dung *</label>
+              <label>Hán tự *</label>
               <textarea 
                 className={styles.formInput} 
                 rows={3} 
-                placeholder="Nhập chữ Hán, Pinyin hoặc câu tùy ý..." 
+                placeholder="Nhập chữ Hán..." 
                 value={newPhrase.word} 
                 onChange={e => setNewPhrase({...newPhrase, word: e.target.value})} 
               />
             </div>
 
-            <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
-              <label>Ghi chú</label>
+            <div className={styles.formGroup} style={{marginBottom:'2rem'}}>
+              <label>Nghĩa tiếng Việt *</label>
               <textarea 
                 className={styles.formInput} 
                 rows={2} 
-                placeholder="Giải thích nghĩa, cấu trúc..." 
+                placeholder="Nghĩa của câu..." 
                 value={newPhrase.meaning} 
                 onChange={e => setNewPhrase({...newPhrase, meaning: e.target.value})} 
               />
@@ -440,19 +451,19 @@ export default function PhrasesList() {
               
               <div className={styles.infoSection} style={{padding:0}}>
                 <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
-                  <label>Nội dung</label>
+                  <label>Hán tự</label>
                   <textarea 
                     className={`${styles.formInput} hanzi`} 
-                    style={{fontSize:'1.8rem', minHeight:'120px'}} 
+                    style={{fontSize:'1.8rem', minHeight:'100px'}} 
                     value={detailedPhrase.word} 
                     onChange={e => setDetailedPhrase({...detailedPhrase, word: e.target.value})} 
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Ghi chú</label>
+                  <label>Nghĩa tiếng Việt</label>
                   <textarea 
                     className={styles.formInput} 
-                    style={{minHeight:'80px'}} 
+                    style={{minHeight:'60px'}} 
                     value={detailedPhrase.meaning} 
                     onChange={e => setDetailedPhrase({...detailedPhrase, meaning: e.target.value})} 
                   />

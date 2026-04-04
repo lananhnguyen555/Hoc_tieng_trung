@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Plus, X, Edit2, Trash2, Filter, ChevronDown, Maximize2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import styles from "./grammar.module.css";
+import { pinyin } from "pinyin-pro";
 
 interface GrammarItem {
   id: string;
@@ -97,6 +98,26 @@ export default function GrammarPage() {
     setShowEditModal(false);
   };
 
+
+
+  const renderTextWithPinyin = (text: string) => {
+    // Tự động tìm các đoạn chữ Hán và thêm Pinyin bên cạnh
+    return text.split(/([\u4e00-\u9fa5]+)/g).map((part, i) => {
+      if (/[\u4e00-\u9fa5]/.test(part)) {
+        const py = pinyin(part, { toneType: 'symbol' });
+        return (
+          <span key={i}>
+            {part}
+            <span style={{ fontSize: '1rem', color: 'var(--text-muted)', marginLeft: '4px', fontWeight: 500 }}>
+              ({py})
+            </span>
+          </span>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -131,7 +152,7 @@ export default function GrammarPage() {
                     style={{fontSize:'1.8rem', fontWeight:600}}
                     onClick={(e) => { e.stopPropagation(); setFullScreenItem(item); }}
                   >
-                    {item.title}
+                    {renderTextWithPinyin(item.title)}
                   </td>
                   <td className={styles.contentCell}>{item.content}</td>
                 </tr>

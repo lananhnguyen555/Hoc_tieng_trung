@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, X, Edit2, Trash2, Info, Maximize2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import styles from "./rules.module.css";
+import { pinyin } from "pinyin-pro";
 
 interface Rule {
   id: string;
@@ -76,6 +77,33 @@ export default function RulesPage() {
     setShowEditModal(false);
   };
 
+  const renderTextWithPinyin = (text: string) => {
+    return text.split(/([\u4e00-\u9fa5]+)/g).map((part, i) => {
+      if (/[\u4e00-\u9fa5]/.test(part)) {
+        const py = pinyin(part, { toneType: 'symbol' });
+        return (part + " (" + py + ")");
+      }
+      return part;
+    }).join("");
+  };
+
+  const renderTitle = (text: string) => {
+    return text.split(/([\u4e00-\u9fa5]+)/g).map((part, i) => {
+      if (/[\u4e00-\u9fa5]/.test(part)) {
+        const py = pinyin(part, { toneType: 'symbol' });
+        return (
+          <span key={i}>
+            {part}
+            <span style={{ fontSize: '1rem', color: 'var(--text-muted)', marginLeft: '4px', fontWeight: 500 }}>
+              ({py})
+            </span>
+          </span>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -111,9 +139,9 @@ export default function RulesPage() {
                     onClick={(e) => { e.stopPropagation(); setFullScreenItem(rule); }}
                     title="Nhấn để phóng to"
                   >
-                    {rule.title}
+                    {renderTitle(rule.title)}
                   </td>
-                  <td className={styles.contentCell}>{rule.content}</td>
+                  <td className={styles.contentCell}>{renderTextWithPinyin(rule.content)}</td>
                 </tr>
               ))}
             </tbody>
