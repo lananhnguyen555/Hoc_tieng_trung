@@ -306,6 +306,12 @@ export default function VocabList() {
       return;
     }
 
+    const isDuplicate = vocab.some(v => v.word === newWord.word);
+    if (isDuplicate) {
+      alert(`Từ "${newWord.word}" đã tồn tại trong danh sách! Vui lòng kiểm tra lại.`);
+      return;
+    }
+
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       const { data, error } = await supabase.from("vocab").insert({
