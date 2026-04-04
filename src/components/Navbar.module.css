@@ -45,7 +45,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 2.5rem;
+  gap: 1.2rem; /* Giảm gap để Menu nằm trên 1 hàng */
 }
 
 .rightSection {
@@ -60,9 +60,9 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-weight: 700; /* Đậm hơn */
-  font-size: 1.1rem; /* To hơn */
-  color: #0f172a; /* Màu đậm để tương phản với #00FFCC */
+  font-weight: 700;
+  font-size: 1rem; /* Giảm nhẹ font size */
+  color: #0f172a;
   transition: all 0.2s ease;
   opacity: 1; /* Không trong suốt */
 }

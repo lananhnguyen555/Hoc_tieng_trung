@@ -194,6 +194,77 @@
   gap: 0.5rem;
 }
 
+/* LISTENING QUIZ */
+.quizForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.inputBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputBox label {
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.studyInput {
+  padding: 1rem;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  font-size: 1.2rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.studyInput:focus {
+  border-color: var(--primary);
+}
+
+.correct {
+  color: #10b981;
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+}
+
+.incorrect {
+  color: #ef4444;
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+}
+
+.checkBtn, .nextBtn {
+  margin-top: 1rem;
+  padding: 1.2rem;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  transition: all 0.2s;
+}
+
+.checkBtn {
+  background: var(--primary);
+  color: white;
+}
+
+.nextBtn {
+  background: #10b981;
+  color: white;
+}
+
+.nextBtn:hover, .checkBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
 /* FLASHCARDS */
 .flashcardContainer {
   display: flex;

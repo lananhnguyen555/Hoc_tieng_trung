@@ -43,6 +43,11 @@ export default function StudyPage() {
   // Flashcards/Quiz state
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Listening Mode Inputs
+  const [userInputs, setUserInputs] = useState({ word: "", meaning: "" });
+  const [showResult, setShowResult] = useState(false);
+  const [checkResult, setCheckResult] = useState<{ word: boolean, meaning: boolean } | null>(null);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -245,20 +250,75 @@ export default function StudyPage() {
           {activeMode === "listening" && (
             <div className={styles.listeningContainer}>
               <div className={styles.listenCard}>
-                <button className={styles.bigPlayBtn} onClick={() => speak(currentWord.word)}>
+                <button className={styles.bigPlayBtn} onClick={() => speak(currentWord.word)} title="Nhấn để nghe">
                   <Play size={48} fill="white" />
                 </button>
-                <p className={styles.instruction}>Nghe và đoán từ vựng...</p>
+                <p className={styles.instruction}>Hãy nghe và nhập lại Hán tự & Nghĩa Việt</p>
                 
-                <div className={styles.answerSection}>
-                  <button className={styles.revealBtn} onClick={() => speak(currentWord.word)}>
-                    Nghe lại
-                  </button>
-                  <div className={styles.revealedInfo}>
-                    <p className="hanzi" style={{fontSize: "4rem", display: 'block', margin: '1rem 0'}}>{currentWord.word}</p>
-                    <p className={styles.revealedPinyin}>({currentWord.pinyin})</p>
-                    <p className={styles.revealedMeaning}>{currentWord.meaning}</p>
+                <div className={styles.quizForm}>
+                  <div className={styles.inputBox}>
+                    <label>Hán tự:</label>
+                    <input 
+                      type="text" 
+                      className={`${styles.studyInput} hanzi`} 
+                      placeholder="Nhập chữ Hán..."
+                      value={userInputs.word}
+                      onChange={e => setUserInputs({...userInputs, word: e.target.value})}
+                      disabled={showResult}
+                    />
+                    {showResult && (
+                      <span className={checkResult?.word ? styles.correct : styles.incorrect}>
+                        {checkResult?.word ? "✓ Chính xác" : `✗ Sai (Đúng là: ${currentWord.word})`}
+                      </span>
+                    )}
                   </div>
+
+                  <div className={styles.inputBox}>
+                    <label>Nghĩa Việt:</label>
+                    <input 
+                      type="text" 
+                      className={styles.studyInput} 
+                      placeholder="Nhập nghĩa tiếng Việt..."
+                      value={userInputs.meaning}
+                      onChange={e => setUserInputs({...userInputs, meaning: e.target.value})}
+                      disabled={showResult}
+                    />
+                    {showResult && (
+                      <span className={checkResult?.meaning ? styles.correct : styles.incorrect}>
+                        {checkResult?.meaning ? "✓ Chính xác" : `✗ Sai (Đúng là: ${currentWord.meaning})`}
+                      </span>
+                    )}
+                  </div>
+
+                  {!showResult ? (
+                    <button 
+                      className={styles.checkBtn} 
+                      onClick={() => {
+                        const wordMatch = userInputs.word.trim() === currentWord.word.trim();
+                        const meaningMatch = userInputs.meaning.trim().toLowerCase() === currentWord.meaning.trim().toLowerCase();
+                        setCheckResult({ word: wordMatch, meaning: meaningMatch });
+                        setShowResult(true);
+                      }}
+                    >
+                      Kiểm tra đáp án
+                    </button>
+                  ) : (
+                    <button 
+                      className={styles.nextBtn}
+                      onClick={() => {
+                        if (currentIndex < filteredVocab.length - 1) {
+                          setCurrentIndex(prev => prev + 1);
+                          setUserInputs({ word: "", meaning: "" });
+                          setShowResult(false);
+                          setCheckResult(null);
+                        } else {
+                          alert("Chúc mừng! Bạn đã hoàn thành bài luyện nghe.");
+                        }
+                      }}
+                    >
+                      Tiếp theo <ChevronRight size={18} />
+                    </button>
+                  )}
                 </div>
               </div>
 
