@@ -6,8 +6,8 @@
   --card-bg: #f8fafc;
   --border: #e2e8f0;
   --text-muted: #64748b;
-  --font-sans: 'ChineseAdjusted', var(--font-geist-sans), Inter, system-ui, sans-serif;
-  --font-chinese: var(--font-chinese); 
+  --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
+  --font-chinese: 'ChineseAdjusted', var(--font-chinese), cursive;
   --radius: 12px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --nav-bg: #00FFCC; /* Màu Xanh Neon/Cyan đậm đục theo yêu cầu */
@@ -30,11 +30,11 @@
 
 /* Áp dụng màu sắc cho chữ Hán nếu có thể hoặc qua class */
 .hanzi {
-  font-family: 'ChineseAdjusted', var(--font-chinese), cursive;
+  font-family: var(--font-chinese);
   color: var(--chinese-color);
   font-weight: 400;
-  font-size: 2.5rem; /* Cực to theo yêu cầu */
-  line-height: 1.2;
+  font-size: 3.2rem; /* To hơn nữa theo yêu cầu */
+  line-height: 1.1;
   display: inline-block;
   vertical-align: middle;
 }

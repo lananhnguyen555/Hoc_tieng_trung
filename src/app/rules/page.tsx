@@ -135,7 +135,6 @@ export default function RulesPage() {
                    <td className={styles.sttCell}>{index + 1}</td>
                    <td 
                     className={`${styles.ruleTitleCell} hanzi`}
-                    style={{fontSize:'1.8rem', fontWeight:600}}
                     onClick={(e) => { e.stopPropagation(); setFullScreenItem(rule); }}
                     title="Nhấn để phóng to"
                   >

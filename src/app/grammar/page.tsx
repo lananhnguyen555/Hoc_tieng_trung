@@ -149,7 +149,6 @@ export default function GrammarPage() {
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td 
                     className={`${styles.titleCell} hanzi`}
-                    style={{fontSize:'1.8rem', fontWeight:600}}
                     onClick={(e) => { e.stopPropagation(); setFullScreenItem(item); }}
                   >
                     {renderTextWithPinyin(item.title)}

@@ -369,8 +369,8 @@ export default function PhrasesList() {
               {filteredPhrases.map((item, index) => (
                 <tr key={item.id} onClick={() => handleOpenDetailed(item)} style={{cursor:'pointer'}}>
                   <td className={styles.sttCell}>{index + 1}</td>
-                  <td className={styles.wordCell}>
-                    <div className="hanzi">{item.word}</div>
+                  <td className={styles.wordCell} style={{minWidth: '250px'}}>
+                    <div className="hanzi" style={{lineHeight: 1.1}}>{item.word}</div>
                     <div className={styles.pinyinSub}>
                       {pinyin(item.word, { toneType: 'symbol' })}
                     </div>
