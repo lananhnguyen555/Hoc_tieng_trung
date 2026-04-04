@@ -133,11 +133,7 @@ export default function RulesPage() {
         <p className={styles.subtitle}>Các quy tắc biến điệu, viết chữ và phát âm quan trọng.</p>
       </header>
 
-      <div className={styles.addBtnWrapper}>
-        <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
-          <Plus size={24} /> Thêm quy tắc
-        </button>
-      </div>
+
 
       {loading ? (
         <div className={styles.loader}>Đang tải dữ liệu...</div>
@@ -172,11 +168,7 @@ export default function RulesPage() {
               ))}
             </tbody>
           </table>
-          <div className={styles.addBtnWrapper} style={{justifyContent: 'center', marginTop: '2rem'}}>
-            <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
-              <Plus size={24} /> Thêm bài mới tại đây
-            </button>
-          </div>
+
           {rules.length === 0 && (
             <div className={styles.empty}>Chưa có quy tắc nào được lưu.</div>
           )}

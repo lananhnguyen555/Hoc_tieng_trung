@@ -143,12 +143,6 @@ export default function GrammarPage() {
       <header className={styles.header}>
         <h1 className={styles.title}>Ngữ pháp tiếng Trung</h1>
         <p className={styles.subtitle}>Danh sách cấu trúc ngữ pháp được đánh số và trình bày khoa học.</p>
-        
-        <div className={styles.toolbar} style={{justifyContent: 'flex-end'}}>
-          <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
-            <Plus size={20} /> Thêm bài mới
-          </button>
-        </div>
       </header>
 
       {loading ? (
@@ -187,11 +181,7 @@ export default function GrammarPage() {
               Chưa có dữ liệu cho mục này.
             </div>
           )}
-          <div style={{padding: '2rem 0', display: 'flex', justifyContent: 'center'}}>
-            <button className={styles.addBtn} onClick={() => setShowAddModal(true)}>
-              <Plus size={24} /> Thêm bài mới tại đây
-            </button>
-          </div>
+
         </div>
       )}
 

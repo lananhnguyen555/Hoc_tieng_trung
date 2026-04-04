@@ -1,9 +1,9 @@
 .container {
   padding: 2rem;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   min-height: calc(100vh - 80px);
-  padding-top: 100px; /* Bù cho Navbar ngang */
+  padding-top: 50px;
 }
 
 .header {
@@ -118,14 +118,15 @@
 }
 
 .vocabTable th {
-  background: #f1f5f9; /* Màu nền đục */
+  background: #ffffff;
   padding: 1.2rem 1rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--primary);
   border-bottom: 2px solid var(--border);
   position: sticky;
-  top: 165px; /* Dưới Navbar + Toolbar */
-  z-index: 50; /* Giảm z-index để không đè lên Modal nhưng vẫn trên hàng thường */
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .vocabTable td {
@@ -503,25 +504,26 @@ textarea.formInput {
 
 .floatingAddBtn {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 60px;
-  height: 60px;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #0ea5e9;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
-  z-index: 999;
+  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.5);
+  z-index: 1000;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 3px solid white;
 }
 
 .floatingAddBtn:hover {
-  transform: scale(1.1) rotate(90deg);
-  background: var(--primary-hover);
-  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.6);
+  transform: scale(1.1) translateY(-5px);
+  background: #0284c7;
+  box-shadow: 0 15px 30px rgba(14, 165, 233, 0.6);
 }
 
 @media (max-width: 768px) {

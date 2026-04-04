@@ -352,12 +352,8 @@ export default function PhrasesList() {
         <p className={styles.subtitle}>Đồng bộ hóa Cloud và luyện tập mọi lúc mọi nơi.</p>
       </header>
 
-      <div className={styles.toolbar}>
-        <div className={styles.actionBtns} style={{justifyContent: 'flex-end', width: '100%'}}>
-          <button className={styles.addBtn} style={{background:'#1ea362', color:'white'}} onClick={handleExportExcel}><FileUp size={20} /> Xuất Excel</button>
-          <button className={styles.addBtn} style={{background:'var(--foreground)', color:'white'}} onClick={() => setShowImportModal(true)}><LogIn size={20} /> Nhập Excel</button>
-          <button className={styles.addBtn} onClick={handleOpenAddModal}><Plus size={20} /> Thêm câu</button>
-        </div>
+      <div className={styles.toolbar} style={{display: 'none'}}>
+        {/* Toolbar hidden as requested, using FAB instead */}
       </div>
 
       {loading ? (
@@ -397,12 +393,7 @@ export default function PhrasesList() {
         </div>
       )}
 
-      {/* Button Thêm bài mới ở giữa trang */}
-      <div style={{display: 'flex', justifyContent: 'center', padding: '2rem 0'}}>
-        <button className={styles.addBtn} onClick={handleOpenAddModal} style={{padding: '1rem 2.5rem', fontSize: '1.1rem'}}>
-          <Plus size={24} /> Thêm mẫu câu mới tại đây
-        </button>
-      </div>
+
 
       <button className={styles.floatingAddBtn} onClick={handleOpenAddModal} title="Thêm mẫu câu mới nhanh">
         <Plus size={28} />

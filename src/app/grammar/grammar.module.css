@@ -1,6 +1,6 @@
 .container {
   padding: 3rem 1rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -104,15 +104,16 @@
 }
 
 .grammarTable th {
-  background: #f8fafc; /* Màu nền đục để không bị lộ nội dung khi cuộn qua */
-  padding: 1rem;
-  font-weight: 700;
+  background: #ffffff; /* Trắng đặc để che hàng khi cuộn */
+  padding: 1.2rem 1rem;
+  font-weight: 800;
   color: var(--primary);
   border-bottom: 2px solid var(--border);
   white-space: nowrap;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .grammarTable td {
@@ -275,24 +276,26 @@
 
 .floatingAddBtn {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 60px;
-  height: 60px;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #0ea5e9;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.5);
   z-index: 1000;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 3px solid white;
 }
 
 .floatingAddBtn:hover {
-  transform: scale(1.1) rotate(90deg);
-  background: var(--primary-hover);
+  transform: scale(1.1) translateY(-5px);
+  background: #0284c7;
+  box-shadow: 0 15px 30px rgba(14, 165, 233, 0.6);
 }
 
 @media (max-width: 768px) {

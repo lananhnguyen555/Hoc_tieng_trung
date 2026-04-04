@@ -1,6 +1,6 @@
 .container {
   padding: 3rem 1rem;
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -61,14 +61,15 @@
 }
 
 .rulesTable th {
-  background: #f8fafc;
+  background: #ffffff;
   padding: 1.2rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--primary);
   border-bottom: 2px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .rulesTable td {
