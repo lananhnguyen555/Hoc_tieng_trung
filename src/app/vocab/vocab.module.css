@@ -171,6 +171,7 @@
   font-weight: 600;
   color: #0f172a;
   min-width: 200px;
+  white-space: pre-wrap; /* Hỗ trợ xuống dòng khi nhấn Enter */
 }
 
 .typeCell {
@@ -193,7 +194,7 @@
 
 .exampleCn { color: var(--primary); font-weight: 700; margin: 0; font-size: 1.5rem !important; }
 .examplePy { font-size: 0.8rem; color: var(--text-muted); margin: 2px 0; }
-.exampleVi { font-style: italic; margin: 0; }
+.exampleVi { font-style: italic; margin: 0; white-space: pre-wrap; }
 
 .actionCell { width: 150px; text-align: right; }
 

@@ -92,28 +92,39 @@ export default function VocabList() {
   useEffect(() => {
     if (detailedWord && writerContainerRef.current) {
       writerContainerRef.current.innerHTML = '';
-      const characters = detailedWord.word.split('');
-      const charToDraw = characters[currentCharIndex] || characters[0];
-      const width = writerContainerRef.current.clientWidth;
-      writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
-        width: width,
-        height: width,
-        padding: 5,
-        strokeColor: '#0ea5e9',
-        outlineColor: '#eee',
-        drawingColor: '#333',
-        showOutline: true,
-        delayBetweenLoops: 1000
-      });
-      writerInstance.current.animateCharacter({
-        onComplete: () => {
-          if (currentCharIndex < characters.length - 1) {
-            setTimeout(() => setCurrentCharIndex(prev => prev + 1), 1000);
+      // Chỉ lấy các ký tự là chữ Hán để vẽ (loại bỏ dấu cách, dấu câu...)
+      const characters = detailedWord.word.match(/[\u4e00-\u9fa5]/g) || [];
+      
+      if (characters.length > 0) {
+        const charToDraw = characters[currentCharIndex] || characters[0];
+        const width = writerContainerRef.current.clientWidth;
+        writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
+          width: width,
+          height: width,
+          padding: 5,
+          strokeColor: '#0ea5e9',
+          outlineColor: '#eee',
+          drawingColor: '#333',
+          showOutline: true,
+          delayBetweenLoops: 1000
+        });
+        
+        // Tự động chuyển sang chữ tiếp theo sau khi vẽ xong
+        writerInstance.current.animateCharacter({
+          onComplete: () => {
+            if (currentCharIndex < characters.length - 1) {
+              setTimeout(() => setCurrentCharIndex(prev => prev + 1), 1000);
+            }
           }
-        }
-      });
+        });
+      }
+
       if (currentCharIndex === 0) {
-        setEditingExample({ cn: detailedWord.example_cn || "", py: detailedWord.example_py || "", vi: detailedWord.example_vi || "" });
+        setEditingExample({ 
+          cn: detailedWord.example_cn || "", 
+          py: detailedWord.example_py || "", 
+          vi: detailedWord.example_vi || "" 
+        });
       }
     }
   }, [detailedWord, currentCharIndex]);
@@ -681,7 +692,7 @@ export default function VocabList() {
               <div className={styles.hanziSection}>
                 <div ref={writerContainerRef} className={styles.writerContainer}></div>
                 <div className={styles.charTabs}>
-                  {detailedWord.word.split('').map((char, index) => (
+                  {(detailedWord.word.match(/[\u4e00-\u9fa5]/g) || []).map((char, index) => (
                     <button key={index} className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`} onClick={(e) => { e.stopPropagation(); setCurrentCharIndex(index); }} title={`Xem chữ ${char}`}>{char}</button>
                   ))}
                 </div>
