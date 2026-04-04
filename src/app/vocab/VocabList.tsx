@@ -704,7 +704,12 @@ export default function VocabList() {
                 <div className={styles.mainInfo}>
                   <div className={styles.formGroup}>
                     <label>Hán tự</label>
-                    <input type="text" className={`${styles.formInput} hanzi`} style={{fontSize:'1.8rem', fontWeight:700}} value={detailedWord.word} onChange={e => setDetailedWord({...detailedWord, word: e.target.value})} />
+                    <textarea 
+                      className={`${styles.formInput} hanzi`} 
+                      style={{fontSize:'1.8rem', fontWeight:700}} 
+                      value={detailedWord.word} 
+                      onChange={e => setDetailedWord({...detailedWord, word: e.target.value})} 
+                    />
                   </div>
                   <div className={styles.formGroup}>
                     <label>Pinyin</label>
@@ -712,7 +717,11 @@ export default function VocabList() {
                   </div>
                   <div className={styles.formGroup}>
                     <label>Nghĩa Việt</label>
-                    <input type="text" className={styles.formInput} value={detailedWord.meaning} onChange={e => setDetailedWord({...detailedWord, meaning: e.target.value})} />
+                    <textarea 
+                      className={styles.formInput} 
+                      value={detailedWord.meaning} 
+                      onChange={e => setDetailedWord({...detailedWord, meaning: e.target.value})} 
+                    />
                   </div>
                   <div className={styles.formGroup}>
                     <label>Loại từ</label>
@@ -721,9 +730,18 @@ export default function VocabList() {
                 </div>
                 <div className={styles.exampleForm}>
                   <p style={{fontWeight:700, margin:0}}>Ví dụ học tập:</p>
-                  <div className={styles.formGroup}><label>Ví dụ (Hán tự)</label><input type="text" className={styles.formInput} value={editingExample.cn} onChange={e => setEditingExample({...editingExample, cn: e.target.value})} /></div>
-                  <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={editingExample.py} onChange={e => setEditingExample({...editingExample, py: e.target.value})} /></div>
-                  <div className={styles.formGroup}><label>Nghĩa Việt</label><input type="text" className={styles.formInput} value={editingExample.vi} onChange={e => setEditingExample({...editingExample, vi: e.target.value})} /></div>
+                  <div className={styles.formGroup}>
+                    <label>Ví dụ (Hán tự)</label>
+                    <textarea className={`${styles.formInput} hanzi`} value={editingExample.cn} onChange={e => setEditingExample({...editingExample, cn: e.target.value})} />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Pinyin</label>
+                    <input type="text" className={styles.formInput} value={editingExample.py} onChange={e => setEditingExample({...editingExample, py: e.target.value})} />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Nghĩa Việt</label>
+                    <textarea className={styles.formInput} value={editingExample.vi} onChange={e => setEditingExample({...editingExample, vi: e.target.value})} />
+                  </div>
                   <button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} style={{marginRight:'0.5rem'}} /> Lưu tất cả thay đổi</button>
                   <button 
                     className={styles.iconBtn} 
