@@ -9,8 +9,7 @@
   align-items: center;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background-color: var(--nav-bg) !important; /* Đổi sang màu xám Slate đậm */
-  backdrop-filter: blur(10px);
+  background-color: var(--nav-bg) !important;
 }
 
 
@@ -27,17 +26,18 @@
 
 
 .logo {
-  flex: 0 0 160px; /* Nhỏ hơn để menu có chỗ */
+  flex: 0 0 250px; /* Tăng thêm để đủ 1 hàng */
   font-weight: 800;
   font-size: 1.6rem;
-  color: #0f172a; /* Màu đậm hơn trên nền sáng */
+  color: #0f172a;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap; /* Ép tên trên 1 hàng */
 }
 
 .logoText {
-  color: #ffffff;
+  color: #0f172a;
   font-weight: 900;
 }
 
@@ -64,7 +64,7 @@
   gap: 0.6rem;
   font-weight: 700;
   font-size: 1rem;
-  color: #cbd5e1; /* Màu xám nhạt để nổi trên nền xám Slate */
+  color: #0f172a;
   transition: all 0.2s ease;
   opacity: 0.9;
 }
@@ -75,8 +75,8 @@
 }
 
 .link.active {
-  color: white !important;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+  color: #0ea5e9 !important; /* Màu xanh nổi bật trên nền hồng nhạt */
+  text-shadow: none;
 }
 
 
@@ -89,9 +89,9 @@
 }
 
 .userEmail {
-  font-size: 0.95rem; /* To hơn một chút cho dễ đọc */
+  font-size: 0.95rem;
   font-weight: 700;
-  color: #cbd5e1; /* Đổi tên sang màu nhạt */
+  color: #0f172a;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -101,7 +101,7 @@
 .logoutBtn {
   padding: 0.4rem;
   border-radius: 6px;
-  color: #cbd5e1;
+  color: #0f172a;
   font-weight: 700;
   transition: all 0.2s ease;
 }

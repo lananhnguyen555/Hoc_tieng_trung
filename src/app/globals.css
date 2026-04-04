@@ -10,7 +10,7 @@
   --font-chinese: 'ChineseCalligraphy', cursive;
   --radius: 12px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --nav-bg: #1e293b; /* Đổi sang màu xám Slate đậm để chữ trắng/đen đều nổi bật */
+  --nav-bg: #FFE4E1; /* Màu thiết lập theo yêu cầu người dùng */
   --chinese-color: #0ea5e9; /* Màu xanh thư pháp theo yêu cầu */
 }
 
