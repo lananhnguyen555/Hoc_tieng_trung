@@ -62,6 +62,33 @@ export default function VocabList() {
     setShowAddModal(true);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, setter: (val: string) => void, currentVal: string) => {
+    if (e.key === 'Enter') {
+      const cursorPosition = e.currentTarget.selectionStart;
+      const textBeforeCursor = currentVal.substring(0, cursorPosition);
+      const lines = textBeforeCursor.split('\n');
+      const lastLine = lines[lines.length - 1];
+      
+      // Kiểm tra xem dòng cuối có bắt đầu bằng số (ví dụ: "1. ")
+      const match = lastLine.match(/^(\d+)\.\s/);
+      if (match) {
+        e.preventDefault();
+        const nextNumber = parseInt(match[1]) + 1;
+        const insertText = `\n${nextNumber}. `;
+        
+        const newText = currentVal.substring(0, cursorPosition) + insertText + currentVal.substring(cursorPosition);
+        setter(newText);
+        
+        // Đặt con trỏ sau số vừa chèn (dùng setTimeout để đợi React update State)
+        const newPos = cursorPosition + insertText.length;
+        setTimeout(() => {
+          const textarea = e.target as HTMLTextAreaElement;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+      }
+    }
+  };
+
   const handleSelectSuggestion = async (char: string, accented: string) => {
     setNewWord(prev => ({ 
       ...prev, 
@@ -660,7 +687,12 @@ export default function VocabList() {
               </div>
               <div className={styles.formGroup}>
                 <label>Nghĩa tiếng Việt *</label>
-                <input type="text" className={styles.formInput} value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} />
+                <textarea 
+                  className={styles.formInput} 
+                  value={newWord.meaning} 
+                  onChange={e => setNewWord({...newWord, meaning: e.target.value})} 
+                  onKeyDown={e => handleKeyDown(e, (val) => setNewWord({...newWord, meaning: val}), newWord.meaning)}
+                />
               </div>
             </div>
 
@@ -674,9 +706,9 @@ export default function VocabList() {
 
             <div style={{marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
               <p style={{fontWeight:700, fontSize:'0.9rem', marginBottom:'0.5rem'}}>Ví dụ đi kèm (Tùy chọn):</p>
-              <input type="text" placeholder="Ví dụ Hán tự" className={styles.formInput} style={{marginBottom:'0.5rem'}} value={newWord.example_cn} onChange={e => setNewWord({...newWord, example_cn: e.target.value})} />
+              <textarea placeholder="Ví dụ Hán tự" className={`${styles.formInput} hanzi`} style={{marginBottom:'0.5rem'}} value={newWord.example_cn} onChange={e => setNewWord({...newWord, example_cn: e.target.value})} onKeyDown={e => handleKeyDown(e, (val) => setNewWord({...newWord, example_cn: val}), newWord.example_cn)} />
               <input type="text" placeholder="Ví dụ Pinyin" className={styles.formInput} style={{marginBottom:'0.5rem'}} value={newWord.example_py} onChange={e => setNewWord({...newWord, example_py: e.target.value})} />
-              <input type="text" placeholder="Ví dụ Nghĩa Việt" className={styles.formInput} value={newWord.example_vi} onChange={e => setNewWord({...newWord, example_vi: e.target.value})} />
+              <textarea placeholder="Ví dụ Nghĩa Việt" className={styles.formInput} value={newWord.example_vi} onChange={e => setNewWord({...newWord, example_vi: e.target.value})} onKeyDown={e => handleKeyDown(e, (val) => setNewWord({...newWord, example_vi: val}), newWord.example_vi)} />
             </div>
 
             <button className={styles.saveBtn} style={{marginTop:'2rem', width:'100%'}} onClick={handleSaveNewWord}>Lưu từ vựng</button>
@@ -709,6 +741,7 @@ export default function VocabList() {
                       style={{fontSize:'1.8rem', fontWeight:700}} 
                       value={detailedWord.word} 
                       onChange={e => setDetailedWord({...detailedWord, word: e.target.value})} 
+                      onKeyDown={e => handleKeyDown(e, (val) => setDetailedWord({...detailedWord, word: val}), detailedWord.word)}
                     />
                   </div>
                   <div className={styles.formGroup}>
@@ -721,6 +754,7 @@ export default function VocabList() {
                       className={styles.formInput} 
                       value={detailedWord.meaning} 
                       onChange={e => setDetailedWord({...detailedWord, meaning: e.target.value})} 
+                      onKeyDown={e => handleKeyDown(e, (val) => setDetailedWord({...detailedWord, meaning: val}), detailedWord.meaning)}
                     />
                   </div>
                   <div className={styles.formGroup}>
@@ -732,7 +766,7 @@ export default function VocabList() {
                   <p style={{fontWeight:700, margin:0}}>Ví dụ học tập:</p>
                   <div className={styles.formGroup}>
                     <label>Ví dụ (Hán tự)</label>
-                    <textarea className={`${styles.formInput} hanzi`} value={editingExample.cn} onChange={e => setEditingExample({...editingExample, cn: e.target.value})} />
+                    <textarea className={`${styles.formInput} hanzi`} value={editingExample.cn} onChange={e => setEditingExample({...editingExample, cn: e.target.value})} onKeyDown={e => handleKeyDown(e, (val) => setEditingExample({...editingExample, cn: val}), editingExample.cn)} />
                   </div>
                   <div className={styles.formGroup}>
                     <label>Pinyin</label>
@@ -740,7 +774,7 @@ export default function VocabList() {
                   </div>
                   <div className={styles.formGroup}>
                     <label>Nghĩa Việt</label>
-                    <textarea className={styles.formInput} value={editingExample.vi} onChange={e => setEditingExample({...editingExample, vi: e.target.value})} />
+                    <textarea className={styles.formInput} value={editingExample.vi} onChange={e => setEditingExample({...editingExample, vi: e.target.value})} onKeyDown={e => handleKeyDown(e, (val) => setEditingExample({...editingExample, vi: val}), editingExample.vi)} />
                   </div>
                   <button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} style={{marginRight:'0.5rem'}} /> Lưu tất cả thay đổi</button>
                   <button 

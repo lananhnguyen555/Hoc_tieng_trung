@@ -47,6 +47,29 @@ export default function RulesPage() {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, setter: (val: string) => void, currentVal: string) => {
+    if (e.key === 'Enter') {
+      const cursorPosition = e.currentTarget.selectionStart;
+      const textBeforeCursor = currentVal.substring(0, cursorPosition);
+      const lines = textBeforeCursor.split('\n');
+      const lastLine = lines[lines.length - 1];
+      
+      const match = lastLine.match(/^(\d+)\.\s/);
+      if (match) {
+        e.preventDefault();
+        const nextNumber = parseInt(match[1]) + 1;
+        const insertText = `\n${nextNumber}. `;
+        const newText = currentVal.substring(0, cursorPosition) + insertText + currentVal.substring(cursorPosition);
+        setter(newText);
+        const newPos = cursorPosition + insertText.length;
+        setTimeout(() => {
+          const textarea = e.target as HTMLTextAreaElement;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+      }
+    }
+  };
+
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     const entry = { ...newItem, id: `local-r-${Date.now()}` };
@@ -127,20 +150,27 @@ export default function RulesPage() {
                 <th className={styles.sttCell}>STT</th>
                 <th>Nội dung (Bao gồm Hán tự)</th>
                 <th>Ghi chú</th>
+                <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {rules.map((rule, index) => (
-                <tr key={rule.id} onClick={() => { setEditingItem(rule); setShowEditModal(true); }} style={{cursor:'pointer'}}>
+                <tr key={rule.id}>
                    <td className={styles.sttCell}>{index + 1}</td>
                    <td 
                     className={styles.ruleTitleCell}
-                    onClick={(e) => { e.stopPropagation(); setFullScreenItem(rule); }}
+                    onClick={() => setFullScreenItem(rule)}
                     title="Nhấn để phóng to"
                   >
                     {renderTitle(rule.title)}
                   </td>
                   <td className={styles.contentCell}>{renderTextWithPinyin(rule.content)}</td>
+                  <td className={styles.actionCell}>
+                    <div className={styles.actionGroup}>
+                      <button className={styles.iconBtn} onClick={() => { setEditingItem(rule); setShowEditModal(true); }} title="Sửa"><Edit2 size={18} /></button>
+                      <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDelete(rule.id, e)} title="Xóa"><Trash2 size={18} /></button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -190,6 +220,7 @@ export default function RulesPage() {
                 <textarea 
                   value={newItem.title}
                   onChange={e => setNewItem({...newItem, title: e.target.value})}
+                  onKeyDown={e => handleKeyDown(e, (val) => setNewItem({...newItem, title: val}), newItem.title)}
                   placeholder="Ví dụ: Quy tắc biến điệu Bù (不)..."
                   required 
                   style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'120px'}}
@@ -200,6 +231,7 @@ export default function RulesPage() {
                 <textarea 
                   value={newItem.content}
                   onChange={e => setNewItem({...newItem, content: e.target.value})}
+                  onKeyDown={e => handleKeyDown(e, (val) => setNewItem({...newItem, content: val}), newItem.content)}
                   placeholder="Giải thích, lưu ý thêm..."
                   style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'100px'}}
                 />
@@ -224,6 +256,7 @@ export default function RulesPage() {
                 <textarea 
                   value={editingItem.title}
                   onChange={e => setEditingItem({...editingItem, title: e.target.value})}
+                  onKeyDown={e => handleKeyDown(e, (val) => setEditingItem({...editingItem, title: val}), editingItem.title)}
                   required 
                   style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'120px'}}
                 />
@@ -233,6 +266,7 @@ export default function RulesPage() {
                 <textarea 
                   value={editingItem.content}
                   onChange={e => setEditingItem({...editingItem, content: e.target.value})}
+                  onKeyDown={e => handleKeyDown(e, (val) => setEditingItem({...editingItem, content: val}), editingItem.content)}
                   style={{padding:'1rem', borderRadius:'10px', border:'1.5px solid var(--border)', minHeight:'100px'}}
                 />
               </div>

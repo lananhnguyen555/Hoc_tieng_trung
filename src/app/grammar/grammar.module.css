@@ -130,9 +130,11 @@
 
 .titleCell {
   min-width: 200px;
-  font-size: 1.8rem !important; /* Hanzi to */
+  font-size: 1.8rem !important;
   cursor: pointer;
   transition: transform 0.2s ease;
+  white-space: pre-wrap; /* Hỗ trợ xuống dòng */
+  line-height: 1.4;
 }
 
 .titleCell:hover {
@@ -142,6 +144,7 @@
 .contentCell {
   min-width: 250px;
   line-height: 1.6;
+  white-space: pre-wrap; /* Hỗ trợ xuống dòng */
 }
 
 .exampleCell {

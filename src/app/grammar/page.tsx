@@ -59,6 +59,29 @@ export default function GrammarPage() {
     return lessons.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   }, [grammarList]);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, setter: (val: string) => void, currentVal: string) => {
+    if (e.key === 'Enter') {
+      const cursorPosition = e.currentTarget.selectionStart;
+      const textBeforeCursor = currentVal.substring(0, cursorPosition);
+      const lines = textBeforeCursor.split('\n');
+      const lastLine = lines[lines.length - 1];
+      
+      const match = lastLine.match(/^(\d+)\.\s/);
+      if (match) {
+        e.preventDefault();
+        const nextNumber = parseInt(match[1]) + 1;
+        const insertText = `\n${nextNumber}. `;
+        const newText = currentVal.substring(0, cursorPosition) + insertText + currentVal.substring(cursorPosition);
+        setter(newText);
+        const newPos = cursorPosition + insertText.length;
+        setTimeout(() => {
+          const textarea = e.target as HTMLTextAreaElement;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+      }
+    }
+  };
+
   const filteredGrammar = useMemo(() => {
     if (selectedLesson === "all") return grammarList;
     return grammarList.filter(item => item.lesson === selectedLesson);
@@ -141,19 +164,27 @@ export default function GrammarPage() {
                 <th className={styles.sttCell}>STT</th>
                 <th>Nội dung (Bao gồm Hán tự)</th>
                 <th>Ghi chú</th>
+                <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {filteredGrammar.map((item, index) => (
-                <tr key={item.id} onClick={() => { setEditingItem(item); setShowEditModal(true); }} style={{cursor:'pointer'}}>
+                <tr key={item.id}>
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td 
                     className={styles.titleCell}
-                    onClick={(e) => { e.stopPropagation(); setFullScreenItem(item); }}
+                    onClick={() => setFullScreenItem(item)}
+                    title="Nhấn để phóng to chữ Hán"
                   >
                     {renderTextWithPinyin(item.title)}
                   </td>
                   <td className={styles.contentCell}>{renderTextWithPinyin(item.content)}</td>
+                  <td className={styles.actionCell}>
+                    <div className={styles.actionGroup}>
+                      <button className={styles.iconBtn} onClick={() => { setEditingItem(item); setShowEditModal(true); }} title="Sửa"><Edit2 size={18} /></button>
+                      <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDelete(item.id, e)} title="Xóa"><Trash2 size={18} /></button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -206,6 +237,7 @@ export default function GrammarPage() {
                 <textarea 
                   value={newItem.title}
                   onChange={e => setNewItem({...newItem, title: e.target.value})}
+                  onKeyDown={e => handleKeyDown(e, (val) => setNewItem({...newItem, title: val}), newItem.title)}
                   placeholder="Nhập bất kỳ nội dung gì bạn muốn..."
                   required 
                   style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'100px'}}
@@ -216,6 +248,7 @@ export default function GrammarPage() {
                 <textarea 
                   value={newItem.content}
                   onChange={e => setNewItem({...newItem, content: e.target.value})}
+                  onKeyDown={e => handleKeyDown(e, (val) => setNewItem({...newItem, content: val}), newItem.content)}
                   placeholder="Giải thích, ví dụ..."
                   style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'80px'}}
                 />
@@ -240,6 +273,7 @@ export default function GrammarPage() {
                 <textarea 
                   value={editingItem.title}
                   onChange={e => setEditingItem({...editingItem, title: e.target.value})}
+                  onKeyDown={e => handleKeyDown(e, (val) => setEditingItem({...editingItem, title: val}), editingItem.title)}
                   required 
                   style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'100px'}}
                 />
@@ -249,6 +283,7 @@ export default function GrammarPage() {
                 <textarea 
                   value={editingItem.content}
                   onChange={e => setEditingItem({...editingItem, content: e.target.value})}
+                  onKeyDown={e => handleKeyDown(e, (val) => setEditingItem({...editingItem, content: val}), editingItem.content)}
                   style={{padding:'0.8rem', borderRadius:'8px', border:'1px solid var(--border)', minHeight:'80px'}}
                 />
               </div>
