@@ -20,7 +20,7 @@ export default function Flashcard({ word, pinyin, meaning }: FlashcardProps) {
       <div className={styles.cardInner}>
         {/* Front */}
         <div className={styles.cardFront}>
-          <span className={styles.word}>{word}</span>
+          <span className={`${styles.word} hanzi`}>{word}</span>
           <p className={styles.hint}>Click để xem nghĩa</p>
         </div>
         

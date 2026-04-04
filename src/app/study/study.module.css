@@ -1,0 +1,294 @@
+.container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-top: 100px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--primary), #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--text-muted);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  background: white;
+  padding: 1.2rem 2rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+  position: sticky;
+  top: 90px;
+  z-index: 100;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.filterSection {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.selectGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--background);
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.select {
+  border: none;
+  background: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 180px;
+  outline: none;
+}
+
+.modeTabs {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--background);
+  padding: 0.3rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.activeTab {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.mainContent {
+  animation: fadeIn 0.4s ease;
+}
+
+/* HIDDEN ROWS MODE */
+.studySection {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.tableControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.checkGroup {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.studyTableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.studyTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.studyTable th {
+  background: rgba(14, 165, 233, 0.05);
+  padding: 1rem;
+  font-weight: 800;
+  color: var(--primary);
+  border-bottom: 2px solid var(--border);
+}
+
+.studyTable td {
+  padding: 1.2rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.cellContent {
+  width: 30%;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.blurred {
+  background: rgba(15, 23, 42, 0.05);
+  color: transparent !important;
+  border-radius: 4px;
+  padding: 2px 1rem;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.blurred:active {
+  background: transparent;
+  color: inherit !important;
+}
+
+.loadMore {
+  background: var(--primary);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  transition: all 0.2s ease;
+}
+
+.resetBtn {
+  margin: 1.5rem auto 0;
+  color: var(--text-muted);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* FLASHCARDS */
+.flashcardContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.cardCounter {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+.navBtns {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.navBtn {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 0.8rem 2rem;
+  border-radius: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.navBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* LISTENING */
+.listenCard {
+  background: white;
+  border-radius: 24px;
+  padding: 4rem;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.bigPlayBtn {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+  box-shadow: 0 10px 20px rgba(14, 165, 233, 0.4);
+}
+
+.revealedInfo {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.revealedPinyin {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.revealedMeaning {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.revealBtn {
+  background: var(--background);
+  padding: 0.8rem 2rem;
+  border-radius: 12px;
+  font-weight: 800;
+  border: 1px solid var(--border);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .toolbar { flex-direction: column; top: 0; padding: 1rem; }
+  .modeTabs { width: 100%; flex-wrap: wrap; }
+  .tab { flex: 1; text-align: center; justify-content: center; }
+  .checkGroup { flex-direction: column; gap: 0.5rem; }
+}

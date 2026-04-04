@@ -64,6 +64,9 @@ export default function Navbar() {
           <Link href="/rules" className={styles.link}>
             <Scale size={20} /> <span>Quy tắc</span>
           </Link>
+          <Link href="/study" className={styles.link}>
+            <GraduationCap size={20} /> <span>Ôn tập</span>
+          </Link>
         </div>
 
         <div className={styles.rightSection}>
