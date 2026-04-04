@@ -9,7 +9,8 @@
   align-items: center;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background-color: #00FFCC !important; /* Ép mã màu Neon Cyan đục */
+  background-color: var(--nav-bg) !important; /* Đổi sang màu xám Slate đậm */
+  backdrop-filter: blur(10px);
 }
 
 
@@ -36,7 +37,7 @@
 }
 
 .logoText {
-  color: #0f172a;
+  color: #ffffff;
   font-weight: 900;
 }
 
@@ -62,10 +63,10 @@
   align-items: center;
   gap: 0.6rem;
   font-weight: 700;
-  font-size: 1rem; /* Giảm nhẹ font size */
-  color: #0f172a;
+  font-size: 1rem;
+  color: #cbd5e1; /* Màu xám nhạt để nổi trên nền xám Slate */
   transition: all 0.2s ease;
-  opacity: 1; /* Không trong suốt */
+  opacity: 0.9;
 }
 
 .link:hover {
@@ -90,7 +91,7 @@
 .userEmail {
   font-size: 0.95rem; /* To hơn một chút cho dễ đọc */
   font-weight: 700;
-  color: #0f172a; /* Đổi tên sang màu đen đồng bộ */
+  color: #cbd5e1; /* Đổi tên sang màu nhạt */
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -100,7 +101,7 @@
 .logoutBtn {
   padding: 0.4rem;
   border-radius: 6px;
-  color: #0f172a; /* Màu đen đồng bộ */
+  color: #cbd5e1;
   font-weight: 700;
   transition: all 0.2s ease;
 }
