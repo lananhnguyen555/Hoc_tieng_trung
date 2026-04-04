@@ -235,12 +235,13 @@
 .detailModal {
   background: var(--background);
   width: 95%;
-  max-width: 700px;
+  max-width: 900px; /* Tăng chiều rộng một chút cho thoải mái */
+  max-height: 90vh; /* Giới hạn chiều cao 90% màn hình */
   border-radius: 20px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden; /* Để scroll bên trong content */
 }
 
 .detailContent {
@@ -248,6 +249,8 @@
   padding: 2.5rem;
   gap: 2.5rem;
   align-items: flex-start;
+  overflow-y: auto; /* Thêm thanh cuộn dọc cho nội dung */
+  flex: 1;
 }
 
 .hanziSection {
@@ -340,6 +343,7 @@
 .exampleForm {
   border-top: 1px solid var(--border);
   padding-top: 1.5rem;
+  padding-bottom: 1rem; /* Thêm khoảng cách dưới cùng */
   display: flex;
   flex-direction: column;
   gap: 1rem;
