@@ -40,7 +40,8 @@ export default function StudyPage() {
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
   const [visibleCount, setVisibleCount] = useState(5);
 
-  // Flashcards/Quiz state
+  // Flashcards/Quiz/Table Paging state
+  const [startIndex, setStartIndex] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Listening Mode Inputs
@@ -81,7 +82,7 @@ export default function StudyPage() {
     : vocab.filter(v => v.lesson_id === selectedLessonId);
 
   const displayVocab = activeMode === "hidden_rows" 
-    ? filteredVocab.slice(0, visibleCount) 
+    ? filteredVocab.slice(startIndex, startIndex + visibleCount) 
     : filteredVocab;
 
   const currentWord = filteredVocab[currentIndex];
@@ -118,7 +119,7 @@ export default function StudyPage() {
               value={selectedLessonId} 
               onChange={e => {
                 setSelectedLessonId(e.target.value);
-                setVisibleCount(5);
+                setStartIndex(0);
                 setCurrentIndex(0);
               }}
             >
@@ -191,7 +192,7 @@ export default function StudyPage() {
                   <tbody>
                     {displayVocab.map((item, idx) => (
                       <tr key={item.id}>
-                        <td className={styles.stt}>{idx + 1}</td>
+                        <td className={styles.stt}>{startIndex + idx + 1}</td>
                         <td 
                           className={`hanzi ${hiddenColumns.includes("word") ? styles.blurred : ""}`} 
                           style={{fontSize: "2.5rem", cursor: "pointer"}}
@@ -216,16 +217,25 @@ export default function StudyPage() {
                 </table>
               </div>
 
-              {visibleCount < filteredVocab.length && (
-                <button className={styles.loadMore} onClick={() => setVisibleCount(prev => prev + 5)}>
-                  Hiện thêm 5 hàng tiếp theo <ChevronRight size={18} />
-                </button>
-              )}
-              {visibleCount > 5 && (
-                <button className={styles.resetBtn} onClick={() => setVisibleCount(5)}>
-                  <RotateCcw size={18} /> Quay lại 5 hàng đầu
-                </button>
-              )}
+                <div className={styles.pagination}>
+                  <button 
+                    className={styles.navBtn} 
+                    disabled={startIndex === 0}
+                    onClick={() => setStartIndex(prev => Math.max(0, prev - visibleCount))}
+                  >
+                    <ChevronLeft size={18} /> Nhóm 5 từ trước
+                  </button>
+                  <span className={styles.pageInfo}>
+                    Hiển thị <b>{startIndex + 1} - {Math.min(startIndex + visibleCount, filteredVocab.length)}</b> / {filteredVocab.length} từ
+                  </span>
+                  <button 
+                    className={styles.navBtn} 
+                    disabled={startIndex + visibleCount >= filteredVocab.length}
+                    onClick={() => setStartIndex(prev => prev + visibleCount)}
+                  >
+                    Nhóm 5 từ tiếp theo <ChevronRight size={18} />
+                  </button>
+                </div>
             </div>
           )}
 
