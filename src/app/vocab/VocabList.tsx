@@ -347,9 +347,9 @@ export default function VocabList() {
       return;
     }
 
-    const isDuplicate = vocab.some(v => v.word === newWord.word);
-    if (isDuplicate) {
-      alert(`Từ "${newWord.word}" đã tồn tại trong danh sách! Vui lòng kiểm tra lại.`);
+    const isDuplicateInLesson = vocab.some(v => v.word === newWord.word && v.lesson_id === newWord.lesson_id);
+    if (isDuplicateInLesson) {
+      alert(`Từ "${newWord.word}" đã tồn tại trong buổi học này!`);
       return;
     }
 
@@ -526,9 +526,18 @@ export default function VocabList() {
   };
 
   const filteredVocab = vocab.filter(item => {
-    if (selectedLessonId === "all") return false;
-    const matchesSearch = item.word.includes(search) || item.meaning.toLowerCase().includes(search.toLowerCase());
-    return matchesSearch && item.lesson_id === selectedLessonId;
+    const matchesSearch = item.word.includes(search) || 
+                         item.meaning.toLowerCase().includes(search.toLowerCase()) ||
+                         item.pinyin.toLowerCase().includes(search.toLowerCase());
+    
+    if (search.trim() !== "") {
+      // Nếu đang tìm kiếm: Cho phép tìm trên toàn bộ buổi học
+      return matchesSearch;
+    } else {
+      // Nếu không tìm kiếm: Lọc theo buổi học được chọn
+      if (selectedLessonId === "all") return false;
+      return item.lesson_id === selectedLessonId;
+    }
   });
 
   return (
@@ -593,6 +602,7 @@ export default function VocabList() {
                 <th>Pinyin</th>
                 <th>Loại từ</th>
                 <th>Nghĩa Việt</th>
+                {search.trim() !== "" && <th>Buổi học</th>}
                 <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
@@ -604,6 +614,7 @@ export default function VocabList() {
                   <td className={styles.pinyinCell}>{item.pinyin}</td>
                   <td className={styles.typeCell}>{item.word_type}</td>
                   <td className={styles.meaningCell}>{item.meaning}</td>
+                  {search.trim() !== "" && <td style={{fontSize:'0.8rem', color:'var(--primary)', fontWeight:600}}>{item.lesson}</td>}
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
                       <button className={styles.iconBtn} onClick={() => speak(item.word)} title="Phát âm"><Play size={16} /></button>
