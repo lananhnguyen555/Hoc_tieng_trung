@@ -22,7 +22,7 @@ export default function PhrasesList() {
   const [search, setSearch] = useState("");
   const [phrases, setPhrases] = useState<Phrase[]>([]);
   const [lessons, setLessons] = useState<any[]>([]);
-  const [selectedLessonId, setSelectedLessonId] = useState<string>("all_visible");
+  const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   
   const [showAddModal, setShowAddModal] = useState(false);
@@ -336,8 +336,18 @@ export default function PhrasesList() {
 
   const filteredPhrases = phrases.filter(item => {
     const matchesSearch = item.word.includes(search) || item.meaning.toLowerCase().includes(search.toLowerCase());
-    return matchesSearch;
+    
+    if (search.trim() !== "") {
+      return matchesSearch;
+    } else {
+      if (selectedLessonId === "all") return false;
+      return matchesSearch && item.lesson_id === selectedLessonId;
+    }
   });
+
+  const getLessonName = (id: string) => {
+    return lessons.find(l => l.id === id)?.name || "Kho chung";
+  };
 
   const handleOpenDetailed = (p: Phrase) => {
     setDetailedPhrase(p);
@@ -352,8 +362,41 @@ export default function PhrasesList() {
         <p className={styles.subtitle}>Đồng bộ hóa Cloud và luyện tập mọi lúc mọi nơi.</p>
       </header>
 
-      <div className={styles.toolbar} style={{display: 'none'}}>
-        {/* Toolbar hidden as requested, using FAB instead */}
+      <div className={styles.toolbar}>
+        <div className={styles.filterSection}>
+          <label style={{fontWeight:700}}>Buổi học:</label>
+          <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
+            <select className={styles.lessonSelect} value={selectedLessonId} onChange={(e) => setSelectedLessonId(e.target.value)}>
+              <option value="all">--- Chọn buổi học ---</option>
+              {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+            </select>
+            <button className={styles.iconBtn} onClick={handleAddLesson} title="Thêm buổi học mới" style={{padding:'5px', background:'var(--primary)', color:'white', borderRadius:'4px', display:'flex'}}>
+              <Plus size={20} />
+            </button>
+            {selectedLessonId !== "all" && (
+              <button className={styles.iconBtn} onClick={handleDeleteLesson} title="Xóa buổi này" style={{padding:'5px', background:'#ef4444', color:'white', borderRadius:'4px', display:'flex'}}>
+                <Trash2 size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.searchWrapper}>
+          <Search className={styles.searchIcon} size={20} />
+          <input type="text" placeholder="Tìm kiếm câu giao tiếp..." className={styles.searchInput} value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+
+        <div className={styles.actionBtns}>
+          <button className={styles.addBtn} style={{background:'#1ea362', color:'white'}} onClick={handleExportExcel}>
+            <FileUp size={20} /> Xuất Excel
+          </button>
+          <button className={styles.addBtn} style={{background:'var(--foreground)', color:'white'}} onClick={() => setShowImportModal(true)}>
+            <LogIn size={20} /> Nhập Excel
+          </button>
+          <button className={styles.addBtn} onClick={handleOpenAddModal}>
+            <Plus size={20} /> Thêm câu mới
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -366,14 +409,15 @@ export default function PhrasesList() {
                 <th className={styles.sttCell}>STT</th>
                 <th>Nội dung (Hán tự + Pinyin)</th>
                 <th>Nghĩa tiếng Việt</th>
-                <th>Ghi chú</th>
+                {search.trim() !== "" && <th>Buổi học</th>}
+                <th className={styles.actionCell}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {filteredPhrases.map((item, index) => (
-                <tr key={item.id} onClick={() => handleOpenDetailed(item)} style={{cursor:'pointer'}}>
+                <tr key={item.id}>
                   <td className={styles.sttCell}>{index + 1}</td>
-                  <td className={styles.wordCell} style={{minWidth: '250px'}}>
+                  <td className={styles.wordCell} style={{minWidth: '250px'}} onClick={() => handleOpenDetailed(item)}>
                     <div className="hanzi" style={{lineHeight: 1.1, fontSize: '2.5rem'}}>{item.word}</div>
                     <div className={styles.pinyinSub} style={{fontWeight: 800, color: '#0f172a', fontSize: '0.95rem'}}>
                       ({pinyin(item.word, { toneType: 'symbol' })})
@@ -382,9 +426,13 @@ export default function PhrasesList() {
                   <td className={styles.meaningCell} style={{fontSize: '1rem', fontWeight: 600}}>
                     {item.meaning}
                   </td>
-                  <td className={styles.contentCell}>
-                    {/* Giả sử meaning ghi chú cũ rơi vào đây, hoặc bạn có thể đổi field */}
-                    -
+                  {search.trim() !== "" && <td style={{fontSize:'0.8rem', color:'var(--primary)', fontWeight:600}}>{getLessonName(item.lesson_id)}</td>}
+                  <td className={styles.actionCell}>
+                    <div className={styles.iconGroup}>
+                      <button className={styles.iconBtn} onClick={() => speak(item.word)} title="Phát âm"><Play size={16} /></button>
+                      <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)} title="Chỉnh sửa"><Edit2 size={16} /></button>
+                      <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => handleDeletePhrase(item.id)} title="Xóa"><Trash2 size={16} /></button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -430,6 +478,13 @@ export default function PhrasesList() {
                 onChange={e => setNewPhrase({...newPhrase, meaning: e.target.value})} 
                 onKeyDown={e => handleKeyDown(e, (val) => setNewPhrase({...newPhrase, meaning: val}), newPhrase.meaning)}
               />
+            </div>
+            <div className={styles.formGroup} style={{marginBottom:'1.5rem'}}>
+              <label>Thuộc buổi học *</label>
+              <select className={styles.formInput} value={newPhrase.lesson_id} onChange={e => setNewPhrase({...newPhrase, lesson_id: e.target.value})}>
+                <option value="">-- Chọn buổi học --</option>
+                {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </select>
             </div>
             <button className={styles.saveBtn} style={{width:'100%'}} onClick={handleSaveNewPhrase}>Lưu mẫu câu</button>
           </div>
