@@ -18,10 +18,10 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 1200px; /* Thêm max-width trực tiếp tại đây */
-  margin: 0 auto; /* Căn giữa container */
-  padding: 0 2rem; /* Thêm padding ngang */
-  height: 100%; /* Đảm bảo các khối chiếm hết chiều cao 80px của Navbar */
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 100%;
 }
 
 
@@ -46,8 +46,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1.2rem;
-  white-space: nowrap; /* Ép 1 hàng */
+  gap: 1.5rem;
+  white-space: nowrap;
 }
 
 .rightSection {
@@ -152,11 +152,53 @@
   color: var(--primary);
 }
 
-@media (max-width: 768px) {
-  .links span {
+@media (max-width: 992px) {
+  .logo {
+    flex: 0 0 auto;
+    margin-right: 1.5rem;
+  }
+  
+  .logoText {
+    font-size: 1.2rem;
+  }
+
+  .betaBadge {
     display: none;
   }
+
+  .nav {
+    padding: 0 1rem;
+  }
+
   .links {
-    gap: 1.5rem;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    padding: 0 0.5rem;
+    gap: 1.2rem;
+  }
+
+  .links::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  .link span {
+    display: inline !important; /* Hiện chữ đầy đủ */
+    font-size: 0.9rem;
+  }
+
+  .link {
+    gap: 0.4rem;
+  }
+
+  .rightSection {
+    flex: 0 0 auto;
+    margin-left: 1rem;
+    gap: 0.8rem;
+  }
+
+  .userEmail span {
+    display: none; /* Ẩn chữ "@email" nếu quá dài trên mobile */
   }
 }
