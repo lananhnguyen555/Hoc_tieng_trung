@@ -45,7 +45,8 @@ export default function Navbar() {
     <header className={styles.header}>
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoText}> Học Tiếng Trung <span className={styles.betaBadge}>BETA</span></span>
+          <span className={styles.logoMain}>Học Tiếng Trung</span>
+          <span className={styles.betaBadge}>BETA</span>
         </Link>
 
         <div className={styles.links}>

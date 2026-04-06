@@ -36,7 +36,7 @@
   white-space: nowrap; /* Ép tên trên 1 hàng */
 }
 
-.logoText {
+.logoMain {
   color: #0f172a;
   font-weight: 900;
 }
@@ -155,28 +155,38 @@
 @media (max-width: 992px) {
   .logo {
     flex: 0 0 auto;
+    flex-direction: column; /* Chia làm 2 dòng: "Học Tiếng Trung" và "BETA" */
+    align-items: flex-start;
+    gap: 0;
     margin-right: 1.5rem;
+    line-height: 1;
   }
   
-  .logoText {
-    font-size: 1.2rem;
+  .logoMain {
+    font-size: 0.85rem; /* Thu nhỏ chữ */
+    white-space: nowrap;
   }
 
   .betaBadge {
-    display: none;
+    display: inline-block;
+    font-size: 0.55rem;
+    padding: 0.05rem 0.3rem;
+    background: #ef4444; /* Màu đỏ nổi bật cho BETA */
+    margin: 0.1rem 0 0 0;
   }
 
   .nav {
-    padding: 0 1rem;
+    padding: 0 0.8rem;
   }
 
   .links {
+    flex: 1;
     justify-content: flex-start;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox */
-    padding: 0 0.5rem;
-    gap: 1.2rem;
+    scrollbar-width: none;
+    padding: 0;
+    gap: 1.5rem;
   }
 
   .links::-webkit-scrollbar {
