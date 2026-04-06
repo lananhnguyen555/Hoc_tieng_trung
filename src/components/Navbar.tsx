@@ -73,6 +73,22 @@ export default function Navbar() {
           </Link>
         </div>
 
+        <div className={styles.mobileNav}>
+          <select 
+            value={usePathname()} 
+            onChange={(e) => router.push(e.target.value)}
+            className={styles.mobileSelect}
+          >
+            <option value="/">🏠 Trang chủ</option>
+            <option value="/vocab">📖 Từ vựng</option>
+            <option value="/vocab/summary">📚 Tổng hợp</option>
+            <option value="/phrases">💬 Giao tiếp</option>
+            <option value="/grammar">🎓 Ngữ pháp</option>
+            <option value="/rules">⚖️ Quy tắc</option>
+            <option value="/study">✍️ Ôn tập</option>
+          </select>
+        </div>
+
         <div className={styles.rightSection}>
           {user ? (
             <div className={styles.userSection}>
