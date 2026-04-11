@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Play, Plus, X, Edit2, Trash2, BookOpen, Save, FileUp, LogIn } from "lucide-react";
+import { Search, Volume2, Plus, X, Edit2, Trash2, BookOpen, Save, FileUp, LogIn } from "lucide-react";
 import styles from "./vocab.module.css";
 import HanziWriter from "hanzi-writer";
 import { supabase } from "@/lib/supabase";
@@ -152,7 +152,7 @@ export default function VocabList() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
+      const { data: dbLessons } = await supabase.from("lessons").select("*").not("type", "eq", "phrases").order("created_at");
       const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
       const { data: dbVocab, error } = await supabase.from("vocab").select("*, lessons(name, id)").order("created_at", { ascending: true });
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
@@ -311,8 +311,13 @@ export default function VocabList() {
     setSelectedLessonId(nl.id);
   };
 
-  const handleDeleteLesson = () => {
+  const handleDeleteLesson = async () => {
     if (selectedLessonId === "all" || !confirm("Xóa cả buổi và từ vựng?")) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user && !selectedLessonId.startsWith("lesson-")) {
+      const { error } = await supabase.from("lessons").delete().eq("id", selectedLessonId);
+      if (error) { alert("Lỗi xóa Cloud: " + error.message); return; }
+    }
     const localL = JSON.parse(localStorage.getItem("user_lessons") || "[]");
     localStorage.setItem("user_lessons", JSON.stringify(localL.filter((l: any) => l.id !== selectedLessonId)));
     setLessons(prev => prev.filter(l => l.id !== selectedLessonId));
@@ -321,6 +326,7 @@ export default function VocabList() {
     localStorage.setItem("user_vocab", JSON.stringify(filteredV));
     setVocab(prev => prev.filter(v => v.lesson_id !== selectedLessonId));
     setSelectedLessonId("all");
+    alert("Đã xóa dứt điểm!");
   };
 
   const handleExportExcel = () => {
@@ -384,7 +390,7 @@ export default function VocabList() {
                   <td className={styles.meaningCell}>{item.meaning}</td>
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
-                      <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>
+                      <button className={styles.iconBtn} onClick={() => speak(item.word)} title="Nghe phát âm"><Volume2 size={16} /></button>
                       {(isAdmin(userEmail) || item.id.startsWith("local-") || item.id.startsWith("excel-")) && (
                         <><button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
                         <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDeleteWord(item.id, e)}><Trash2 size={16} /></button></>
@@ -440,11 +446,14 @@ export default function VocabList() {
           <div className={styles.detailModal} onClick={e => e.stopPropagation()}>
             <div className={styles.detailContent}>
               <div className={styles.hanziSection}>
-                <div ref={writerContainerRef} className={styles.writerContainer} onClick={() => speak(detailedWord.word)} style={{cursor:'pointer'}} title="Nghe phát âm"></div>
+                <div ref={writerContainerRef} className={styles.writerContainer}></div>
                 <div className={styles.charTabs}>{(detailedWord.word.match(/[\u4e00-\u9fa5]/g) || []).map((char, index) => (
                   <button key={index} className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`} onClick={() => {setCurrentCharIndex(index); speak(char);}}>{char}</button>
                 ))}</div>
-                <button className={styles.iconBtn} style={{marginTop:'1rem'}} onClick={() => {setCurrentCharIndex(0); writerInstance.current?.animateCharacter();}}>Vẽ lại</button>
+                <div style={{display:'flex', gap:'0.5rem', marginTop:'1rem', justifyContent:'center'}}>
+                  <button className={styles.iconBtn} onClick={() => {setCurrentCharIndex(0); writerInstance.current?.animateCharacter();}} title="Vẽ lại">Vẽ lại</button>
+                  <button className={styles.iconBtn} onClick={() => speak(detailedWord.word)} title="Nghe phát âm" style={{background:'rgba(14,165,233,0.15)', color:'var(--primary)'}}><Volume2 size={20} /></button>
+                </div>
               </div>
               <div className={styles.infoSection}>
                 <div className={styles.formGroup}><label>Hán tự</label><textarea className={`${styles.formInput} hanzi`} value={detailedWord.word} onChange={e => setDetailedWord({...detailedWord, word: e.target.value})} /></div>
