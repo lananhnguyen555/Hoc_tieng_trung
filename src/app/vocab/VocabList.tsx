@@ -9,6 +9,7 @@ import HanziSuggester from "@/components/HanziSuggester";
 import { HAN_VIET_DATA } from "@/lib/han-viet";
 import * as XLSX from "xlsx";
 import { pinyin } from "pinyin-pro";
+import { isAdmin } from "@/lib/auth-utils";
 
 interface Word {
   id: string;
@@ -26,6 +27,7 @@ export default function VocabList() {
   const [lessons, setLessons] = useState<any[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -167,6 +169,8 @@ export default function VocabList() {
       }
 
       const { data: { session } } = await supabase.auth.getSession();
+      setUserEmail(session?.user?.email || null);
+
       if (session?.user) {
         finalLessons = [...finalLessons]; // Migration logic omitted for brevity in rewrite
       } else {
@@ -343,7 +347,7 @@ export default function VocabList() {
               {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
             <button className={styles.iconBtn} onClick={handleAddLesson} style={{background:'var(--primary)', color:'white'}}><Plus size={20} /></button>
-            {selectedLessonId !== "all" && <button className={styles.iconBtn} onClick={handleDeleteLesson} style={{background:'#ef4444', color:'white'}}><Trash2 size={18} /></button>}
+            {selectedLessonId !== "all" && isAdmin(userEmail) && <button className={styles.iconBtn} onClick={handleDeleteLesson} style={{background:'#ef4444', color:'white'}}><Trash2 size={18} /></button>}
           </div>
         </div>
         <div className={styles.searchWrapper}>
@@ -379,8 +383,12 @@ export default function VocabList() {
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
                       <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>
-                      <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
-                      <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDeleteWord(item.id, e)}><Trash2 size={16} /></button>
+                      {(isAdmin(userEmail) || item.id.startsWith("local-") || item.id.startsWith("excel-")) && (
+                        <>
+                          <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
+                          <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDeleteWord(item.id, e)}><Trash2 size={16} /></button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -493,8 +501,12 @@ export default function VocabList() {
                 <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={detailedWord.pinyin} onChange={e => setDetailedWord({...detailedWord, pinyin: e.target.value})} /></div>
                 <div className={styles.formGroup}><label>Nghĩa Việt</label><textarea className={styles.formInput} value={detailedWord.meaning} onChange={e => setDetailedWord({...detailedWord, meaning: e.target.value})} onKeyDown={e => handleKeyDown(e, (v)=>setDetailedWord({...detailedWord, meaning:v}), detailedWord.meaning)} /></div>
                 <div className={styles.formGroup}><label>Loại từ</label><input type="text" className={styles.formInput} value={detailedWord.word_type} onChange={e => setDetailedWord({...detailedWord, word_type: e.target.value})} /></div>
-                <button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} /> Lưu thay đổi</button>
-                <button className={styles.iconBtn} style={{background:'#ef4444', color:'white', width:'100%', marginTop:'0.5rem', justifyContent:'center'}} onClick={(e) => handleDeleteWord(detailedWord.id, e)}><Trash2 size={16} /> Xóa từ</button>
+                {(isAdmin(userEmail) || detailedWord.id.startsWith("local-") || detailedWord.id.startsWith("excel-")) && (
+                  <>
+                    <button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} /> Lưu thay đổi</button>
+                    <button className={styles.iconBtn} style={{background:'#ef4444', color:'white', width:'100%', marginTop:'0.5rem', justifyContent:'center'}} onClick={(e) => handleDeleteWord(detailedWord.id, e)}><Trash2 size={16} /> Xóa từ</button>
+                  </>
+                )}
               </div>
             </div>
             <button style={{padding:'1rem', background:'rgba(0,0,0,0.05)', width:'100%'}} onClick={() => setDetailedWord(null)}>Đóng</button>
