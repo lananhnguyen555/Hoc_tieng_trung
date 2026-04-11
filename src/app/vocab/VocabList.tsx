@@ -152,7 +152,7 @@ export default function VocabList() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data: dbLessons } = await supabase.from("lessons").select("*").or("type.neq.phrases,type.is.null").order("created_at");
+      const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
       const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
       const { data: dbVocab, error } = await supabase.from("vocab").select("*, lessons(name, id)").order("created_at", { ascending: true });
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
