@@ -8,14 +8,35 @@ import { supabase } from "@/lib/supabase";
 import HanziSuggester from "@/components/HanziSuggester";
 import { HAN_VIET_DATA } from "@/lib/han-viet";
 import * as XLSX from "xlsx";
-import { FileUp, LogIn } from "lucide-react";
+import { FileUp, LogIn, GripVertical } from "lucide-react";
 import { pinyin } from "pinyin-pro";
+import { isAdmin } from "@/lib/auth-utils";
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 interface Phrase {
   id: string;
   word: string; // Nội dung
   meaning: string; // Ghi chú
   lesson_id: string;
+  sort_order: number;
 }
 
 export default function PhrasesList() {
@@ -32,6 +53,18 @@ export default function PhrasesList() {
   const [newPhrase, setNewPhrase] = useState({ 
     word: "", meaning: "", lesson_id: ""
   });
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -97,7 +130,7 @@ export default function PhrasesList() {
       const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
       const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
 
-      const { data: dbPhrases, error } = await supabase.from("phrases").select("*");
+      const { data: dbPhrases, error } = await supabase.from("phrases").select("*").order("sort_order", { ascending: true });
       const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
 
       let finalLessons = [...(dbLessons || [])];
@@ -145,13 +178,23 @@ export default function PhrasesList() {
       }
 
       setLessons(sortLessons(finalLessons));
-      setPhrases(finalPhrases);
+      setPhrases(finalPhrases.sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0)));
+      
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setUserEmail(currentSession?.user?.email || null);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email || null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSaveNewPhrase = async () => {
     if (!newPhrase.word || !newPhrase.lesson_id) {
@@ -172,16 +215,50 @@ export default function PhrasesList() {
         setPhrases(prev => [...prev, data]);
         setShowAddModal(false);
         setNewPhrase({ word: "", meaning: "", lesson_id: "" });
-        alert("Đã lưu lên Cloud!");
+        alert("Đã lưu Cloud!");
       }
     } else {
-      const phraseToAdd: Phrase = { ...newPhrase, id: `phrase-${Date.now()}` };
+      const phraseToAdd: Phrase = { 
+        ...newPhrase, 
+        id: `phrase-${Date.now()}`,
+        sort_order: phrases.length
+      };
       const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
       localStorage.setItem("user_phrases", JSON.stringify([...localPhrases, phraseToAdd]));
       setPhrases(prev => [...prev, phraseToAdd]);
       setShowAddModal(false);
       alert("Đã lưu tạm trên máy!");
     }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !isAdmin(userEmail)) return;
+
+    const oldIndex = phrases.findIndex((item) => item.id === active.id);
+    const newIndex = phrases.findIndex((item) => item.id === over.id);
+
+    const newList = arrayMove(phrases, oldIndex, newIndex).map((item, index) => ({
+      ...item,
+      sort_order: index
+    }));
+
+    setPhrases(newList);
+
+    const updates = newList.filter(item => !item.id.startsWith('phrase-')).map(item => ({
+      id: item.id,
+      sort_order: item.sort_order,
+      word: item.word,
+      meaning: item.meaning,
+      lesson_id: item.lesson_id
+    }));
+
+    if (updates.length > 0) {
+      await supabase.from("phrases").upsert(updates);
+    }
+
+    const locals = newList.filter(item => item.id.startsWith('phrase-'));
+    localStorage.setItem("user_phrases", JSON.stringify(locals));
   };
 
   const handleUpdatePhraseInfo = async () => {
@@ -390,7 +467,7 @@ export default function PhrasesList() {
             <button className={styles.iconBtn} onClick={handleAddLesson} title="Thêm buổi học mới" style={{padding:'5px', background:'var(--primary)', color:'white', borderRadius:'4px', display:'flex'}}>
               <Plus size={20} />
             </button>
-            {selectedLessonId !== "all" && (
+            {selectedLessonId !== "all" && isAdmin(userEmail) && (
               <button className={styles.iconBtn} onClick={handleDeleteLesson} title="Xóa buổi này" style={{padding:'5px', background:'#ef4444', color:'white', borderRadius:'4px', display:'flex'}}>
                 <Trash2 size={18} />
               </button>
@@ -410,9 +487,11 @@ export default function PhrasesList() {
           <button className={styles.addBtn} style={{background:'var(--foreground)', color:'white'}} onClick={() => setShowImportModal(true)}>
             <LogIn size={20} /> Nhập Excel
           </button>
-          <button className={styles.addBtn} onClick={handleOpenAddModal}>
-            <Plus size={20} /> Thêm câu mới
-          </button>
+          {isAdmin(userEmail) && (
+            <button className={styles.addBtn} onClick={handleOpenAddModal}>
+              <Plus size={20} /> Thêm câu mới
+            </button>
+          )}
         </div>
       </div>
 
@@ -420,49 +499,54 @@ export default function PhrasesList() {
         <div className={styles.emptyState}>Đang tải...</div>
       ) : (
         <div className={styles.tableWrapper}>
-          <table className={styles.vocabTable}>
-            <thead>
-              <tr>
-                <th className={styles.sttCell}>STT</th>
-                <th>Nội dung (Hán tự + Pinyin)</th>
-                <th>Nghĩa tiếng Việt</th>
-                {search.trim() !== "" && <th>Buổi học</th>}
-                <th className={styles.actionCell}>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPhrases.map((item, index) => (
-                <tr key={item.id}>
-                  <td className={styles.sttCell}>{index + 1}</td>
-                  <td className={styles.wordCell} style={{minWidth: '250px'}} onClick={() => handleOpenDetailed(item)}>
-                    <div className="hanzi" style={{lineHeight: 1.1, fontSize: '2.5rem'}}>{item.word}</div>
-                    <div className={styles.pinyinSub} style={{fontWeight: 800, color: '#0f172a', fontSize: '0.95rem'}}>
-                      ({pinyin(item.word, { toneType: 'symbol' })})
-                    </div>
-                  </td>
-                  <td className={styles.meaningCell} style={{fontSize: '1rem', fontWeight: 600}}>
-                    {item.meaning}
-                  </td>
-                  {search.trim() !== "" && <td style={{fontSize:'0.8rem', color:'var(--primary)', fontWeight:600}}>{getLessonName(item.lesson_id)}</td>}
-                  <td className={styles.actionCell}>
-                    <div className={styles.iconGroup}>
-                      <button className={styles.iconBtn} onClick={() => speak(item.word)} title="Phát âm"><Play size={16} /></button>
-                      <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)} title="Chỉnh sửa"><Edit2 size={16} /></button>
-                      <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => handleDeletePhrase(item.id)} title="Xóa"><Trash2 size={16} /></button>
-                    </div>
-                  </td>
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <table className={styles.vocabTable}>
+              <thead>
+                <tr>
+                  <th className={styles.sttCell}>STT</th>
+                  <th>Nội dung (Hán tự + Pinyin)</th>
+                  <th>Nghĩa tiếng Việt</th>
+                  {search.trim() !== "" && <th>Buổi học</th>}
+                  {isAdmin(userEmail) && <th className={styles.actionCell}>Thao tác</th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <SortableContext 
+                  items={filteredPhrases.map(i => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {filteredPhrases.map((item, index) => (
+                    <SortableRow 
+                      key={item.id} 
+                      item={item} 
+                      index={index} 
+                      isAdmin={isAdmin(userEmail)}
+                      onEdit={() => handleOpenDetailed(item)}
+                      onDelete={() => handleDeletePhrase(item.id)}
+                      onSpeak={() => speak(item.word)}
+                      showLesson={search.trim() !== ""}
+                      lessonName={getLessonName(item.lesson_id)}
+                    />
+                  ))}
+                </SortableContext>
+              </tbody>
+            </table>
+          </DndContext>
         </div>
       )}
 
 
 
-      <button className={styles.floatingAddBtn} onClick={handleOpenAddModal} title="Thêm mẫu câu mới nhanh">
-        <Plus size={28} />
-      </button>
+      {isAdmin(userEmail) && (
+        <button className={styles.floatingAddBtn} onClick={handleOpenAddModal} title="Thêm mẫu câu mới nhanh">
+          <Plus size={28} />
+        </button>
+      )}
 
       {/* Add Modal */}
       {showAddModal && (
@@ -554,9 +638,11 @@ export default function PhrasesList() {
                     onKeyDown={e => handleKeyDown(e, (val) => setDetailedPhrase({...detailedPhrase, meaning: val}), detailedPhrase.meaning)}
                   />
                 </div>
-                <button className={styles.saveBtn} style={{width:'100%', marginTop:'2rem'}} onClick={handleUpdatePhraseInfo}>
-                  <Save size={18} style={{marginRight:'0.5rem'}} /> Lưu thay đổi
-                </button>
+                {isAdmin(userEmail) && (
+                  <button className={styles.saveBtn} style={{width:'100%', marginTop:'2rem'}} onClick={handleUpdatePhraseInfo}>
+                    <Save size={18} style={{marginRight:'0.5rem'}} /> Lưu thay đổi
+                  </button>
+                )}
               </div>
             </div>
             <button style={{padding:'1rem', width:'100%', borderTop:'1px solid var(--border)', fontWeight:700}} onClick={() => setDetailedPhrase(null)}>Đóng</button>
@@ -564,5 +650,55 @@ export default function PhrasesList() {
         </div>
       )}
     </div>
+  );
+}
+
+function SortableRow({ item, index, isAdmin, onEdit, onDelete, onSpeak, showLesson, lessonName }: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 200 : 0,
+    position: 'relative' as any,
+    background: isDragging ? '#f1f5f9' : undefined,
+    opacity: isDragging ? 0.8 : 1
+  };
+
+  return (
+    <tr ref={setNodeRef} style={style}>
+      <td className={styles.sttCell} {...(isAdmin ? attributes : {})} {...(isAdmin ? listeners : {})} style={{cursor: isAdmin ? 'grab' : 'default'}}>
+        {isAdmin && <GripVertical size={14} style={{marginRight: 4, opacity: 0.5}} />}
+        {index + 1}
+      </td>
+      <td className={styles.wordCell} style={{minWidth: '250px'}} onClick={onEdit}>
+        <div className="hanzi" style={{lineHeight: 1.1, fontSize: '2.5rem'}}>{item.word}</div>
+        <div className={styles.pinyinSub} style={{fontWeight: 800, color: '#0f172a', fontSize: '0.95rem'}}>
+          ({pinyin(item.word, { toneType: 'symbol' })})
+        </div>
+      </td>
+      <td className={styles.meaningCell} style={{fontSize: '1rem', fontWeight: 600}}>
+        {item.meaning}
+      </td>
+      {showLesson && <td style={{fontSize:'0.8rem', color:'var(--primary)', fontWeight:600}}>{lessonName}</td>}
+      <td className={styles.actionCell}>
+        <div className={styles.iconGroup}>
+          <button className={styles.iconBtn} onClick={onSpeak} title="Phát âm"><Play size={16} /></button>
+          {isAdmin && (
+            <>
+              <button className={styles.iconBtn} onClick={onEdit} title="Chỉnh sửa"><Edit2 size={16} /></button>
+              <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={onDelete} title="Xóa"><Trash2 size={16} /></button>
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
   );
 }

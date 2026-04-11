@@ -2,14 +2,9 @@
 
 import React from 'react';
 import styles from './phonetics.module.css';
+import { Play } from 'lucide-react';
 
-const TONES = [
-  { tone: 'ā', char: '妈', name: 'Thanh 1 (Ngang)', hint: 'Cao, bằng - Đọc như a (như "ba")' },
-  { tone: 'á', char: '麻', name: 'Thanh 2 (Sắc)', hint: 'Từ thấp lên cao - Đọc như á (như "bá")' },
-  { tone: 'ǎ', char: '马', name: 'Thanh 3 (Hỏi)', hint: 'Xuống thấp rồi lên - Đọc như ả (như "bả")' },
-  { tone: 'à', char: '骂', name: 'Thanh 4 (Dứt khoát)', hint: 'Từ cao xuống thấp, dứt khoát - Đọc như à (như "bạ")' },
-  { tone: 'a', char: '嘛', name: 'Thanh nhẹ', hint: 'Ngắn, nhẹ - Đọc như a không dấu (như "ba")' },
-];
+// Bỏ mảng TONES cũ, thay bằng ảnh
 
 export default function TonesSection() {
   const speak = (char: string) => {
@@ -32,17 +27,22 @@ export default function TonesSection() {
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>4 Thanh Điệu &amp; 1 Thanh Nhẹ</h2>
-      <div className={styles.grid}>
-        {TONES.map((item) => (
-          <div key={item.tone} className={styles.toneCard} onClick={() => speak(item.char)}>
-            <div className={styles.toneChar}>
-              {item.tone} 
-              <span className={styles.toneCharExample}>({item.char})</span>
-            </div>
-            <div className={styles.toneName}>{item.name}</div>
-            <p className={styles.hint}>{item.hint}</p>
+      <div className={styles.imageContainer}>
+        <img 
+          src="/images/tones.png" 
+          alt="Sơ đồ 4 thanh điệu tiếng Trung" 
+          className={styles.tonesImage}
+        />
+        <div className={styles.imageOverlay}>
+          <p>Nhấn vào các nút phát âm bên dưới để nghe thử ví dụ</p>
+          <div className={styles.audioGrid}>
+            {['ā/妈', 'á/麻', 'ǎ/马', 'à/骂', 'a/嘛'].map((text) => (
+              <button key={text} className={styles.audioBtn} onClick={() => speak(text.split('/')[1])}>
+                {text} <Play size={14} style={{marginLeft: 4}} />
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

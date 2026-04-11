@@ -338,3 +338,64 @@
   line-height: 1.6;
   font-size: 1.1rem;
 }
+
+/* Tones Section Image Styles */
+.imageContainer {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+  background: white;
+  border: 1px solid var(--border);
+}
+
+.tonesImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  padding: 1rem;
+}
+
+.imageOverlay {
+  padding: 2rem;
+  background: rgba(14, 165, 233, 0.03);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.imageOverlay p {
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+}
+
+.audioGrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.audioBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: 2px solid var(--border);
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 800;
+  color: #0f172a;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.audioBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+}

@@ -1,15 +1,37 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, X, Edit2, Trash2, Info, Maximize2 } from "lucide-react";
+import { Plus, X, Edit2, Trash2, Info, Maximize2, FileUp, GripVertical } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import styles from "./rules.module.css";
 import { pinyin } from "pinyin-pro";
+import * as XLSX from "xlsx";
+import { isAdmin } from "@/lib/auth-utils";
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 interface Rule {
   id: string;
   title: string;
   content: string;
+  sort_order: number;
 }
 
 export default function RulesPage() {
@@ -19,6 +41,18 @@ export default function RulesPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Rule | null>(null);
   const [newItem, setNewItem] = useState({ title: "", content: "" });
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   
 
 
@@ -31,20 +65,30 @@ export default function RulesPage() {
       const { data, error } = await supabase
         .from("rules")
         .select("*")
-        .order("created_at", { ascending: true });
+        .order("sort_order", { ascending: true });
 
       if (error) throw error;
       
       const localData = JSON.parse(localStorage.getItem("user_rules") || "[]");
-      setRules([...(data || []), ...localData]);
+      setRules([...(data || []), ...localData].sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0)));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      setUserEmail(session?.user?.email || null);
     } catch (err) {
       console.error("Error fetching rules:", err);
       const localData = JSON.parse(localStorage.getItem("user_rules") || "[]");
-      setRules(localData);
+      setRules(localData.sort((a:any, b:any) => (a.sort_order || 0) - (b.sort_order || 0)));
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email || null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, setter: (val: string) => void, currentVal: string) => {
     if (e.key === 'Enter') {
@@ -71,7 +115,11 @@ export default function RulesPage() {
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
-    const entry = { ...newItem, id: `local-r-${Date.now()}` };
+    const entry: Rule = { 
+      ...newItem, 
+      id: `local-r-${Date.now()}`,
+      sort_order: rules.length 
+    };
     const localData = JSON.parse(localStorage.getItem("user_rules") || "[]");
     localStorage.setItem("user_rules", JSON.stringify([...localData, entry]));
     
@@ -103,10 +151,58 @@ export default function RulesPage() {
     return text.split(/([\u4e00-\u9fa5]+)/g).map((part, i) => {
       if (/[\u4e00-\u9fa5]/.test(part)) {
         const py = pinyin(part, { toneType: 'symbol' });
-        return `${part} (${py})`;
+        return (
+          <span key={i} style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle', margin: '0 4px' }}>
+            <span className="hanzi" style={{ lineHeight: 1 }}>{part}</span>
+            <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600, marginTop: '-2px' }}>
+              ({py})
+            </span>
+          </span>
+        );
       }
-      return part;
-    }).join("");
+      return <span key={i} style={{fontWeight: 700, color: '#0f172a'}}>{part}</span>;
+    });
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !isAdmin(userEmail)) return;
+
+    const oldIndex = rules.findIndex((item) => item.id === active.id);
+    const newIndex = rules.findIndex((item) => item.id === over.id);
+
+    const newList = arrayMove(rules, oldIndex, newIndex).map((item, index) => ({
+      ...item,
+      sort_order: index
+    }));
+
+    setRules(newList);
+
+    const updates = newList.filter(item => !item.id.startsWith('local-')).map(item => ({
+      id: item.id,
+      sort_order: item.sort_order,
+      title: item.title,
+      content: item.content
+    }));
+
+    if (updates.length > 0) {
+      await supabase.from("rules").upsert(updates);
+    }
+
+    const locals = newList.filter(item => item.id.startsWith('local-'));
+    localStorage.setItem("user_rules", JSON.stringify(locals));
+  };
+
+  const handleExportExcel = () => {
+    const data = rules.map((item, index) => ({
+      "STT": index + 1,
+      "Quy tắc": item.title,
+      "Ghi chú": item.content
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "QuyTac");
+    XLSX.writeFile(wb, `QuyTac_${new Date().toLocaleDateString()}.xlsx`);
   };
 
   const renderTitle = (text: string) => {
@@ -130,7 +226,11 @@ export default function RulesPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Quy tắc Tiếng Trung</h1>
-        <p className={styles.subtitle}>Các quy tắc biến điệu, viết chữ và phát âm quan trọng.</p>
+        <p className={styles.subtitle}>Các quy tắc biến điệu, viết chữ và phát âm quan trọng (Kéo STT để đổi thứ tự).</p>
+        <div style={{display:'flex', gap:'1rem', marginTop:'1rem', justifyContent:'center'}}>
+          <button className={styles.addBtn} style={{background:'#16a34a'}} onClick={handleExportExcel}><FileUp size={20} /> Xuất Excel</button>
+          {isAdmin(userEmail) && <button className={styles.addBtn} onClick={() => setShowAddModal(true)}><Plus size={20} /> Thêm quy tắc</button>}
+        </div>
       </header>
 
 
@@ -139,35 +239,42 @@ export default function RulesPage() {
         <div className={styles.loader}>Đang tải dữ liệu...</div>
       ) : (
         <div className={styles.tableWrapper}>
-          <table className={styles.rulesTable}>
-            <thead>
-              <tr>
-                <th className={styles.sttCell}>STT</th>
-                <th>Nội dung (Bao gồm Hán tự)</th>
-                <th>Ghi chú</th>
-                <th className={styles.actionCell}>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rules.map((rule, index) => (
-                <tr key={rule.id}>
-                   <td className={styles.sttCell}>{index + 1}</td>
-                   <td 
-                    className={styles.ruleTitleCell}
-                  >
-                    {renderTitle(rule.title)}
-                  </td>
-                  <td className={styles.contentCell}>{renderTextWithPinyin(rule.content)}</td>
-                  <td className={styles.actionCell}>
-                    <div className={styles.actionGroup}>
-                      <button className={styles.iconBtn} onClick={() => { setEditingItem(rule); setShowEditModal(true); }} title="Sửa"><Edit2 size={18} /></button>
-                      <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDelete(rule.id, e)} title="Xóa"><Trash2 size={18} /></button>
-                    </div>
-                  </td>
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <table className={styles.rulesTable}>
+              <thead>
+                <tr>
+                  <th className={styles.sttCell}>STT</th>
+                  <th>Nội dung (Bao gồm Hán tự)</th>
+                  <th>Ghi chú</th>
+                  {isAdmin(userEmail) && <th className={styles.actionCell}>Thao tác</th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <SortableContext 
+                  items={rules.map(i => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {rules.map((rule, index) => (
+                    <SortableRow 
+                      key={rule.id} 
+                      rule={rule} 
+                      index={index}
+                      isAdmin={isAdmin(userEmail)}
+                      onEdit={() => { setEditingItem(rule); setShowEditModal(true); }}
+                      onDelete={(e) => handleDelete(rule.id, e)}
+                      renderTitle={renderTitle}
+                      renderTextWithPinyin={renderTextWithPinyin}
+                    />
+                  ))}
+                </SortableContext>
+              </tbody>
+            </table>
+          </DndContext>
 
           {rules.length === 0 && (
             <div className={styles.empty}>Chưa có quy tắc nào được lưu.</div>
@@ -176,9 +283,11 @@ export default function RulesPage() {
       )}
 
       {/* FAB Thêm nhanh */}
-      <button className={styles.floatingAddBtn} onClick={() => setShowAddModal(true)} title="Thêm mới nhanh">
-        <Plus size={28} />
-      </button>
+      {isAdmin(userEmail) && (
+        <button className={styles.floatingAddBtn} onClick={() => setShowAddModal(true)} title="Thêm mới nhanh">
+          <Plus size={28} />
+        </button>
+      )}
 
       {/* Edit Modal (Add/Edit) */}
 
@@ -264,5 +373,46 @@ export default function RulesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function SortableRow({ rule, index, isAdmin, onEdit, onDelete, renderTitle, renderTextWithPinyin }: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: rule.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 200 : 0,
+    position: 'relative' as any,
+    background: isDragging ? '#f1f5f9' : undefined,
+    opacity: isDragging ? 0.8 : 1
+  };
+
+  return (
+    <tr ref={setNodeRef} style={style}>
+      <td className={styles.sttCell} {...(isAdmin ? attributes : {})} {...(isAdmin ? listeners : {})} style={{cursor: isAdmin ? 'grab' : 'default'}}>
+        {isAdmin && <GripVertical size={14} style={{marginRight: 4, opacity: 0.5}} />}
+        {index + 1}
+      </td>
+      <td className={styles.ruleTitleCell}>
+        {renderTitle(rule.title)}
+      </td>
+      <td className={styles.contentCell}>{renderTextWithPinyin(rule.content)}</td>
+      {isAdmin && (
+        <td className={styles.actionCell}>
+          <div className={styles.actionGroup}>
+            <button className={styles.iconBtn} onClick={onEdit} title="Sửa"><Edit2 size={18} /></button>
+            <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={onDelete} title="Xóa"><Trash2 size={18} /></button>
+          </div>
+        </td>
+      )}
+    </tr>
   );
 }

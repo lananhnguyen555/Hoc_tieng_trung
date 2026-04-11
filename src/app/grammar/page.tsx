@@ -1,16 +1,38 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, X, Edit2, Trash2, Filter, ChevronDown, Maximize2 } from "lucide-react";
+import { Plus, X, Edit2, Trash2, Filter, ChevronDown, Maximize2, FileUp, GripVertical } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import styles from "./grammar.module.css";
 import { pinyin } from "pinyin-pro";
+import * as XLSX from "xlsx";
+import { isAdmin } from "@/lib/auth-utils";
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 interface GrammarItem {
   id: string;
-  title: string; // Nội dung
-  content: string; // Ghi chú
+  title: string;
+  content: string;
   lesson: string;
+  sort_order: number;
 }
 
 export default function GrammarPage() {
@@ -20,7 +42,19 @@ export default function GrammarPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingItem, setEditingItem] = useState<GrammarItem | null>(null);
   const [newItem, setNewItem] = useState({ title: "", content: "", lesson: "" });
-  const [selectedLesson, setSelectedLesson] = useState<string>("all");
+  const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Để tránh việc click nhầm là drag
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     fetchGrammar();
@@ -31,7 +65,7 @@ export default function GrammarPage() {
       const { data, error } = await supabase
         .from("grammar")
         .select("*")
-        .order("lesson", { ascending: true });
+        .order("sort_order", { ascending: true });
 
       if (error) throw error;
       
@@ -41,15 +75,25 @@ export default function GrammarPage() {
         lesson: item.lesson || "Chưa phân loại"
       }));
       
-      setGrammarList([...(data || []), ...formattedLocal]);
+      setGrammarList([...(data || []), ...formattedLocal].sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0)));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      setUserEmail(session?.user?.email || null);
     } catch (err) {
       console.error("Error fetching grammar:", err);
       const localData = JSON.parse(localStorage.getItem("user_grammar") || "[]");
-      setGrammarList(localData.map((i: any) => ({ ...i, lesson: i.lesson || "Chưa phân loại" })));
+      setGrammarList(localData.map((i: any) => ({ ...i, lesson: i.lesson || "Chưa phân loại" })).sort((a:any, b:any) => (a.sort_order || 0) - (b.sort_order || 0)));
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email || null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const uniqueLessons = useMemo(() => {
     const lessons = Array.from(new Set(grammarList.map(item => item.lesson)));
@@ -80,9 +124,53 @@ export default function GrammarPage() {
   };
 
   const filteredGrammar = useMemo(() => {
-    if (selectedLesson === "all") return grammarList;
-    return grammarList.filter(item => item.lesson === selectedLesson);
-  }, [grammarList, selectedLesson]);
+    return grammarList; // Trang ngữ pháp dùng chung hoặc lọc theo logic khác nếu cần
+  }, [grammarList]);
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !isAdmin(userEmail)) return;
+
+    const oldIndex = grammarList.findIndex((item) => item.id === active.id);
+    const newIndex = grammarList.findIndex((item) => item.id === over.id);
+
+    const newList = arrayMove(grammarList, oldIndex, newIndex).map((item, index) => ({
+      ...item,
+      sort_order: index
+    }));
+
+    setGrammarList(newList);
+
+    // Cập nhật Cloud if admin
+    const updates = newList.filter(item => !item.id.startsWith('local-')).map(item => ({
+      id: item.id,
+      sort_order: item.sort_order,
+      title: item.title,
+      content: item.content,
+      lesson: item.lesson
+    }));
+
+    if (updates.length > 0) {
+      await supabase.from("grammar").upsert(updates);
+    }
+
+    // Cập nhật Local
+    const locals = newList.filter(item => item.id.startsWith('local-'));
+    localStorage.setItem("user_grammar", JSON.stringify(locals));
+  };
+
+  const handleExportExcel = () => {
+    const data = grammarList.map((item, index) => ({
+      "STT": index + 1,
+      "Nội dung": item.title,
+      "Ghi chú": item.content,
+      "Phân loại": item.lesson
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "NguPhap");
+    XLSX.writeFile(wb, `NguPhap_${new Date().toLocaleDateString()}.xlsx`);
+  };
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,53 +230,66 @@ export default function GrammarPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Ngữ pháp tiếng Trung</h1>
-        <p className={styles.subtitle}>Danh sách cấu trúc ngữ pháp được đánh số và trình bày khoa học.</p>
+        <p className={styles.subtitle}>Danh sách cấu trúc ngữ pháp được trình bày khoa học (Nhấn giữ STT để đổi thứ tự).</p>
+        <div style={{display:'flex', gap:'1rem', marginTop:'1rem'}}>
+          <button className={styles.addBtn} style={{background:'#16a34a'}} onClick={handleExportExcel}><FileUp size={20} /> Xuất Excel</button>
+          {isAdmin(userEmail) && <button className={styles.addBtn} onClick={() => setShowAddModal(true)}><Plus size={20} /> Thêm ngữ pháp</button>}
+        </div>
       </header>
 
       {loading ? (
         <div className={styles.loader}>Đang tải dữ liệu...</div>
       ) : (
         <div className={styles.tableWrapper}>
-          <table className={styles.grammarTable}>
-            <thead>
-              <tr>
-                <th className={styles.sttCell}>STT</th>
-                <th>Nội dung (Bao gồm Hán tự)</th>
-                <th>Ghi chú</th>
-                <th className={styles.actionCell}>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredGrammar.map((item, index) => (
-                <tr key={item.id}>
-                  <td className={styles.sttCell}>{index + 1}</td>
-                  <td className={styles.titleCell}>
-                    {renderTextWithPinyin(item.title)}
-                  </td>
-                  <td className={styles.contentCell}>{renderTextWithPinyin(item.content)}</td>
-                  <td className={styles.actionCell}>
-                    <div className={styles.actionGroup}>
-                      <button className={styles.iconBtn} onClick={() => { setEditingItem(item); setShowEditModal(true); }} title="Sửa"><Edit2 size={18} /></button>
-                      <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDelete(item.id, e)} title="Xóa"><Trash2 size={18} /></button>
-                    </div>
-                  </td>
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <table className={styles.grammarTable}>
+              <thead>
+                <tr>
+                  <th className={styles.sttCell}>STT</th>
+                  <th>Nội dung (Bao gồm Hán tự)</th>
+                  <th>Ghi chú</th>
+                  {isAdmin(userEmail) && <th className={styles.actionCell}>Thao tác</th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <SortableContext 
+                  items={filteredGrammar.map(i => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {filteredGrammar.map((item, index) => (
+                    <SortableRow 
+                      key={item.id} 
+                      item={item} 
+                      index={index} 
+                      isAdmin={isAdmin(userEmail)}
+                      onEdit={() => { setEditingItem(item); setShowEditModal(true); }}
+                      onDelete={(e) => handleDelete(item.id, e)}
+                      renderTextWithPinyin={renderTextWithPinyin}
+                    />
+                  ))}
+                </SortableContext>
+              </tbody>
+            </table>
+          </DndContext>
           {filteredGrammar.length === 0 && (
             <div className={styles.empty}>
               Chưa có dữ liệu cho mục này.
             </div>
           )}
-
         </div>
       )}
 
       {/* FAB Thêm nhanh */}
-      <button className={styles.floatingAddBtn} onClick={() => setShowAddModal(true)} title="Thêm mới nhanh">
-        <Plus size={28} />
-      </button>
+      {isAdmin(userEmail) && (
+        <button className={styles.floatingAddBtn} onClick={() => setShowAddModal(true)} title="Thêm mới nhanh">
+          <Plus size={28} />
+        </button>
+      )}
 
 
 
@@ -272,5 +373,46 @@ export default function GrammarPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function SortableRow({ item, index, isAdmin, onEdit, onDelete, renderTextWithPinyin }: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 200 : 0,
+    position: 'relative' as any,
+    background: isDragging ? '#f1f5f9' : undefined,
+    opacity: isDragging ? 0.8 : 1
+  };
+
+  return (
+    <tr ref={setNodeRef} style={style}>
+      <td className={styles.sttCell} {...(isAdmin ? attributes : {})} {...(isAdmin ? listeners : {})} style={{cursor: isAdmin ? 'grab' : 'default'}}>
+        {isAdmin && <GripVertical size={14} style={{marginRight: 4, opacity: 0.5}} />}
+        {index + 1}
+      </td>
+      <td className={styles.titleCell}>
+        {renderTextWithPinyin(item.title)}
+      </td>
+      <td className={styles.contentCell}>{renderTextWithPinyin(item.content)}</td>
+      {isAdmin && (
+        <td className={styles.actionCell}>
+          <div className={styles.actionGroup}>
+            <button className={styles.iconBtn} onClick={onEdit} title="Sửa"><Edit2 size={18} /></button>
+            <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={onDelete} title="Xóa"><Trash2 size={18} /></button>
+          </div>
+        </td>
+      )}
+    </tr>
   );
 }
