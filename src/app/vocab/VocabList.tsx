@@ -38,6 +38,25 @@ const WORD_TYPES = [
   { label: "Từ tượng thanh",    abbr: "Từ tượng thanh" },
 ];
 
+// Bảng ánh xạ tên cũ (tiếng Việt thường) → viết tắt
+const WORD_TYPE_MAP: Record<string, string> = {
+  "danh từ": "N", "danh tu": "N",
+  "động từ": "V", "dong tu": "V",
+  "tính từ": "Adj", "tinh tu": "Adj",
+};
+
+const normalizeWordType = (wt: string): string => {
+  if (!wt) return "";
+  // Đã là giá trị chuẩn thì giữ nguyên
+  if (WORD_TYPES.some(t => t.abbr === wt)) return wt;
+  // Thử ánh xạ từ tên cũ
+  const mapped = WORD_TYPE_MAP[wt.toLowerCase().trim()];
+  if (mapped) return mapped;
+  // Thử khớp label không case-sensitive
+  const found = WORD_TYPES.find(t => t.label.toLowerCase().startsWith(wt.toLowerCase().trim()));
+  return found?.abbr || wt;
+};
+
 export default function VocabList() {
   const [search, setSearch] = useState("");
   const [vocab, setVocab] = useState<Word[]>([]);
@@ -176,9 +195,22 @@ export default function VocabList() {
       let finalLessons = [...(dbLessons || [])];
       let finalVocab: Word[] = [];
       if (!error && dbVocab) {
-        finalVocab = dbVocab.map((item: any) => ({
-          ...item, word_type: item.word_type || "", lesson: item.lessons?.name || "Kho chung", lesson_id: item.lesson_id
-        }));
+        const { data: { session: s } } = await supabase.auth.getSession();
+        const toUpdate: { id: string; word_type: string }[] = [];
+        finalVocab = dbVocab.map((item: any) => {
+          const rawType = item.word_type || "";
+          const normalized = normalizeWordType(rawType);
+          if (normalized !== rawType && s?.user) {
+            toUpdate.push({ id: item.id, word_type: normalized });
+          }
+          return { ...item, word_type: normalized, lesson: item.lessons?.name || "Kho chung", lesson_id: item.lesson_id };
+        });
+        // Cập nhật hàng loạt lên Supabase nếu có dữ liệu cần chuẩn hóa
+        if (toUpdate.length > 0 && s?.user) {
+          for (const item of toUpdate) {
+            await supabase.from("vocab").update({ word_type: item.word_type }).eq("id", item.id);
+          }
+        }
       }
       const { data: { session } } = await supabase.auth.getSession();
       const email = session?.user?.email || null;
@@ -441,7 +473,7 @@ export default function VocabList() {
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td className={`${styles.wordCell} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.word}</td>
                   <td className={styles.pinyinCell}>{item.pinyin}</td>
-                  <td><span className={styles.typeCell}>{WORD_TYPES.find(t => t.abbr === item.word_type || t.label === item.word_type)?.abbr || item.word_type}</span></td>
+                  <td><span className={styles.typeCell}>{normalizeWordType(item.word_type)}</span></td>
                   <td className={styles.meaningCell}>{item.meaning}</td>
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
