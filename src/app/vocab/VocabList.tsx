@@ -216,6 +216,7 @@ export default function VocabList() {
         const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
         let currentVocab = [...vocab, ...localVocab];
         let updatedLocal = [...localVocab];
+        let addedVocab: Word[] = [];
         let addedCount = 0;
 
         const firstCell = String(data[0]?.[0] || "").toLowerCase();
@@ -226,6 +227,7 @@ export default function VocabList() {
           const hanzi = String(row[0] || row.find((val: any) => /[\u4e00-\u9fa5]/.test(String(val || ""))) || "").trim();
           if (!hanzi || hanzi === "undefined" || currentVocab.some(v => v.word === hanzi)) continue;
 
+          console.log("Importing:", hanzi);
           const py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
           let meaning = "";
           try {
@@ -237,7 +239,7 @@ export default function VocabList() {
           }
 
           if (session?.user && isAdmin(session.user.email)) {
-            const { data: dbItem } = await supabase.from("vocab").insert({
+            const { data: dbItem, error: dbError } = await supabase.from("vocab").insert({
               word: hanzi,
               pinyin: py,
               meaning: meaning,
@@ -245,19 +247,36 @@ export default function VocabList() {
               lesson_id: selectedLessonId,
               user_id: session.user.id
             }).select().single();
-            if (dbItem) {
-              setVocab(prev => [...prev, { ...dbItem, lesson: lessons.find(l => l.id === selectedLessonId)?.name }]);
+            
+            if (dbError) {
+              console.error("Cloud insert error:", dbError);
+            } else if (dbItem) {
+              const newItem = { ...dbItem, lesson: lessons.find(l => l.id === selectedLessonId)?.name };
+              addedVocab.push(newItem);
+              console.log("Cloud saved:", hanzi);
             }
           } else {
-            const nw: Word = { id: `excel-${Date.now()}-${i}`, word: hanzi, pinyin: py, meaning, word_type: "", lesson_id: selectedLessonId };
+            const nw: Word = { 
+              id: `excel-${Date.now()}-${i}`, 
+              word: hanzi, pinyin: py, meaning, word_type: "", 
+              lesson_id: selectedLessonId,
+              lesson: lessons.find(l => l.id === selectedLessonId)?.name
+            };
             updatedLocal.push(nw);
-            setVocab(prev => [...prev, nw]);
+            addedVocab.push(nw);
+            console.log("Local buffered:", hanzi);
           }
           addedCount++;
         }
         
         if (updatedLocal.length > localVocab.length) {
           localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
+          console.log("Local storage updated");
+        }
+        
+        // Cập nhật state một lần duy nhất để trigger re-render
+        if (addedVocab.length > 0) {
+          setVocab(prev => [...prev, ...addedVocab]);
         }
         
         setShowImportModal(false);
