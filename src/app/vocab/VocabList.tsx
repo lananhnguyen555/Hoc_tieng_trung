@@ -379,7 +379,9 @@ export default function VocabList() {
                 <tr key={item.id}>
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td className={`${styles.wordCell} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.word}</td>
-                  <td>{item.pinyin}</td><td>{item.word_type}</td><td>{item.meaning}</td>
+                  <td className={styles.pinyinCell}>{item.pinyin}</td>
+                  <td><span className={styles.typeCell}>{item.word_type}</span></td>
+                  <td className={styles.meaningCell}>{item.meaning}</td>
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
                       <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>

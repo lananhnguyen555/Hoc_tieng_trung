@@ -174,16 +174,18 @@
   font-weight: 600;
   color: #0f172a;
   min-width: 200px;
-  white-space: pre-wrap; /* Hỗ trợ xuống dòng khi nhấn Enter */
+  white-space: pre-wrap;
+  font-size: 1.05rem; /* Đồng bộ kích thước font chữ Việt */
 }
 
 .typeCell {
   font-size: 0.9rem;
   color: #ffffff;
-  background: #f59e0b; /* Màu cam hổ phách nổi bật */
+  background: #00EE76; /* Màu xanh lá yêu cầu */
   padding: 6px 12px;
   border-radius: 8px;
   font-weight: 800;
+  color: #0f172a; /* Đổi màu chữ sang đen đậm cho nổi bật trên nền xanh sáng */
   display: inline-block;
   min-width: 80px;
   text-align: center;
