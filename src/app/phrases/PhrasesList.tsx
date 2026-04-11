@@ -127,8 +127,8 @@ export default function PhrasesList() {
       const { data: { session } } = await supabase.auth.getSession();
       const currentUser = session?.user;
 
-      const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
-      const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
+      const { data: dbLessons } = await supabase.from("lessons").select("*").filter("type", "eq", "phrases").order("created_at");
+      const localLessons = JSON.parse(localStorage.getItem("user_lessons_phrases") || "[]");
 
       const { data: dbPhrases, error } = await supabase.from("phrases").select("*").order("sort_order", { ascending: true });
       const localPhrases = JSON.parse(localStorage.getItem("user_phrases") || "[]");
@@ -167,7 +167,7 @@ export default function PhrasesList() {
         }
 
         if (migrationHappened) {
-          localStorage.removeItem("user_lessons");
+          localStorage.removeItem("user_lessons_phrases");
           localStorage.removeItem("user_phrases");
           const { data: refreshed } = await supabase.from("phrases").select("*");
           finalPhrases = refreshed || [];
@@ -322,15 +322,15 @@ export default function PhrasesList() {
     
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      const { data, error } = await supabase.from("lessons").insert({ name, user_id: session.user.id }).select().single();
+      const { data, error } = await supabase.from("lessons").insert({ name, user_id: session.user.id, type: "phrases" }).select().single();
       if (!error && data) {
         setLessons(prev => [...prev, data]);
         setSelectedLessonId(data.id);
       }
     } else {
-      const newLesson = { id: `lesson-${Date.now()}`, name };
-      const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-      localStorage.setItem("user_lessons", JSON.stringify([...localLessons, newLesson]));
+      const newLesson = { id: `lesson-phrase-${Date.now()}`, name };
+      const localLessons = JSON.parse(localStorage.getItem("user_lessons_phrases") || "[]");
+      localStorage.setItem("user_lessons_phrases", JSON.stringify([...localLessons, newLesson]));
       setLessons(prev => [...prev, newLesson]);
       setSelectedLessonId(newLesson.id);
     }
@@ -345,8 +345,8 @@ export default function PhrasesList() {
     if (session?.user && !selectedLessonId.startsWith("lesson-")) {
       await supabase.from("lessons").delete().eq("id", selectedLessonId);
     } else {
-      const localL = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-      localStorage.setItem("user_lessons", JSON.stringify(localL.filter((l: any) => l.id !== selectedLessonId)));
+      const localL = JSON.parse(localStorage.getItem("user_lessons_phrases") || "[]");
+      localStorage.setItem("user_lessons_phrases", JSON.stringify(localL.filter((l: any) => l.id !== selectedLessonId)));
       const localP = JSON.parse(localStorage.getItem("user_phrases") || "[]");
       localStorage.setItem("user_phrases", JSON.stringify(localP.filter((p: any) => p.lesson_id !== selectedLessonId)));
     }
