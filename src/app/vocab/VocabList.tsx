@@ -45,12 +45,9 @@ export default function VocabList() {
 
   useEffect(() => {
     fetchData();
-    
-    // Lắng nghe thay đổi trạng thái đăng nhập
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserEmail(session?.user?.email || null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -69,7 +66,6 @@ export default function VocabList() {
       const textBeforeCursor = currentVal.substring(0, cursorPosition);
       const lines = textBeforeCursor.split('\n');
       const lastLine = lines[lines.length - 1];
-      
       const match = lastLine.match(/^(\d+)\.\s/);
       if (match) {
         e.preventDefault();
@@ -92,7 +88,6 @@ export default function VocabList() {
       word: char, 
       pinyin: accented.replace(/\s+/g, ''),
     }));
-    
     try {
       const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(char)}`);
       const data = await res.json();
@@ -116,14 +111,8 @@ export default function VocabList() {
         const charToDraw = (characters[currentCharIndex] || characters[0]) as string;
         const width = writerContainerRef.current.clientWidth;
         writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
-          width: width,
-          height: width,
-          padding: 5,
-          strokeColor: '#0ea5e9',
-          outlineColor: '#eee',
-          drawingColor: '#333',
-          showOutline: true,
-          delayBetweenLoops: 1000
+          width: width, height: width, padding: 5, strokeColor: '#0ea5e9',
+          outlineColor: '#eee', drawingColor: '#333', showOutline: true, delayBetweenLoops: 1000
         });
         writerInstance.current.animateCharacter({
           onComplete: () => {
@@ -157,50 +146,33 @@ export default function VocabList() {
     try {
       const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
       const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-      const { data: dbVocab, error } = await supabase
-        .from("vocab")
-        .select("*, lessons(name, id)")
-        .order("created_at", { ascending: true });
+      const { data: dbVocab, error } = await supabase.from("vocab").select("*, lessons(name, id)").order("created_at", { ascending: true });
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-
       let finalLessons = [...(dbLessons || [])];
       let finalVocab: Word[] = [];
-
       if (!error && dbVocab) {
         finalVocab = dbVocab.map((item: any) => ({
-          ...item,
-          word_type: item.word_type || "",
-          lesson: item.lessons?.name || "Kho chung",
-          lesson_id: item.lesson_id
+          ...item, word_type: item.word_type || "", lesson: item.lessons?.name || "Kho chung", lesson_id: item.lesson_id
         }));
       }
-
       const { data: { session } } = await supabase.auth.getSession();
       const email = session?.user?.email || null;
       setUserEmail(email);
-      console.log("Debug - Admin Email Check:", email);
-
       if (session?.user) {
-        finalLessons = [...finalLessons]; // Migration logic omitted for brevity in rewrite
+        finalLessons = [...finalLessons];
       } else {
         finalLessons = [...finalLessons, ...localLessons];
         finalVocab = [...finalVocab, ...localVocab];
       }
-
       setLessons(sortLessons(finalLessons));
       setVocab(finalVocab);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
   const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || selectedLessonId === "all") {
-      alert("Vui lòng chọn một buổi học cụ thể trước khi nhập!");
-      return;
+      alert("Vui lòng chọn một buổi học cụ thể trước khi nhập!"); return;
     }
     const reader = new FileReader();
     reader.onload = async (evt) => {
@@ -211,82 +183,48 @@ export default function VocabList() {
         const ws = wb.Sheets[wb.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
         if (!data || data.length === 0) return;
-
         const { data: { session } } = await supabase.auth.getSession();
         const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
         let currentVocab = [...vocab, ...localVocab];
         let updatedLocal = [...localVocab];
         let addedVocab: Word[] = [];
         let addedCount = 0;
-
         const firstCell = String(data[0]?.[0] || "").toLowerCase();
         const startIdx = (firstCell.includes("hán") || firstCell.includes("stt")) ? 1 : 0;
-
         for (let i = startIdx; i < data.length; i++) {
           const row = data[i];
           const hanzi = String(row[0] || row.find((val: any) => /[\u4e00-\u9fa5]/.test(String(val || ""))) || "").trim();
           if (!hanzi || hanzi === "undefined" || currentVocab.some(v => v.word === hanzi)) continue;
-
-          console.log("Importing:", hanzi);
           const py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
           let meaning = "";
           try {
             const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(hanzi)}`);
             const transData = await res.json();
             meaning = transData?.[0]?.[0]?.[0] || "";
-          } catch {
-            meaning = hanzi.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
-          }
-
+          } catch { meaning = hanzi.split('').map(c => HAN_VIET_DATA[c] || c).join(' '); }
           if (session?.user && isAdmin(session.user.email)) {
-            const { data: dbItem, error: dbError } = await supabase.from("vocab").insert({
-              word: hanzi,
-              pinyin: py,
-              meaning: meaning,
-              word_type: "",
-              lesson_id: selectedLessonId,
-              user_id: session.user.id
+            const { data: dbItem } = await supabase.from("vocab").insert({
+              word: hanzi, pinyin: py, meaning: meaning, word_type: "", lesson_id: selectedLessonId, user_id: session.user.id
             }).select().single();
-            
-            if (dbError) {
-              console.error("Cloud insert error:", dbError);
-            } else if (dbItem) {
-              const newItem = { ...dbItem, lesson: lessons.find(l => l.id === selectedLessonId)?.name };
-              addedVocab.push(newItem);
-              console.log("Cloud saved:", hanzi);
+            if (dbItem) {
+              addedVocab.push({ ...dbItem, lesson: lessons.find(l => l.id === selectedLessonId)?.name });
             }
           } else {
-            const nw: Word = { 
-              id: `excel-${Date.now()}-${i}`, 
-              word: hanzi, pinyin: py, meaning, word_type: "", 
-              lesson_id: selectedLessonId,
-              lesson: lessons.find(l => l.id === selectedLessonId)?.name
-            };
+            const nw: Word = { id: `excel-${Date.now()}-${i}`, word: hanzi, pinyin: py, meaning, word_type: "", lesson_id: selectedLessonId, lesson: lessons.find(l => l.id === selectedLessonId)?.name };
             updatedLocal.push(nw);
             addedVocab.push(nw);
-            console.log("Local buffered:", hanzi);
           }
           addedCount++;
         }
-        
         if (updatedLocal.length > localVocab.length) {
           localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
-          console.log("Local storage updated");
         }
-        
-        // Cập nhật state một lần duy nhất để trigger re-render
         if (addedVocab.length > 0) {
           setVocab(prev => [...prev, ...addedVocab]);
         }
-        
         setShowImportModal(false);
         alert(`Đã nhập xong ${addedCount} từ!`);
-      } catch (err) { 
-        console.error(err); 
-        alert("Lỗi khi nhập file Excel!");
-      } finally { 
-        setLoading(false); 
-      }
+      } catch (err) { console.error(err); alert("Lỗi khi nhập file Excel!"); } finally { setLoading(false); }
     };
     reader.readAsArrayBuffer(file);
   };
@@ -301,14 +239,18 @@ export default function VocabList() {
       if (!error && data) {
         setVocab(prev => [...prev, { ...data, lesson: lessons.find(l => l.id === data.lesson_id)?.name }]);
         setShowAddModal(false);
-        alert("Đã lưu Cloud!");
+        setNewWord({ word: "", pinyin: "", meaning: "", word_type: "", lesson_id: selectedLessonId });
+        setPinyinInput("");
+        alert("Đã lưu thành công!");
       }
     } else {
-      const wordToAdd: Word = { ...newWord, id: `local-${Date.now()}` };
+      const wordToAdd: Word = { ...newWord, id: `local-${Date.now()}`, lesson: lessons.find(l => l.id === newWord.lesson_id)?.name };
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
       localStorage.setItem("user_vocab", JSON.stringify([...localVocab, wordToAdd]));
       setVocab(prev => [...prev, wordToAdd]);
       setShowAddModal(false);
+      setNewWord({ word: "", pinyin: "", meaning: "", word_type: "", lesson_id: selectedLessonId });
+      setPinyinInput("");
       alert("Đã lưu Local!");
     }
   };
@@ -347,8 +289,7 @@ export default function VocabList() {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "zh-CN";
-    utterance.rate = 0.8;
+    utterance.lang = "zh-CN"; utterance.rate = 0.8;
     window.speechSynthesis.speak(utterance);
   };
 
@@ -370,7 +311,7 @@ export default function VocabList() {
     const localV = JSON.parse(localStorage.getItem("user_vocab") || "[]");
     const filteredV = localV.filter((v: any) => v.lesson_id !== selectedLessonId);
     localStorage.setItem("user_vocab", JSON.stringify(filteredV));
-    setVocab(filteredV);
+    setVocab(prev => prev.filter(v => v.lesson_id !== selectedLessonId));
     setSelectedLessonId("all");
   };
 
@@ -393,7 +334,7 @@ export default function VocabList() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Từ vựng Tiếng Trung</h1>
-        <p className={styles.subtitle}>Không còn mục ví dụ, tập trung vào học từ và viết chữ.</p>
+        <p className={styles.subtitle}>Tập trung học từ và viết chữ.</p>
       </header>
 
       <div className={styles.toolbar}>
@@ -419,19 +360,12 @@ export default function VocabList() {
         </div>
       </div>
 
-      {loading ? (
-        <div className={styles.emptyState}>Đang tải...</div>
-      ) : selectedLessonId === "all" ? (
+      {loading ? (<div className={styles.emptyState}>Đang tải...</div>) : selectedLessonId === "all" ? (
         <div className={styles.emptyState}><BookOpen size={48} style={{opacity:0.2, marginBottom:'1rem'}} /><p>Chọn bài học để bắt đầu!</p></div>
       ) : (
         <div className={styles.tableWrapper}>
           <table className={styles.vocabTable}>
-            <thead>
-              <tr>
-                <th className={styles.sttCell}>STT</th>
-                <th>Hán tự</th><th>Pinyin</th><th>Loại từ</th><th>Nghĩa Việt</th><th className={styles.actionCell}>Thao tác</th>
-              </tr>
-            </thead>
+            <thead><tr><th className={styles.sttCell}>STT</th><th>Hán tự</th><th>Pinyin</th><th>Loại từ</th><th>Nghĩa Việt</th><th className={styles.actionCell}>Thao tác</th></tr></thead>
             <tbody>
               {filteredVocab.map((item, index) => (
                 <tr key={item.id}>
@@ -442,10 +376,8 @@ export default function VocabList() {
                     <div className={styles.iconGroup}>
                       <button className={styles.iconBtn} onClick={() => speak(item.word)}><Play size={16} /></button>
                       {(isAdmin(userEmail) || item.id.startsWith("local-") || item.id.startsWith("excel-")) && (
-                        <>
-                          <button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
-                          <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDeleteWord(item.id, e)}><Trash2 size={16} /></button>
-                        </>
+                        <><button className={styles.iconBtn} onClick={() => handleOpenDetailed(item)}><Edit2 size={16} /></button>
+                        <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={(e) => handleDeleteWord(item.id, e)}><Trash2 size={16} /></button></>
                       )}
                     </div>
                   </td>
@@ -456,150 +388,52 @@ export default function VocabList() {
         </div>
       )}
 
-      {/* Add Modal */}
       {showAddModal && (
         <div className={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
           <div className={styles.detailModal} style={{maxWidth:'600px', display:'flex', flexDirection:'column', maxHeight:'90vh'}} onClick={e => e.stopPropagation()}>
-            <div style={{padding:'1.5rem 2rem 0.5rem 2rem'}}>
-              <div style={{display:'flex', justifyContent:'space-between', marginBottom:'1rem'}}>
-                <h2 style={{margin:0}}>Thêm từ vựng</h2><X style={{cursor:'pointer'}} onClick={() => setShowAddModal(false)} />
-              </div>
-            </div>
-            
-            <div style={{flex: 1, overflowY:'auto', padding:'0 2rem 1.5rem 2rem'}}>
-              <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
-                <label>Gợi ý từ Pinyin</label>
-                <input 
-                  type="text" 
-                  className={styles.formInput} 
-                  value={pinyinInput} 
-                  onChange={e => setPinyinInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()}
-                />
-              </div>
+            <div style={{padding:'1.5rem 2rem 0.5rem 2rem'}}><div style={{display:'flex', justifyContent:'space-between', marginBottom:'1rem'}}><h2 style={{margin:0}}>Thêm từ vựng</h2><X style={{cursor:'pointer'}} onClick={() => setShowAddModal(false)} /></div></div>
+            <div style={{flex:1, overflowY:'auto', padding:'0 2rem 1.5rem 2rem'}}>
+              <div className={styles.formGroup}><label>Gợi ý từ Pinyin</label><input type="text" className={styles.formInput} value={pinyinInput} onChange={e => setPinyinInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()} /></div>
               {pinyinInput && <HanziSuggester pinyin={pinyinInput} onSelect={handleSelectSuggestion} />}
-              
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginTop:'1rem'}}>
-                <div className={styles.formGroup}>
-                  <label>Hán tự</label>
-                  <input 
-                    type="text" 
-                    className={styles.formInput} 
-                    value={newWord.word} 
-                    onChange={e => setNewWord({...newWord, word: e.target.value})}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Pinyin</label>
-                  <input 
-                    type="text" 
-                    className={styles.formInput} 
-                    value={newWord.pinyin} 
-                    onChange={e => setNewWord({...newWord, pinyin: e.target.value})}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()}
-                  />
-                </div>
+                <div className={styles.formGroup}><label>Hán tự</label><input type="text" className={styles.formInput} value={newWord.word} onChange={e => setNewWord({...newWord, word: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()} /></div>
+                <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={newWord.pinyin} onChange={e => setNewWord({...newWord, pinyin: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()} /></div>
               </div>
-
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginTop:'1rem'}}>
-                <div className={styles.formGroup}>
-                  <label>Loại từ</label>
-                  <input 
-                    type="text" 
-                    className={styles.formInput} 
-                    value={newWord.word_type} 
-                    onChange={e => setNewWord({...newWord, word_type: e.target.value})}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Nghĩa Việt</label>
-                  <textarea 
-                    className={styles.formInput} 
-                    value={newWord.meaning} 
-                    onChange={e => setNewWord({...newWord, meaning: e.target.value})} 
-                    onKeyDown={e => handleKeyDown(e, (v)=>setNewWord({...newWord, meaning:v}), newWord.meaning)} 
-                  />
-                </div>
+                <div className={styles.formGroup}><label>Loại từ</label><input type="text" className={styles.formInput} value={newWord.word_type} onChange={e => setNewWord({...newWord, word_type: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()} /></div>
+                <div className={styles.formGroup}><label>Nghĩa Việt</label><textarea className={styles.formInput} value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} onKeyDown={e => handleKeyDown(e, (v)=>setNewWord({...newWord, meaning:v}), newWord.meaning)} /></div>
               </div>
-
-              <div className={styles.formGroup} style={{marginTop:'1.5rem'}}>
-                <label>Buổi học</label>
-                <select className={styles.formInput} value={newWord.lesson_id} onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}>
-                  <option value="">-- Chọn buổi học --</option>
-                  {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
+              <div className={styles.formGroup} style={{marginTop:'1.5rem'}}><label>Buổi học</label><select className={styles.formInput} value={newWord.lesson_id} onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}>
+                <option value="">-- Chọn buổi học --</option>{lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}</select>
               </div>
             </div>
-
+            <div style={{padding:'1rem 2rem', borderTop:'1px solid #eee', background:'white', borderBottomLeftRadius:'12px', borderBottomRightRadius:'12px'}}><button className={styles.saveBtn} style={{width:'100%', margin:0}} onClick={handleSaveNewWord}>Lưu từ vựng (Enter)</button></div>
           </div>
         </div>
       )}
 
-      {/* Import Modal */}
       {showImportModal && (
         <div className={styles.modalOverlay} onClick={() => setShowImportModal(false)}>
           <div className={styles.detailModal} style={{maxWidth:'500px', display:'flex', flexDirection:'column', maxHeight:'90vh'}} onClick={e => e.stopPropagation()}>
             <div style={{padding:'2rem'}}>
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}>
-                <h2 style={{margin:0}}>Nhập từ vựng Excel</h2>
-                <X style={{cursor:'pointer'}} onClick={() => setShowImportModal(false)} />
-              </div>
-              <div style={{background:'rgba(14, 165, 233, 0.1)', padding:'1.2rem', borderRadius:'12px', marginBottom:'1.5rem'}}>
-                <p style={{margin:0, fontSize:'0.9rem', color:'var(--primary)', fontWeight:600}}>
-                  💡 File Excel chỉ cần 1 cột chứa Hán tự. Hệ thống sẽ tự động điền Pinyin và Nghĩa Việt!
-                </p>
-              </div>
-              <p style={{fontSize:'0.9rem', color:'var(--text-muted)', marginBottom:'1.5rem'}}>
-                Đang chọn buổi học: <b>{lessons.find(l => l.id === selectedLessonId)?.name}</b>
-              </p>
-              <button 
-                className={styles.saveBtn} 
-                style={{width:'100%', marginBottom:'1rem'}} 
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Chọn file Excel (.xlsx)
-              </button>
-              <button 
-                style={{width:'100%', background:'transparent', border:'1px solid var(--border)', padding:'0.8rem', borderRadius:'10px'}}
-                onClick={() => setShowImportModal(false)}
-              >
-                Hủy bỏ
-              </button>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}><h2 style={{margin:0}}>Nhập từ Excel</h2><X style={{cursor:'pointer'}} onClick={() => setShowImportModal(false)} /></div>
+              <div style={{background:'rgba(14, 165, 233, 0.1)', padding:'1rem', borderRadius:'12px', marginBottom:'1.5rem'}}><p style={{margin:0, fontSize:'0.9rem', color:'var(--primary)', fontWeight:600}}>💡 File chỉ cần 1 cột Hán tự, hệ thống tự điền Pinyin/Nghĩa!</p></div>
+              <button className={styles.saveBtn} style={{width:'100%', marginBottom:'1rem'}} onClick={() => fileInputRef.current?.click()}>Chọn file .xlsx</button>
+              <button style={{width:'100%', background:'transparent', border:'1px solid #eee', padding:'0.8rem', borderRadius:'10px'}} onClick={() => setShowImportModal(false)}>Hủy bỏ</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Detail Modal */}
       {detailedWord && (
         <div className={styles.modalOverlay} onClick={() => setDetailedWord(null)}>
           <div className={styles.detailModal} onClick={e => e.stopPropagation()}>
             <div className={styles.detailContent}>
               <div className={styles.hanziSection}>
-                <div 
-                  ref={writerContainerRef} 
-                  className={styles.writerContainer} 
-                  onClick={() => speak(detailedWord.word)}
-                  style={{cursor: 'pointer'}}
-                  title="Nhấn để nghe phát âm cả từ"
-                ></div>
-                <div className={styles.charTabs}>
-                  {(detailedWord.word.match(/[\u4e00-\u9fa5]/g) || []).map((char, index) => (
-                    <button 
-                      key={index} 
-                      className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`} 
-                      onClick={() => {
-                        setCurrentCharIndex(index);
-                        speak(char);
-                      }}
-                      title={`Nghe phát âm chữ ${char}`}
-                    >
-                      {char}
-                    </button>
-                  ))}
-                </div>
+                <div ref={writerContainerRef} className={styles.writerContainer} onClick={() => speak(detailedWord.word)} style={{cursor:'pointer'}} title="Nghe phát âm"></div>
+                <div className={styles.charTabs}>{(detailedWord.word.match(/[\u4e00-\u9fa5]/g) || []).map((char, index) => (
+                  <button key={index} className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`} onClick={() => {setCurrentCharIndex(index); speak(char);}}>{char}</button>
+                ))}</div>
                 <button className={styles.iconBtn} style={{marginTop:'1rem'}} onClick={() => {setCurrentCharIndex(0); writerInstance.current?.animateCharacter();}}>Vẽ lại</button>
               </div>
               <div className={styles.infoSection}>
@@ -608,10 +442,8 @@ export default function VocabList() {
                 <div className={styles.formGroup}><label>Nghĩa Việt</label><textarea className={styles.formInput} value={detailedWord.meaning} onChange={e => setDetailedWord({...detailedWord, meaning: e.target.value})} onKeyDown={e => handleKeyDown(e, (v)=>setDetailedWord({...detailedWord, meaning:v}), detailedWord.meaning)} /></div>
                 <div className={styles.formGroup}><label>Loại từ</label><input type="text" className={styles.formInput} value={detailedWord.word_type} onChange={e => setDetailedWord({...detailedWord, word_type: e.target.value})} /></div>
                 {(isAdmin(userEmail) || detailedWord.id.startsWith("local-") || detailedWord.id.startsWith("excel-")) && (
-                  <>
-                    <button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} /> Lưu thay đổi</button>
-                    <button className={styles.iconBtn} style={{background:'#ef4444', color:'white', width:'100%', marginTop:'0.5rem', justifyContent:'center'}} onClick={(e) => handleDeleteWord(detailedWord.id, e)}><Trash2 size={16} /> Xóa từ</button>
-                  </>
+                  <><button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} /> Lưu thay đổi</button>
+                  <button className={styles.iconBtn} style={{background:'#ef4444', color:'white', width:'100%', marginTop:'0.5rem', justifyContent:'center'}} onClick={(e) => handleDeleteWord(detailedWord.id, e)}><Trash2 size={16} /></button></>
                 )}
               </div>
             </div>
@@ -621,13 +453,7 @@ export default function VocabList() {
       )}
 
       <button className={styles.floatingAddBtn} onClick={handleOpenAddModal}><Plus size={28} /></button>
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{display:'none'}} 
-        accept=".xlsx, .xls" 
-        onChange={handleImportExcel} 
-      />
+      <input type="file" ref={fileInputRef} style={{display:'none'}} accept=".xlsx, .xls" onChange={handleImportExcel} />
     </div>
   );
 }
