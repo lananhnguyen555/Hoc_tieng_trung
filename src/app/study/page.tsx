@@ -49,6 +49,23 @@ export default function StudyPage() {
   const [showResult, setShowResult] = useState(false);
   const [checkResult, setCheckResult] = useState<{ word: boolean, meaning: boolean } | null>(null);
 
+  const sortLessons = (lessonList: any[]) => {
+    return [...lessonList].sort((a, b) => {
+      const numA = a.name.match(/\d+/);
+      const numB = b.name.match(/\d+/);
+
+      if (numA && numB) {
+        return parseInt(numA[0]) - parseInt(numB[0]);
+      }
+      if (numA) return -1;
+      if (numB) return 1;
+
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateA - dateB;
+    });
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -67,9 +84,9 @@ export default function StudyPage() {
       const { data: dbVocab } = await supabase.from("vocab").select("*");
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
 
-      let finalVocab = [...(dbVocab || []), ...localVocab];
+      let finalLessons = [...(dbLessons || []), ...localLessons];
       setVocab(finalVocab);
-      setLessons([...(dbLessons || []), ...localLessons]);
+      setLessons(sortLessons(finalLessons));
     } catch (err) {
       console.error(err);
     } finally {

@@ -161,6 +161,24 @@ export default function VocabList() {
     setDetailedWord(word);
   };
 
+  const sortLessons = (lessonList: any[]) => {
+    return [...lessonList].sort((a, b) => {
+      const numA = a.name.match(/\d+/);
+      const numB = b.name.match(/\d+/);
+
+      if (numA && numB) {
+        return parseInt(numA[0]) - parseInt(numB[0]);
+      }
+      if (numA) return -1;
+      if (numB) return 1;
+
+      // Nếu cả hai không có số, sắp xếp theo ngày tạo (cũ nhất lên đầu)
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateA - dateB;
+    });
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -242,7 +260,7 @@ export default function VocabList() {
         finalVocab = [...finalVocab, ...localVocab];
       }
 
-      setLessons(finalLessons);
+      setLessons(sortLessons(finalLessons));
       setVocab(finalVocab);
     } catch (err) {
       console.error(err);

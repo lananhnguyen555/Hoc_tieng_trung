@@ -71,6 +71,23 @@ export default function PhrasesList() {
     setShowAddModal(true);
   };
 
+  const sortLessons = (lessonList: any[]) => {
+    return [...lessonList].sort((a, b) => {
+      const numA = a.name.match(/\d+/);
+      const numB = b.name.match(/\d+/);
+
+      if (numA && numB) {
+        return parseInt(numA[0]) - parseInt(numB[0]);
+      }
+      if (numA) return -1;
+      if (numB) return 1;
+
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateA - dateB;
+    });
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -127,7 +144,7 @@ export default function PhrasesList() {
         finalPhrases = [...finalPhrases, ...localPhrases];
       }
 
-      setLessons(finalLessons);
+      setLessons(sortLessons(finalLessons));
       setPhrases(finalPhrases);
     } catch (err) {
       console.error(err);
