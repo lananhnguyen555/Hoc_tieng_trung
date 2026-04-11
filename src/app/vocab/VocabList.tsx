@@ -212,32 +212,62 @@ export default function VocabList() {
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
         if (!data || data.length === 0) return;
 
+        const { data: { session } } = await supabase.auth.getSession();
         const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
         let currentVocab = [...vocab, ...localVocab];
         let updatedLocal = [...localVocab];
         let addedCount = 0;
 
-        const startIdx = 1; // Assuming header
+        const firstCell = String(data[0]?.[0] || "").toLowerCase();
+        const startIdx = (firstCell.includes("hán") || firstCell.includes("stt")) ? 1 : 0;
+
         for (let i = startIdx; i < data.length; i++) {
           const row = data[i];
-          const hanzi = row.find(val => /[\u4e00-\u9fa5]/.test(String(val || "")))?.toString().trim();
-          if (!hanzi || currentVocab.some(v => v.word === hanzi)) continue;
+          const hanzi = String(row[0] || row.find((val: any) => /[\u4e00-\u9fa5]/.test(String(val || ""))) || "").trim();
+          if (!hanzi || hanzi === "undefined" || currentVocab.some(v => v.word === hanzi)) continue;
 
           const py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
-          const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(hanzi)}`);
-          const transData = await res.json();
-          const meaning = transData?.[0]?.[0]?.[0] || "";
+          let meaning = "";
+          try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=vi&dt=t&q=${encodeURIComponent(hanzi)}`);
+            const transData = await res.json();
+            meaning = transData?.[0]?.[0]?.[0] || "";
+          } catch {
+            meaning = hanzi.split('').map(c => HAN_VIET_DATA[c] || c).join(' ');
+          }
 
-          const nw: Word = { id: `excel-${Date.now()}-${i}`, word: hanzi, pinyin: py, meaning, word_type: "", lesson_id: selectedLessonId };
-          updatedLocal.push(nw);
-          currentVocab.push(nw);
+          if (session?.user && isAdmin(session.user.email)) {
+            const { data: dbItem } = await supabase.from("vocab").insert({
+              word: hanzi,
+              pinyin: py,
+              meaning: meaning,
+              word_type: "",
+              lesson_id: selectedLessonId,
+              user_id: session.user.id
+            }).select().single();
+            if (dbItem) {
+              setVocab(prev => [...prev, { ...dbItem, lesson: lessons.find(l => l.id === selectedLessonId)?.name }]);
+            }
+          } else {
+            const nw: Word = { id: `excel-${Date.now()}-${i}`, word: hanzi, pinyin: py, meaning, word_type: "", lesson_id: selectedLessonId };
+            updatedLocal.push(nw);
+            setVocab(prev => [...prev, nw]);
+          }
           addedCount++;
         }
-        localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
-        setVocab(currentVocab);
+        
+        if (updatedLocal.length > localVocab.length) {
+          localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
+        }
+        
         setShowImportModal(false);
-        alert(`Đã thêm ${addedCount} từ!`);
-      } catch (err) { console.error(err); } finally { setLoading(false); }
+        alert(`Đã nhập xong ${addedCount} từ!`);
+      } catch (err) { 
+        console.error(err); 
+        alert("Lỗi khi nhập file Excel!");
+      } finally { 
+        setLoading(false); 
+      }
     };
     reader.readAsArrayBuffer(file);
   };
@@ -484,8 +514,40 @@ export default function VocabList() {
               </div>
             </div>
 
-            <div style={{padding:'1rem 2rem', borderTop:'1px solid #eee', background:'white', borderBottomLeftRadius:'12px', borderBottomRightRadius:'12px'}}>
-              <button className={styles.saveBtn} style={{width:'100%', margin:0}} onClick={handleSaveNewWord}>Lưu từ vựng (Enter)</button>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowImportModal(false)}>
+          <div className={styles.detailModal} style={{maxWidth:'500px', display:'flex', flexDirection:'column', maxHeight:'90vh'}} onClick={e => e.stopPropagation()}>
+            <div style={{padding:'2rem'}}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}>
+                <h2 style={{margin:0}}>Nhập từ vựng Excel</h2>
+                <X style={{cursor:'pointer'}} onClick={() => setShowImportModal(false)} />
+              </div>
+              <div style={{background:'rgba(14, 165, 233, 0.1)', padding:'1.2rem', borderRadius:'12px', marginBottom:'1.5rem'}}>
+                <p style={{margin:0, fontSize:'0.9rem', color:'var(--primary)', fontWeight:600}}>
+                  💡 File Excel chỉ cần 1 cột chứa Hán tự. Hệ thống sẽ tự động điền Pinyin và Nghĩa Việt!
+                </p>
+              </div>
+              <p style={{fontSize:'0.9rem', color:'var(--text-muted)', marginBottom:'1.5rem'}}>
+                Đang chọn buổi học: <b>{lessons.find(l => l.id === selectedLessonId)?.name}</b>
+              </p>
+              <button 
+                className={styles.saveBtn} 
+                style={{width:'100%', marginBottom:'1rem'}} 
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Chọn file Excel (.xlsx)
+              </button>
+              <button 
+                style={{width:'100%', background:'transparent', border:'1px solid var(--border)', padding:'0.8rem', borderRadius:'10px'}}
+                onClick={() => setShowImportModal(false)}
+              >
+                Hủy bỏ
+              </button>
             </div>
           </div>
         </div>
@@ -524,6 +586,13 @@ export default function VocabList() {
       )}
 
       <button className={styles.floatingAddBtn} onClick={handleOpenAddModal}><Plus size={28} /></button>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{display:'none'}} 
+        accept=".xlsx, .xls" 
+        onChange={handleImportExcel} 
+      />
     </div>
   );
 }
