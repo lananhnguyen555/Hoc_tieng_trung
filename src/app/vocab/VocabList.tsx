@@ -222,19 +222,28 @@ export default function VocabList() {
             const transData = await res.json();
             meaning = transData?.[0]?.[0]?.[0] || "";
           } catch { meaning = hanzi.split('').map(c => HAN_VIET_DATA[c] || c).join(' '); }
-          if (session?.user && isAdmin(session.user.email)) {
-            const { data: dbItem } = await supabase.from("vocab").insert({
+          if (session?.user && isAdmin(session.user.email) && !currentLessonId.startsWith("lesson-")) {
+            // Admin và lesson từ Cloud: insert vào Supabase
+            const { data: dbItem, error: insertErr } = await supabase.from("vocab").insert({
               word: hanzi, pinyin: py, meaning: meaning, word_type: "", lesson_id: currentLessonId, user_id: session.user.id
             }).select().single();
-            if (dbItem) {
+            if (dbItem && !insertErr) {
               addedVocab.push({ ...dbItem, lesson: lessons.find(l => l.id === currentLessonId)?.name });
+              addedCount++;
+            } else {
+              // Fallback vào localStorage nếu Supabase lỗi
+              const nw: Word = { id: `excel-${Date.now()}-${i}`, word: hanzi, pinyin: py, meaning, word_type: "", lesson_id: currentLessonId, lesson: lessons.find(l => l.id === currentLessonId)?.name };
+              updatedLocal.push(nw);
+              addedVocab.push(nw);
+              addedCount++;
             }
           } else {
+            // Guest hoặc lesson localStorage: lưu local
             const nw: Word = { id: `excel-${Date.now()}-${i}`, word: hanzi, pinyin: py, meaning, word_type: "", lesson_id: currentLessonId, lesson: lessons.find(l => l.id === currentLessonId)?.name };
             updatedLocal.push(nw);
             addedVocab.push(nw);
+            addedCount++;
           }
-          addedCount++;
         }
         if (updatedLocal.length > localVocab.length) {
           localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
@@ -318,14 +327,26 @@ export default function VocabList() {
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleAddLesson = () => {
+  const handleAddLesson = async () => {
     const name = prompt("Tên buổi học:");
     if (!name) return;
-    const nl = { id: `lesson-${Date.now()}`, name };
-    const local = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-    localStorage.setItem("user_lessons", JSON.stringify([...local, nl]));
-    setLessons(prev => sortLessons([...prev, nl]));
-    setSelectedLessonId(nl.id);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      // Admin: tạo lesson trực tiếp trên Supabase để có UUID hợp lệ
+      const { data, error } = await supabase.from("lessons").insert({ name, user_id: session.user.id }).select().single();
+      if (!error && data) {
+        setLessons(prev => sortLessons([...prev, data]));
+        setSelectedLessonId(data.id);
+      } else {
+        alert("Lỗi tạo buổi học: " + (error?.message || "Không rõ"));
+      }
+    } else {
+      const nl = { id: `lesson-${Date.now()}`, name };
+      const local = JSON.parse(localStorage.getItem("user_lessons") || "[]");
+      localStorage.setItem("user_lessons", JSON.stringify([...local, nl]));
+      setLessons(prev => sortLessons([...prev, nl]));
+      setSelectedLessonId(nl.id);
+    }
   };
 
   const handleDeleteLesson = async () => {
