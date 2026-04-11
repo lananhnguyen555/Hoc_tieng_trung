@@ -179,7 +179,9 @@ export default function VocabList() {
 
   const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || selectedLessonId === "all") {
+    // Lưu lại selectedLessonId tại thời điểm này để không bị mất sau async
+    const currentLessonId = selectedLessonId;
+    if (!file || currentLessonId === "all") {
       alert("Vui lòng chọn một buổi học cụ thể trước khi nhập!"); return;
     }
     const reader = new FileReader();
@@ -193,16 +195,26 @@ export default function VocabList() {
         if (!data || data.length === 0) return;
         const { data: { session } } = await supabase.auth.getSession();
         const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-        let currentVocab = [...vocab, ...localVocab];
+        // Chỉ so sánh trùng trong cùng buổi học hiện tại
+        const currentLessonVocab = [...vocab, ...localVocab].filter(v => v.lesson_id === currentLessonId);
         let updatedLocal = [...localVocab];
         let addedVocab: Word[] = [];
         let addedCount = 0;
+        let skippedCount = 0;
         const firstCell = String(data[0]?.[0] || "").toLowerCase();
-        const startIdx = (firstCell.includes("hán") || firstCell.includes("stt")) ? 1 : 0;
+        const startIdx = (firstCell.includes("hán") || firstCell.includes("stt") || firstCell.includes("word")) ? 1 : 0;
         for (let i = startIdx; i < data.length; i++) {
           const row = data[i];
-          const hanzi = String(row[0] || row.find((val: any) => /[\u4e00-\u9fa5]/.test(String(val || ""))) || "").trim();
-          if (!hanzi || hanzi === "undefined" || currentVocab.some(v => v.word === hanzi)) continue;
+          if (!row || row.length === 0) continue;
+          // Tìm chữ Hán trong bất kỳ cột nào của hàng
+          let hanzi = "";
+          for (const cell of row) {
+            const cellStr = String(cell || "").trim();
+            if (/[\u4e00-\u9fa5]/.test(cellStr)) { hanzi = cellStr; break; }
+          }
+          if (!hanzi || hanzi === "undefined") continue;
+          // Chỉ bỏ qua nếu từ đã tồn tại trong CÙNG buổi học
+          if (currentLessonVocab.some(v => v.word === hanzi)) { skippedCount++; continue; }
           const py = pinyin(hanzi, { toneType: 'symbol' }).replace(/\s+/g, '');
           let meaning = "";
           try {
@@ -212,13 +224,13 @@ export default function VocabList() {
           } catch { meaning = hanzi.split('').map(c => HAN_VIET_DATA[c] || c).join(' '); }
           if (session?.user && isAdmin(session.user.email)) {
             const { data: dbItem } = await supabase.from("vocab").insert({
-              word: hanzi, pinyin: py, meaning: meaning, word_type: "", lesson_id: selectedLessonId, user_id: session.user.id
+              word: hanzi, pinyin: py, meaning: meaning, word_type: "", lesson_id: currentLessonId, user_id: session.user.id
             }).select().single();
             if (dbItem) {
-              addedVocab.push({ ...dbItem, lesson: lessons.find(l => l.id === selectedLessonId)?.name });
+              addedVocab.push({ ...dbItem, lesson: lessons.find(l => l.id === currentLessonId)?.name });
             }
           } else {
-            const nw: Word = { id: `excel-${Date.now()}-${i}`, word: hanzi, pinyin: py, meaning, word_type: "", lesson_id: selectedLessonId, lesson: lessons.find(l => l.id === selectedLessonId)?.name };
+            const nw: Word = { id: `excel-${Date.now()}-${i}`, word: hanzi, pinyin: py, meaning, word_type: "", lesson_id: currentLessonId, lesson: lessons.find(l => l.id === currentLessonId)?.name };
             updatedLocal.push(nw);
             addedVocab.push(nw);
           }
@@ -230,8 +242,13 @@ export default function VocabList() {
         if (addedVocab.length > 0) {
           setVocab(prev => [...prev, ...addedVocab]);
         }
+        // Đóng modal trước khi alert để không mất selectedLessonId
         setShowImportModal(false);
-        alert(`Đã nhập xong ${addedCount} từ!`);
+        setSelectedLessonId(currentLessonId); // Đảm bảo giữ buổi học hiện tại
+        const msg = skippedCount > 0
+          ? `Đã nhập ${addedCount} từ! (Bỏ qua ${skippedCount} từ trùng trong buổi này)`
+          : `Đã nhập xong ${addedCount} từ!`;
+        setTimeout(() => alert(msg), 100); // Delay nhỏ để React cập nhật state trước
       } catch (err) { console.error(err); alert("Lỗi khi nhập file Excel!"); } finally { setLoading(false); }
     };
     reader.readAsArrayBuffer(file);
