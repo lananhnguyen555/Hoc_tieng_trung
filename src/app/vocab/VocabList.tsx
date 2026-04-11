@@ -78,6 +78,12 @@ export default function VocabList() {
   const writerContainerRef = useRef<HTMLDivElement>(null);
   const writerInstance = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 2500);
+  };
 
   useEffect(() => {
     fetchData();
@@ -300,13 +306,12 @@ export default function VocabList() {
         if (addedVocab.length > 0) {
           setVocab(prev => [...prev, ...addedVocab]);
         }
-        // Đóng modal trước khi alert để không mất selectedLessonId
         setShowImportModal(false);
-        setSelectedLessonId(currentLessonId); // Đảm bảo giữ buổi học hiện tại
+        setSelectedLessonId(currentLessonId);
         const msg = skippedCount > 0
-          ? `Đã nhập ${addedCount} từ! (Bỏ qua ${skippedCount} từ trùng trong buổi này)`
+          ? `Đã nhập ${addedCount} từ! (Bỏ qua ${skippedCount} từ trùng)`
           : `Đã nhập xong ${addedCount} từ!`;
-        setTimeout(() => alert(msg), 100); // Delay nhỏ để React cập nhật state trước
+        showToast(msg);
       } catch (err) { console.error(err); alert("Lỗi khi nhập file Excel!"); } finally { setLoading(false); }
     };
     reader.readAsArrayBuffer(file);
@@ -324,7 +329,7 @@ export default function VocabList() {
         setShowAddModal(false);
         setNewWord({ word: "", pinyin: "", meaning: "", word_type: "", lesson_id: selectedLessonId });
         setPinyinInput("");
-        alert("Đã lưu thành công!");
+        showToast("Đã lưu thành công!");
       }
     } else {
       const wordToAdd: Word = { ...newWord, id: `local-${Date.now()}`, lesson: lessons.find(l => l.id === newWord.lesson_id)?.name };
@@ -334,7 +339,7 @@ export default function VocabList() {
       setShowAddModal(false);
       setNewWord({ word: "", pinyin: "", meaning: "", word_type: "", lesson_id: selectedLessonId });
       setPinyinInput("");
-      alert("Đã lưu Local!");
+      showToast("Đã lưu!");
     }
   };
 
@@ -345,14 +350,15 @@ export default function VocabList() {
       const { error } = await supabase.from("vocab").update({ 
         word: detailedWord.word, pinyin: detailedWord.pinyin, meaning: detailedWord.meaning, word_type: detailedWord.word_type 
       }).eq("id", detailedWord.id);
-      if (error) { alert(error.message); return; }
+      if (error) { showToast(error.message, "error"); return; }
     } else {
       const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
       const updatedLocal = localVocab.map((v: any) => v.id === detailedWord.id ? detailedWord : v);
       localStorage.setItem("user_vocab", JSON.stringify(updatedLocal));
     }
     setVocab(prev => prev.map(v => v.id === detailedWord.id ? detailedWord : v));
-    alert("Đã cập nhật!");
+    setDetailedWord(null);
+    showToast("Đã cập nhật!");
   };
 
   const handleDeleteWord = async (id: string, e: React.MouseEvent) => {
@@ -413,7 +419,7 @@ export default function VocabList() {
     localStorage.setItem("user_vocab", JSON.stringify(filteredV));
     setVocab(prev => prev.filter(v => v.lesson_id !== selectedLessonId));
     setSelectedLessonId("all");
-    alert("Đã xóa dứt điểm!");
+    showToast("Đã xóa buổi học!");
   };
 
   const handleExportExcel = () => {
@@ -574,6 +580,19 @@ export default function VocabList() {
 
       <button className={styles.floatingAddBtn} onClick={handleOpenAddModal}><Plus size={28} /></button>
       <input type="file" ref={fileInputRef} style={{display:'none'}} accept=".xlsx, .xls" onChange={handleImportExcel} />
+
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999,
+          background: toast.type === 'error' ? '#ef4444' : '#22c55e',
+          color: 'white', padding: '0.85rem 1.5rem', borderRadius: '12px',
+          fontWeight: 600, fontSize: '0.95rem', boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          display: 'flex', alignItems: 'center', gap: '0.5rem',
+          animation: 'slideInRight 0.3s ease',
+        }}>
+          {toast.type === 'error' ? '❌' : '✅'} {toast.msg}
+        </div>
+      )}
     </div>
   );
 }
