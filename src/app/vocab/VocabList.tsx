@@ -22,20 +22,20 @@ interface Word {
 }
 
 const WORD_TYPES = [
-  { label: "Danh từ (N)",        abbr: "N" },
-  { label: "Động từ (V)",        abbr: "V" },
-  { label: "Tính từ (Adj)",      abbr: "Adj" },
-  { label: "Phó từ (Adv)",       abbr: "Adv" },
-  { label: "Đại từ (Pron)",      abbr: "Pron" },
-  { label: "Lượng từ (M)",       abbr: "M" },
-  { label: "Số từ (Num)",        abbr: "Num" },
-  { label: "Giới từ (Prep)",     abbr: "Prep" },
-  { label: "Liên từ (Conj)",     abbr: "Conj" },
-  { label: "Trợ từ (Part)",      abbr: "Part" },
-  { label: "Thán từ (Int)",      abbr: "Int" },
-  { label: "Từ khu biệt (Dist)", abbr: "Dist" },
-  { label: "Từ trạng thái (Sv)", abbr: "Sv" },
-  { label: "Từ tượng thanh (Ono)", abbr: "Ono" },
+  { label: "Danh từ (N)",       abbr: "N" },
+  { label: "Động từ (V)",       abbr: "V" },
+  { label: "Tính từ (Adj)",     abbr: "Adj" },
+  { label: "Phó từ",            abbr: "Phó từ" },
+  { label: "Đại từ",            abbr: "Đại từ" },
+  { label: "Lượng từ",          abbr: "Lượng từ" },
+  { label: "Số từ",             abbr: "Số từ" },
+  { label: "Giới từ",           abbr: "Giới từ" },
+  { label: "Liên từ",           abbr: "Liên từ" },
+  { label: "Trợ từ",            abbr: "Trợ từ" },
+  { label: "Thán từ",           abbr: "Thán từ" },
+  { label: "Từ khu biệt",       abbr: "Từ khu biệt" },
+  { label: "Từ trạng thái",     abbr: "Từ trạng thái" },
+  { label: "Từ tượng thanh",    abbr: "Từ tượng thanh" },
 ];
 
 export default function VocabList() {
