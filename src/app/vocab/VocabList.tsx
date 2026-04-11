@@ -45,6 +45,13 @@ export default function VocabList() {
 
   useEffect(() => {
     fetchData();
+    
+    // Lắng nghe thay đổi trạng thái đăng nhập
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email || null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleOpenAddModal = () => {
