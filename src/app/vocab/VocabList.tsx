@@ -134,10 +134,18 @@ export default function VocabList() {
     return [...lessonList].sort((a, b) => {
       const numA = a.name.match(/\d+/);
       const numB = b.name.match(/\d+/);
+      
       if (numA && numB) return parseInt(numA[0]) - parseInt(numB[0]);
       if (numA) return -1;
       if (numB) return 1;
-      return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+      
+      const getTime = (item: any) => {
+        if (item.created_at) return new Date(item.created_at).getTime();
+        const match = String(item.id || "").match(/lesson-(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      };
+      
+      return getTime(a) - getTime(b);
     });
   };
 
