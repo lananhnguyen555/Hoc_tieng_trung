@@ -104,7 +104,7 @@ export default function VocabList() {
       writerContainerRef.current.innerHTML = '';
       const characters = detailedWord.word.match(/[\u4e00-\u9fa5]/g) || [];
       if (characters.length > 0) {
-        const charToDraw = characters[currentCharIndex] || characters[0];
+        const charToDraw = (characters[currentCharIndex] || characters[0]) as string;
         const width = writerContainerRef.current.clientWidth;
         writerInstance.current = HanziWriter.create(writerContainerRef.current, charToDraw, {
           width: width,
@@ -318,7 +318,7 @@ export default function VocabList() {
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, ws, "TuVung");
+    XLSX.utils.book_append_sheet(wb, ws, "TuVung");
     XLSX.writeFile(wb, `TuVung_${new Date().toLocaleDateString()}.xlsx`);
   };
 
@@ -398,27 +398,72 @@ export default function VocabList() {
               <div style={{display:'flex', justifyContent:'space-between', marginBottom:'1.5rem'}}>
                 <h2>Thêm từ vựng</h2><X style={{cursor:'pointer'}} onClick={() => setShowAddModal(false)} />
               </div>
-              <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
-                <label>Gợi ý từ Pinyin</label>
-                <input type="text" className={styles.formInput} value={pinyinInput} onChange={e => setPinyinInput(e.target.value)} />
+              <div style={{maxHeight:'70vh', overflowY:'auto', paddingRight:'0.5rem'}}>
+                <div className={styles.formGroup} style={{marginBottom:'1rem'}}>
+                  <label>Gợi ý từ Pinyin</label>
+                  <input 
+                    type="text" 
+                    className={styles.formInput} 
+                    value={pinyinInput} 
+                    onChange={e => setPinyinInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()}
+                  />
+                </div>
+                {pinyinInput && <HanziSuggester pinyin={pinyinInput} onSelect={handleSelectSuggestion} />}
+                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginTop:'1rem'}}>
+                  <div className={styles.formGroup}>
+                    <label>Hán tự</label>
+                    <input 
+                      type="text" 
+                      className={styles.formInput} 
+                      value={newWord.word} 
+                      onChange={e => setNewWord({...newWord, word: e.target.value})}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Pinyin</label>
+                    <input 
+                      type="text" 
+                      className={styles.formInput} 
+                      value={newWord.pinyin} 
+                      onChange={e => setNewWord({...newWord, pinyin: e.target.value})}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()}
+                    />
+                  </div>
+                </div>
+                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginTop:'1rem'}}>
+                  <div className={styles.formGroup}>
+                    <label>Loại từ</label>
+                    <input 
+                      type="text" 
+                      className={styles.formInput} 
+                      value={newWord.word_type} 
+                      onChange={e => setNewWord({...newWord, word_type: e.target.value})}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Nghĩa Việt</label>
+                    <textarea 
+                      className={styles.formInput} 
+                      value={newWord.meaning} 
+                      onChange={e => setNewWord({...newWord, meaning: e.target.value})} 
+                      onKeyDown={e => handleKeyDown(e, (v)=>setNewWord({...newWord, meaning:v}), newWord.meaning)} 
+                    />
+                  </div>
+                </div>
+                <div className={styles.formGroup} style={{marginTop:'1rem'}}>
+                  <label>Buổi học</label>
+                  <select className={styles.formInput} value={newWord.lesson_id} onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}>
+                    <option value="">-- Chọn --</option>
+                    {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                  </select>
+                </div>
               </div>
-              {pinyinInput && <HanziSuggester pinyin={pinyinInput} onSelect={handleSelectSuggestion} />}
-              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginTop:'1rem'}}>
-                <div className={styles.formGroup}><label>Hán tự</label><input type="text" className={styles.formInput} value={newWord.word} onChange={e => setNewWord({...newWord, word: e.target.value})} /></div>
-                <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={newWord.pinyin} onChange={e => setNewWord({...newWord, pinyin: e.target.value})} /></div>
+              <div style={{marginTop:'1.5rem', borderTop:'1px solid #eee', paddingTop:'1rem'}}>
+                <button className={styles.saveBtn} style={{width:'100%'}} onClick={handleSaveNewWord}>Lưu từ vựng (Enter)</button>
               </div>
-              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginTop:'1rem'}}>
-                <div className={styles.formGroup}><label>Loại từ</label><input type="text" className={styles.formInput} value={newWord.word_type} onChange={e => setNewWord({...newWord, word_type: e.target.value})} /></div>
-                <div className={styles.formGroup}><label>Nghĩa Việt</label><textarea className={styles.formInput} value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} onKeyDown={e => handleKeyDown(e, (v)=>setNewWord({...newWord, meaning:v}), newWord.meaning)} /></div>
-              </div>
-              <div className={styles.formGroup} style={{marginTop:'1rem'}}>
-                <label>Buổi học</label>
-                <select className={styles.formInput} value={newWord.lesson_id} onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}>
-                  <option value="">-- Chọn --</option>
-                  {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
-              </div>
-              <button className={styles.saveBtn} style={{width:'100%', marginTop:'2rem'}} onClick={handleSaveNewWord}>Lưu từ vựng</button>
             </div>
           </div>
         </div>
