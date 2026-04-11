@@ -559,10 +559,26 @@ export default function VocabList() {
           <div className={styles.detailModal} onClick={e => e.stopPropagation()}>
             <div className={styles.detailContent}>
               <div className={styles.hanziSection}>
-                <div ref={writerContainerRef} className={styles.writerContainer}></div>
+                <div 
+                  ref={writerContainerRef} 
+                  className={styles.writerContainer} 
+                  onClick={() => speak(detailedWord.word)}
+                  style={{cursor: 'pointer'}}
+                  title="Nhấn để nghe phát âm cả từ"
+                ></div>
                 <div className={styles.charTabs}>
                   {(detailedWord.word.match(/[\u4e00-\u9fa5]/g) || []).map((char, index) => (
-                    <button key={index} className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`} onClick={() => setCurrentCharIndex(index)}>{char}</button>
+                    <button 
+                      key={index} 
+                      className={`${styles.charTab} ${currentCharIndex === index ? styles.activeCharTab : ''} hanzi`} 
+                      onClick={() => {
+                        setCurrentCharIndex(index);
+                        speak(char);
+                      }}
+                      title={`Nghe phát âm chữ ${char}`}
+                    >
+                      {char}
+                    </button>
                   ))}
                 </div>
                 <button className={styles.iconBtn} style={{marginTop:'1rem'}} onClick={() => {setCurrentCharIndex(0); writerInstance.current?.animateCharacter();}}>Vẽ lại</button>
