@@ -22,17 +22,20 @@ interface Word {
 }
 
 const WORD_TYPES = [
-  { label: "Danh từ (N)",       abbr: "N" },
-  { label: "Động từ (V)",      abbr: "V" },
-  { label: "Tính từ (Adj)",    abbr: "Adj" },
-  { label: "Phó từ (Adv)",     abbr: "Adv" },
-  { label: "Đại từ (Pron)",    abbr: "Pron" },
-  { label: "Lượng từ (M)",     abbr: "M" },
-  { label: "Số từ (Num)",      abbr: "Num" },
-  { label: "Giới từ (Prep)",   abbr: "Prep" },
-  { label: "Liên từ (Conj)",   abbr: "Conj" },
-  { label: "Trợ từ (Part)",    abbr: "Part" },
-  { label: "Thán từ (Int)",    abbr: "Int" },
+  { label: "Danh từ (N)",        abbr: "N" },
+  { label: "Động từ (V)",        abbr: "V" },
+  { label: "Tính từ (Adj)",      abbr: "Adj" },
+  { label: "Phó từ (Adv)",       abbr: "Adv" },
+  { label: "Đại từ (Pron)",      abbr: "Pron" },
+  { label: "Lượng từ (M)",       abbr: "M" },
+  { label: "Số từ (Num)",        abbr: "Num" },
+  { label: "Giới từ (Prep)",     abbr: "Prep" },
+  { label: "Liên từ (Conj)",     abbr: "Conj" },
+  { label: "Trợ từ (Part)",      abbr: "Part" },
+  { label: "Thán từ (Int)",      abbr: "Int" },
+  { label: "Từ khu biệt (Dist)", abbr: "Dist" },
+  { label: "Từ trạng thái (Sv)", abbr: "Sv" },
+  { label: "Từ tượng thanh (Ono)", abbr: "Ono" },
 ];
 
 export default function VocabList() {
