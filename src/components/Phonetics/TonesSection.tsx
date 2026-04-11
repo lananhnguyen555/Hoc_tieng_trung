@@ -34,11 +34,18 @@ export default function TonesSection() {
           className={styles.tonesImage}
         />
         <div className={styles.imageOverlay}>
-          <p>Nhấn vào các nút phát âm bên dưới để nghe thử ví dụ</p>
+          <p className={styles.overlayHint}>Nhấn vào từng thanh để nghe phát âm minh họa:</p>
           <div className={styles.audioGrid}>
-            {['ā/妈', 'á/麻', 'ǎ/马', 'à/骂', 'a/嘛'].map((text) => (
-              <button key={text} className={styles.audioBtn} onClick={() => speak(text.split('/')[1])}>
-                {text} <Play size={14} style={{marginLeft: 4}} />
+            {[
+              { label: 'Thanh 1 (mā)', char: '妈' },
+              { label: 'Thanh 2 (má)', char: '麻' },
+              { label: 'Thanh 3 (mǎ)', char: '马' },
+              { label: 'Thanh 4 (mà)', char: '骂' },
+              { label: 'Thanh nhẹ (ma)', char: '嘛' }
+            ].map((item) => (
+              <button key={item.label} className={styles.audioBtn} onClick={() => speak(item.char)}>
+                <span className={styles.btnLabel}>{item.label}</span>
+                <Play size={16} fill="currentColor" />
               </button>
             ))}
           </div>

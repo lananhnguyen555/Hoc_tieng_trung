@@ -176,7 +176,9 @@ export default function VocabList() {
       }
 
       const { data: { session } } = await supabase.auth.getSession();
-      setUserEmail(session?.user?.email || null);
+      const email = session?.user?.email || null;
+      setUserEmail(email);
+      console.log("Debug - Admin Email Check:", email);
 
       if (session?.user) {
         finalLessons = [...finalLessons]; // Migration logic omitted for brevity in rewrite
