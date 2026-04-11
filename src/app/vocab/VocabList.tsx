@@ -21,6 +21,20 @@ interface Word {
   lesson?: string;
 }
 
+const WORD_TYPES = [
+  { label: "Danh từ (N)",       abbr: "N" },
+  { label: "Động từ (V)",      abbr: "V" },
+  { label: "Tính từ (Adj)",    abbr: "Adj" },
+  { label: "Phó từ (Adv)",     abbr: "Adv" },
+  { label: "Đại từ (Pron)",    abbr: "Pron" },
+  { label: "Lượng từ (M)",     abbr: "M" },
+  { label: "Số từ (Num)",      abbr: "Num" },
+  { label: "Giới từ (Prep)",   abbr: "Prep" },
+  { label: "Liên từ (Conj)",   abbr: "Conj" },
+  { label: "Trợ từ (Part)",    abbr: "Part" },
+  { label: "Thán từ (Int)",    abbr: "Int" },
+];
+
 export default function VocabList() {
   const [search, setSearch] = useState("");
   const [vocab, setVocab] = useState<Word[]>([]);
@@ -424,7 +438,7 @@ export default function VocabList() {
                   <td className={styles.sttCell}>{index + 1}</td>
                   <td className={`${styles.wordCell} hanzi`} onClick={() => handleOpenDetailed(item)}>{item.word}</td>
                   <td className={styles.pinyinCell}>{item.pinyin}</td>
-                  <td><span className={styles.typeCell}>{item.word_type}</span></td>
+                  <td><span className={styles.typeCell}>{WORD_TYPES.find(t => t.abbr === item.word_type || t.label === item.word_type)?.abbr || item.word_type}</span></td>
                   <td className={styles.meaningCell}>{item.meaning}</td>
                   <td className={styles.actionCell}>
                     <div className={styles.iconGroup}>
@@ -454,7 +468,14 @@ export default function VocabList() {
                 <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={newWord.pinyin} onChange={e => setNewWord({...newWord, pinyin: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()} /></div>
               </div>
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginTop:'1rem'}}>
-                <div className={styles.formGroup}><label>Loại từ</label><input type="text" className={styles.formInput} value={newWord.word_type} onChange={e => setNewWord({...newWord, word_type: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleSaveNewWord()} /></div>
+                <div className={styles.formGroup}><label>Loại từ</label>
+                  <select className={styles.formInput} value={newWord.word_type} onChange={e => setNewWord({...newWord, word_type: e.target.value})}>
+                    <option value="">-- Chọn loại từ --</option>
+                    {WORD_TYPES.map(t => (
+                      <option key={t.abbr} value={t.abbr}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className={styles.formGroup}><label>Nghĩa Việt</label><textarea className={styles.formInput} value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} onKeyDown={e => handleKeyDown(e, (v)=>setNewWord({...newWord, meaning:v}), newWord.meaning)} /></div>
               </div>
               <div className={styles.formGroup} style={{marginTop:'1.5rem'}}><label>Buổi học</label><select className={styles.formInput} value={newWord.lesson_id} onChange={e => setNewWord({...newWord, lesson_id: e.target.value})}>
@@ -497,7 +518,14 @@ export default function VocabList() {
                 <div className={styles.formGroup}><label>Hán tự</label><textarea className={`${styles.formInput} hanzi`} value={detailedWord.word} onChange={e => setDetailedWord({...detailedWord, word: e.target.value})} /></div>
                 <div className={styles.formGroup}><label>Pinyin</label><input type="text" className={styles.formInput} value={detailedWord.pinyin} onChange={e => setDetailedWord({...detailedWord, pinyin: e.target.value})} /></div>
                 <div className={styles.formGroup}><label>Nghĩa Việt</label><textarea className={styles.formInput} value={detailedWord.meaning} onChange={e => setDetailedWord({...detailedWord, meaning: e.target.value})} onKeyDown={e => handleKeyDown(e, (v)=>setDetailedWord({...detailedWord, meaning:v}), detailedWord.meaning)} /></div>
-                <div className={styles.formGroup}><label>Loại từ</label><input type="text" className={styles.formInput} value={detailedWord.word_type} onChange={e => setDetailedWord({...detailedWord, word_type: e.target.value})} /></div>
+                <div className={styles.formGroup}><label>Loại từ</label>
+                  <select className={styles.formInput} value={detailedWord.word_type} onChange={e => setDetailedWord({...detailedWord, word_type: e.target.value})}>
+                    <option value="">-- Chọn loại từ --</option>
+                    {WORD_TYPES.map(t => (
+                      <option key={t.abbr} value={t.abbr}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
                 {(isAdmin(userEmail) || detailedWord.id.startsWith("local-") || detailedWord.id.startsWith("excel-")) && (
                   <><button className={styles.saveBtn} style={{width:'100%', marginTop:'1rem'}} onClick={handleUpdateWordInfo}><Save size={18} /> Lưu thay đổi</button>
                   <button className={styles.iconBtn} style={{background:'#ef4444', color:'white', width:'100%', marginTop:'0.5rem', justifyContent:'center'}} onClick={(e) => handleDeleteWord(detailedWord.id, e)}><Trash2 size={16} /></button></>
