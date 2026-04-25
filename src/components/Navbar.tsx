@@ -10,6 +10,7 @@ import styles from "./Navbar.module.css";
 export default function Navbar() {
   const [theme, setTheme] = useState("light");
   const [user, setUser] = useState<any>(null);
+  const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,7 +27,14 @@ export default function Navbar() {
       setUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    // Scroll listener
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -42,7 +50,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
           <span className={styles.logoMain}>Học Tiếng Trung</span>
