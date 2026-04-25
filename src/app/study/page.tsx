@@ -36,6 +36,14 @@ export default function StudyHubPage() {
       badge: "AI Voice",
     },
     {
+      href: "/study/listening",
+      icon: "🎤",
+      title: "Nghe & Nhắc lại",
+      desc: "Nghe từ → Phát âm → Chấm điểm",
+      color: "linear-gradient(135deg,#ec4899,#be185d)",
+      badge: "Phát âm",
+    },
+    {
       href: "/study/writing",
       icon: "✍️",
       title: "Bài kiểm tra viết",

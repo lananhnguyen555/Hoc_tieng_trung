@@ -1,122 +1,158 @@
-.container {
-  padding: 3rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+.container { max-width: 680px; margin: 0 auto; padding: 2rem 1rem; }
 
 .header {
-  margin-bottom: 3rem;
-  text-align: center;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+}
+.header h1 { margin: 0; font-size: 1.5rem; }
+.select { padding: 0.5rem 0.75rem; border-radius: 10px; border: 1.5px solid #e5e7eb; background: white; font-size: 0.85rem; }
+
+.progressSection { margin-bottom: 1.5rem; }
+.progressInfo { display: flex; justify-content: space-between; font-size: 0.85rem; color: #6b7280; margin-bottom: 0.4rem; }
+.barTrack { height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+.barFill { height: 100%; background: linear-gradient(90deg, #7c3aed, #ec4899); border-radius: 99px; transition: width 0.4s; }
+
+.mainCard {
+  background: white; border-radius: 24px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+  overflow: hidden; min-height: 440px;
 }
 
-.title {
-  font-size: 2.5rem;
-  font-weight: 800;
+.phaseLabel {
+  text-align: center; font-weight: 700; font-size: 1rem;
+  color: #7c3aed; margin: 0 0 1.5rem 0;
+  padding: 1.25rem 2rem 0;
 }
 
-.subtitle {
-  color: var(--text-muted);
+/* LISTEN PHASE */
+.listenPhase { padding: 0 2rem 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.wordHint { text-align: center; margin-bottom: 0.5rem; }
+.lessonTag { background: #f3f4f6; color: #6b7280; padding: 0.2rem 0.75rem; border-radius: 99px; font-size: 0.78rem; }
+.meaningDisplay { font-size: 1.8rem; font-weight: 700; color: #1e293b; margin-top: 0.75rem; }
+
+.bigPlayBtn {
+  display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  color: white; border: none; border-radius: 20px;
+  padding: 1.75rem 3rem; cursor: pointer; font-size: 1rem; font-weight: 700;
+  box-shadow: 0 6px 24px rgba(124,58,237,0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.bigPlayBtn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(124,58,237,0.45); }
+
+.slowBtn {
+  background: #f3f4f6; border: none; border-radius: 12px;
+  padding: 0.6rem 1.5rem; cursor: pointer; font-size: 0.9rem; color: #374151;
+}
+.slowBtn:hover { background: #e5e7eb; }
+
+.nextPhaseBtn {
+  margin-top: 0.5rem; background: #0ea5e9; color: white;
+  border: none; border-radius: 12px; padding: 0.85rem 2rem;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 0.5rem;
 }
 
-.studyArea {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3rem;
-  width: 100%;
-  max-width: 600px;
+/* SPEAK PHASE */
+.speakPhase { padding: 0 2rem 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.speakHint { text-align: center; }
+.pinyinHint { color: #0ea5e9; font-size: 1rem; font-weight: 600; margin-top: 0.25rem; }
+
+.micArea { width: 100%; display: flex; justify-content: center; margin: 0.5rem 0; }
+.micBtn {
+  display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  color: white; border: none; border-radius: 50%;
+  width: 140px; height: 140px; cursor: pointer; font-size: 0.85rem; font-weight: 700;
+  box-shadow: 0 6px 24px rgba(236,72,153,0.35);
+  transition: transform 0.15s;
+}
+.micBtn:hover { transform: scale(1.05); }
+.micActive {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  animation: micPulse 1s infinite;
+  box-shadow: 0 0 0 0 rgba(239,68,68,0.4);
+}
+@keyframes micPulse {
+  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+  70% { box-shadow: 0 0 0 20px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
 }
 
-.audioCard {
-  width: 100%;
-  padding: 4rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  color: var(--primary);
-  transition: all 0.3s ease;
-  cursor: pointer;
+.listenAgainBtn {
+  background: #f0f9ff; color: #0ea5e9; border: 1.5px solid #bae6fd;
+  border-radius: 10px; padding: 0.5rem 1.25rem; cursor: pointer;
+  display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;
+}
+.skipBtn {
+  background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 0.85rem;
 }
 
-.audioCard:hover:not(:disabled) {
-  transform: scale(1.02);
-  border-color: var(--primary);
-  background: var(--card-bg);
+/* RESULT PHASE */
+.resultPhase { padding: 0 2rem 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.scoreDisplay { margin: 0.5rem 0; }
+
+.compareBox {
+  width: 100%; background: #f9fafb; border-radius: 14px;
+  padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.6rem;
+}
+.compareRow { display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; }
+.compareLabel { color: #6b7280; font-size: 0.82rem; width: 70px; flex-shrink: 0; }
+.compareValue { font-weight: 700; font-size: 1.1rem; flex: 1; }
+.textGood { color: #16a34a; }
+.textBad { color: #dc2626; }
+.inlineSpeak { background: none; border: none; cursor: pointer; color: #0ea5e9; padding: 0; }
+
+.scoreBanner {
+  width: 100%; padding: 0.8rem 1rem; border-radius: 12px; text-align: center;
+  font-weight: 600; font-size: 0.9rem;
 }
 
-.audioCard span {
-  font-weight: 600;
-  font-size: 1.25rem;
+.resultActions { display: flex; gap: 0.75rem; width: 100%; }
+.retryBtn {
+  flex: 1; padding: 0.85rem; background: #f3f4f6; color: #374151;
+  border: none; border-radius: 12px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
 }
-
-.loading {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.optionsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  width: 100%;
-}
-
-.optionBtn {
-  padding: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.hanzi {
-  font-size: 2.5rem;
-  font-weight: 800;
-}
-
-.optionBtn:not(:disabled):hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-}
-
-.correct {
-  background: rgba(34, 197, 94, 0.1) !important;
-  border-color: #22c55e !important;
-  color: #22c55e !important;
-}
-
-.wrong {
-  background: rgba(239, 68, 68, 0.1) !important;
-  border-color: #ef4444 !important;
-  color: #ef4444 !important;
-}
-
-.correctIndicator {
-  border-color: #22c55e !important;
-  color: #22c55e !important;
-}
-
-.feedbackIcon {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
 .nextBtn {
-  align-self: center;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
+  flex: 2; padding: 0.85rem; background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
 }
 
-@media (max-width: 480px) {
-  .optionsGrid {
-    grid-template-columns: 1fr;
-  }
+/* SESSION RESULT */
+.resultCard {
+  background: white; border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  padding: 2rem 1.5rem; text-align: center;
+  max-width: 560px; margin: 0 auto;
 }
+.resultEmoji { font-size: 3.5rem; margin-bottom: 0.5rem; }
+.resultCard h2 { margin: 0 0 1rem 0; }
+.resultCard p { color: #6b7280; margin: 0.5rem 0 1rem; }
+.successBanner {
+  background: linear-gradient(135deg, #22c55e, #16a34a); color: white;
+  padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin: 0.5rem 0;
+}
+
+.roundList { width: 100%; display: flex; flex-direction: column; gap: 0.4rem; margin: 1rem 0; max-height: 260px; overflow-y: auto; }
+.roundRow {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 0.75rem; border-radius: 10px; font-size: 0.85rem;
+}
+.rowPass { background: #f0fdf4; }
+.rowFail { background: #fef2f2; }
+.roundHanzi { font-size: 1.2rem; font-weight: 700; width: 50px; flex-shrink: 0; }
+.roundSpoken { flex: 1; color: #4b5563; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roundScore { font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+.scoreGood { color: #16a34a; }
+.scoreBad { color: #dc2626; }
+
+.restartBtn {
+  margin-top: 0.5rem; padding: 0.85rem 2rem; background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 0.5rem; margin: 1rem auto 0;
+}
+
+.empty { text-align: center; padding: 4rem 1rem; color: #9ca3af; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
