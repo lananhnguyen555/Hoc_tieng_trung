@@ -1,0 +1,47 @@
+.container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+.header { margin-bottom: 2rem; }
+.header h1 { margin: 0; font-size: 1.6rem; }
+
+.statsGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+@media (max-width: 640px) { .statsGrid { grid-template-columns: repeat(2, 1fr); } }
+.statCard { background: white; border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07); text-align: center; }
+.statIcon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; margin: 0 auto 0.75rem; }
+.statValue { font-size: 1.8rem; font-weight: 800; color: #1e293b; }
+.statLabel { font-size: 0.8rem; color: #6b7280; margin-top: 0.2rem; }
+
+.chartCard { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 1.5rem; }
+.chartCard h3 { margin: 0 0 1.25rem 0; font-size: 1rem; color: #374151; }
+.barChart { display: flex; align-items: flex-end; gap: 0.5rem; height: 100px; }
+.barCol { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.barWrapper { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.bar { width: 100%; background: linear-gradient(180deg, #0ea5e9, #0284c7); border-radius: 6px 6px 0 0; transition: height 0.5s ease; }
+.barLabel { font-size: 0.7rem; color: #9ca3af; margin-top: 0.3rem; }
+
+.srsCard { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 1.5rem; }
+.srsCard h3 { margin: 0 0 1rem 0; font-size: 1rem; color: #374151; }
+.srsGrid { display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto; }
+.srsItem { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0; }
+.srsWord { width: 50px; font-size: 1.1rem; font-weight: 700; text-align: center; flex-shrink: 0; }
+.srsBarTrack { flex: 1; height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+.srsBar { height: 100%; border-radius: 99px; transition: width 0.5s; }
+.mastered { background: #22c55e; }
+.medium { background: #f59e0b; }
+.weak { background: #ef4444; }
+.srsPct { width: 38px; font-size: 0.78rem; font-weight: 700; text-align: right; color: #6b7280; flex-shrink: 0; }
+
+.sessionsCard { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+.sessionsCard h3 { margin: 0 0 1rem 0; font-size: 1rem; color: #374151; }
+.sessionList { display: flex; flex-direction: column; gap: 0.5rem; }
+.sessionRow {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem; background: #f9fafb; border-radius: 10px;
+  font-size: 0.85rem;
+}
+.sessionType { font-weight: 600; flex: 1.5; }
+.sessionPct { font-weight: 800; width: 44px; text-align: center; padding: 0.15rem 0.4rem; border-radius: 6px; font-size: 0.82rem; }
+.good { background: #dcfce7; color: #16a34a; }
+.ok { background: #fef9c3; color: #92400e; }
+.bad { background: #fee2e2; color: #dc2626; }
+.sessionDetail { color: #6b7280; flex: 1; }
+.sessionTime { display: flex; align-items: center; gap: 0.3rem; color: #9ca3af; }
+.sessionDate { color: #9ca3af; white-space: nowrap; }

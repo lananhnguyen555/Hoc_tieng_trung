@@ -1,205 +1,205 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { CheckCircle2, XCircle, RotateCcw, ChevronRight, Trophy } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { useVocabData, Word } from "@/hooks/useVocabData";
+import { updateProgress, saveStudySession } from "@/lib/srs";
+import { CheckCircle, XCircle, Mic, MicOff, Volume2, RotateCcw, Trophy } from "lucide-react";
 import styles from "./quiz.module.css";
 
-const MOCK_QUESTIONS = [
-  {
-    id: 1,
-    word: "学习",
-    options: ["Học tập", "Giáo viên", "Học sinh", "Cảm ơn"],
-    correct: "Học tập",
-  },
-  {
-    id: 2,
-    word: "lǎoshī",
-    options: ["Học tập", "Giáo viên", "Học sinh", "Cảm ơn"],
-    correct: "Giáo viên",
-  },
-  {
-    id: 3,
-    word: "学生",
-    options: ["Học tập", "Giáo viên", "Học sinh", "Cảm ơn"],
-    correct: "Học sinh",
-  },
-];
+type QuizMode = "hanzi-to-meaning" | "meaning-to-hanzi" | "pinyin-to-hanzi";
+type QuizItem = { word: Word; choices: string[]; correct: string };
+
+function generateQuiz(vocab: Word[], mode: QuizMode, count = 10): QuizItem[] {
+  const pool = [...vocab].sort(() => Math.random() - 0.5).slice(0, Math.max(count, 4));
+  const items: QuizItem[] = [];
+  for (let i = 0; i < Math.min(count, pool.length); i++) {
+    const word = pool[i];
+    let correct: string;
+    let getChoice: (w: Word) => string;
+    if (mode === "hanzi-to-meaning") { correct = word.meaning; getChoice = w => w.meaning; }
+    else if (mode === "meaning-to-hanzi") { correct = word.word; getChoice = w => w.word; }
+    else { correct = word.word; getChoice = w => w.word; }
+    const others = pool.filter((_, j) => j !== i).sort(() => Math.random() - 0.5).slice(0, 3).map(getChoice);
+    const choices = [...new Set([correct, ...others])].sort(() => Math.random() - 0.5).slice(0, 4);
+    if (!choices.includes(correct)) choices[0] = correct;
+    items.push({ word, choices: choices.sort(() => Math.random() - 0.5), correct });
+  }
+  return items;
+}
 
 export default function QuizPage() {
-  const [allVocab, setAllVocab] = useState<any[]>([]);
-  const [lessons, setLessons] = useState<any[]>([]);
-  const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
-  const [questions, setQuestions] = useState<any[]>([]);
-  const [step, setStep] = useState(0);
+  const { vocab, lessons, loading } = useVocabData();
+  const [selectedLessonId, setSelectedLessonId] = useState("all");
+  const [mode, setMode] = useState<QuizMode>("hanzi-to-meaning");
+  const [quizItems, setQuizItems] = useState<QuizItem[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [done, setDone] = useState(false);
+  const [startTime] = useState(Date.now());
+  const [listening, setListening] = useState(false);
+  const [recognition, setRecognition] = useState<any>(null);
 
+  const filteredVocab = selectedLessonId === "all" ? vocab : vocab.filter(v => v.lesson_id === selectedLessonId);
+
+  const startQuiz = useCallback(() => {
+    if (filteredVocab.length < 4) return;
+    setQuizItems(generateQuiz(filteredVocab, mode));
+    setCurrentIndex(0); setSelected(null); setScore(0); setDone(false);
+  }, [filteredVocab, mode]);
+
+  useEffect(() => { if (vocab.length > 0) startQuiz(); }, [vocab, selectedLessonId, mode]);
+
+  // Web Speech API
   useEffect(() => {
-    // Load data
-    const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-    const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-    const combinedVocab = [...MOCK_QUESTIONS.map(q => ({id: q.id, word: q.word, pinyin: "", meaning: q.correct, lesson_id: "mock"})), ...localVocab];
-    
-    setAllVocab(combinedVocab);
-    setLessons([{id: "mock", name: "Dữ liệu mẫu"}, ...localLessons]);
+    if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
+      const r = new (window as any).webkitSpeechRecognition();
+      r.lang = "zh-CN"; r.continuous = false; r.interimResults = false;
+      r.onresult = (e: any) => {
+        const text = e.results[0][0].transcript;
+        handleSelect(text.trim());
+        setListening(false);
+      };
+      r.onerror = () => setListening(false);
+      r.onend = () => setListening(false);
+      setRecognition(r);
+    }
   }, []);
 
-  useEffect(() => {
-    generateQuestions();
-  }, [allVocab, selectedLessonId]);
+  const speak = (text: string) => {
+    window.speechSynthesis?.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "zh-CN"; u.rate = 0.8;
+    window.speechSynthesis?.speak(u);
+  };
 
-  const generateQuestions = () => {
-    const filtered = allVocab.filter(v => selectedLessonId === "all" || v.lesson_id === selectedLessonId);
-    if (filtered.length === 0) {
-      setQuestions([]);
-      return;
-    }
+  const handleSelect = async (choice: string) => {
+    if (selected !== null) return;
+    const item = quizItems[currentIndex];
+    const correct = choice === item.correct;
+    setSelected(choice);
+    await updateProgress(item.word.id, correct);
+    if (correct) setScore(s => s + 1);
 
-    const newQuestions = filtered.map(item => {
-      // Get 3 random wrong answers from the rest of the vocab
-      const otherMeanings = allVocab
-        .filter(v => v.id !== item.id)
-        .map(v => v.meaning);
-      
-      const shuffledOptions = [item.meaning];
-      while (shuffledOptions.length < Math.min(4, allVocab.length)) {
-        const randomMeaning = otherMeanings[Math.floor(Math.random() * otherMeanings.length)];
-        if (!shuffledOptions.includes(randomMeaning)) {
-          shuffledOptions.push(randomMeaning);
-        }
+    setTimeout(async () => {
+      if (currentIndex + 1 >= quizItems.length) {
+        const dur = Math.round((Date.now() - startTime) / 1000);
+        await saveStudySession("quiz", selectedLessonId, score + (correct ? 1 : 0), quizItems.length, dur);
+        setDone(true);
+      } else {
+        setCurrentIndex(i => i + 1);
+        setSelected(null);
       }
-
-      return {
-        id: item.id,
-        word: item.word,
-        pinyin: item.pinyin,
-        options: shuffledOptions.sort(() => Math.random() - 0.5),
-        correct: item.meaning
-      };
-    }).sort(() => Math.random() - 0.5).slice(0, 10); // Max 10 questions
-
-    setQuestions(newQuestions);
-    setStep(0);
-    setScore(0);
-    setFinished(false);
-    setSelectedOption(null);
-    setIsCorrect(null);
+    }, 1000);
   };
 
-  const currentQuestion = questions[step];
-
-  const handleOptionClick = (option: string) => {
-    if (selectedOption) return;
-    setSelectedOption(option);
-    const correct = option === currentQuestion.correct;
-    setIsCorrect(correct);
-    if (correct) setScore(score + 1);
+  const toggleMic = () => {
+    if (!recognition) return;
+    if (listening) { recognition.stop(); setListening(false); }
+    else { recognition.start(); setListening(true); }
   };
 
-  const nextQuestion = () => {
-    if (step < questions.length - 1) {
-      setStep(step + 1);
-      setSelectedOption(null);
-      setIsCorrect(null);
-    } else {
-      setFinished(true);
-    }
-  };
+  if (loading) return <div className={styles.container}><div className={styles.empty}>Đang tải...</div></div>;
+  if (filteredVocab.length < 4) return (
+    <div className={styles.container}>
+      <header className={styles.header}><h1>📝 Quiz Trắc nghiệm</h1></header>
+      <div className={styles.empty}>Cần ít nhất 4 từ để tạo quiz. Hãy chọn buổi học khác!</div>
+    </div>
+  );
 
-  const restart = () => {
-    setStep(0);
-    setScore(0);
-    setFinished(false);
-    setSelectedOption(null);
-    setIsCorrect(null);
-  };
-
-  if (questions.length === 0) {
+  if (done) {
+    const pct = Math.round((score / quizItems.length) * 100);
     return (
       <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Trắc nghiệm từ vựng</h1>
-          <select value={selectedLessonId} onChange={e => setSelectedLessonId(e.target.value)} className={styles.lessonSelect}>
-            <option value="all">Tất cả bài học</option>
-            {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
-        </div>
-        <div className={styles.empty}>Chưa có từ vựng trong buổi này để tạo câu hỏi!</div>
-      </div>
-    );
-  }
-
-  if (finished) {
-    return (
-      <div className={styles.container}>
-        <div className={`card ${styles.resultCard}`}>
-          <Trophy size={64} className={styles.trophy} />
-          <h1>Kết quả luyện tập</h1>
-          <p className={styles.scoreText}>Bạn đã trả lời đúng <strong>{score}/{questions.length}</strong> câu hỏi.</p>
-          <button className="btn-primary" onClick={generateQuestions}>
-            <RotateCcw size={20} /> Thử lại
-          </button>
+        <div className={styles.resultCard}>
+          <div className={styles.resultIcon}>{pct >= 85 ? "🏆" : pct >= 60 ? "👍" : "💪"}</div>
+          <h2>Kết quả Quiz</h2>
+          <div className={styles.resultScore} style={{color: pct >= 85 ? "#22c55e" : pct >= 60 ? "#f59e0b" : "#ef4444"}}>{pct}%</div>
+          <p>{score}/{quizItems.length} câu đúng</p>
+          {pct >= 85 && <div className={styles.successBanner}><Trophy size={18}/> Xuất sắc! Đạt ngưỡng thành thạo!</div>}
+          {pct < 85 && <p style={{color:'#f59e0b', fontSize:'0.85rem'}}>Cần &gt;85% để đạt thành thạo. Cố lên! 💪</p>}
+          <button className={styles.restartBtn} onClick={startQuiz}><RotateCcw size={18}/> Làm lại</button>
         </div>
       </div>
     );
   }
+
+  const item = quizItems[currentIndex];
+  const progressPct = Math.round((currentIndex / quizItems.length) * 100);
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Trắc nghiệm từ vựng</h1>
-        <select value={selectedLessonId} onChange={e => setSelectedLessonId(e.target.value)} className={styles.lessonSelect}>
-          <option value="all">Tất cả bài học</option>
-          {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-        </select>
-        <div className={styles.progressBar}>
-          <div 
-            className={styles.progressFill} 
-            style={{ width: `${((step + 1) / questions.length) * 100}%` }}
-          ></div>
+        <h1>📝 Quiz Trắc nghiệm</h1>
+        <div className={styles.controls}>
+          <select value={selectedLessonId} onChange={e => setSelectedLessonId(e.target.value)} className={styles.select}>
+            <option value="all">Tất cả</option>
+            {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+          <select value={mode} onChange={e => setMode(e.target.value as QuizMode)} className={styles.select}>
+            <option value="hanzi-to-meaning">Hán tự → Nghĩa</option>
+            <option value="meaning-to-hanzi">Nghĩa → Hán tự</option>
+            <option value="pinyin-to-hanzi">Pinyin → Hán tự</option>
+          </select>
         </div>
       </header>
 
-      <div className={styles.quizArea}>
-        <div className={`card ${styles.questionCard}`}>
-          <span className={styles.questionHint}>Nghĩa của từ này là gì?</span>
-          <h2 className={styles.word}>{currentQuestion.word}</h2>
-          {currentQuestion.pinyin && <p className={styles.pinyin}>{currentQuestion.pinyin}</p>}
+      {/* Progress */}
+      <div className={styles.progressSection}>
+        <div className={styles.progressInfo}>
+          <span>Câu {currentIndex + 1}/{quizItems.length}</span>
+          <span style={{color:'#22c55e', fontWeight:700}}>Đúng: {score}</span>
         </div>
+        <div className={styles.barTrack}><div className={styles.barFill} style={{width:`${progressPct}%`}} /></div>
+      </div>
 
-        <div className={styles.optionsGrid}>
-          {currentQuestion.options.map((option: string) => (
-            <button
-              key={option}
-              className={`card ${styles.optionBtn} ${
-                selectedOption === option
-                  ? option === currentQuestion.correct
-                    ? styles.correct
-                    : styles.wrong
-                  : selectedOption && option === currentQuestion.correct
-                  ? styles.correctIndicator
-                  : ""
-              }`}
-              onClick={() => handleOptionClick(option)}
-              disabled={!!selectedOption}
-            >
-              {option}
-              {selectedOption === option && (
-                <div className={styles.feedbackIcon}>
-                  {option === currentQuestion.correct ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {selectedOption && (
-          <button className={`btn-primary ${styles.nextBtn}`} onClick={nextQuestion}>
-            {step < questions.length - 1 ? "Câu tiếp theo" : "Xem kết quả"} <ChevronRight size={20} />
-          </button>
+      {/* Question */}
+      <div className={styles.questionCard}>
+        {mode === "hanzi-to-meaning" && (
+          <div className={styles.questionContent}>
+            <div className={styles.hanziQ}>{item.word.word}</div>
+            <div className={styles.pinyinQ}>{item.word.pinyin}</div>
+            <div className={styles.questionLabel}>Nghĩa của từ này là gì?</div>
+          </div>
         )}
+        {mode === "meaning-to-hanzi" && (
+          <div className={styles.questionContent}>
+            <div className={styles.meaningQ}>{item.word.meaning}</div>
+            <div className={styles.questionLabel}>Hán tự nào tương ứng?</div>
+          </div>
+        )}
+        {mode === "pinyin-to-hanzi" && (
+          <div className={styles.questionContent}>
+            <div className={styles.pinyinBig}>{item.word.pinyin}</div>
+            <div className={styles.questionLabel}>Hán tự nào tương ứng?</div>
+          </div>
+        )}
+        <div className={styles.questionTools}>
+          <button className={styles.toolBtn} onClick={() => speak(item.word.word)} title="Nghe phát âm"><Volume2 size={18}/></button>
+          {recognition && (
+            <button className={`${styles.toolBtn} ${listening ? styles.listening : ""}`} onClick={toggleMic} title="Nói đáp án">
+              {listening ? <MicOff size={18}/> : <Mic size={18}/>}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Choices */}
+      <div className={styles.choices}>
+        {item.choices.map((choice, i) => {
+          let cls = styles.choice;
+          if (selected !== null) {
+            if (choice === item.correct) cls = `${styles.choice} ${styles.correct}`;
+            else if (choice === selected) cls = `${styles.choice} ${styles.wrong}`;
+          }
+          return (
+            <button key={i} className={cls} onClick={() => handleSelect(choice)} disabled={selected !== null}>
+              {selected !== null && choice === item.correct && <CheckCircle size={18}/>}
+              {selected !== null && choice === selected && choice !== item.correct && <XCircle size={18}/>}
+              {mode === "hanzi-to-meaning" ? choice : <span className="hanzi">{choice}</span>}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

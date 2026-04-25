@@ -1,0 +1,73 @@
+.trigger {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.9rem; background: #f3f4f6;
+  border: 1.5px solid #e5e7eb; border-radius: 10px;
+  font-size: 0.85rem; color: #6b7280; cursor: pointer;
+  transition: all 0.15s;
+}
+.trigger:hover { background: #e5e7eb; border-color: #d1d5db; }
+.trigger kbd {
+  background: white; border: 1px solid #d1d5db;
+  border-radius: 5px; padding: 0.05rem 0.35rem;
+  font-size: 0.75rem; color: #9ca3af;
+}
+
+.overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 8vh;
+}
+.modal {
+  background: white; border-radius: 20px;
+  width: 100%; max-width: 560px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+  overflow: hidden; max-height: 80vh;
+  display: flex; flex-direction: column;
+}
+
+.searchBar {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 1rem 1.25rem; border-bottom: 1px solid #f3f4f6;
+}
+.searchIcon { color: #9ca3af; flex-shrink: 0; }
+.searchInput { flex: 1; border: none; outline: none; font-size: 1.05rem; background: transparent; }
+.clearBtn { background: none; border: none; cursor: pointer; color: #9ca3af; padding: 0.2rem; }
+.clearBtn:hover { color: #4b5563; }
+
+.results { list-style: none; margin: 0; padding: 0.5rem 0; overflow-y: auto; }
+.resultItem {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1.25rem; cursor: pointer; transition: background 0.1s;
+  font-size: 0.9rem;
+}
+.resultItem:hover { background: #f0f9ff; }
+.hanzi { font-size: 1.3rem; font-weight: 700; width: 50px; flex-shrink: 0; }
+.pinyin { color: #0ea5e9; font-size: 0.85rem; width: 100px; flex-shrink: 0; }
+.meaning { flex: 1; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.starIcon { color: #f59e0b; flex-shrink: 0; }
+
+.emptyHint { text-align: center; padding: 2rem 1rem; color: #9ca3af; }
+.emptyHint p { margin: 0.3rem 0; }
+
+/* Detail view */
+.detail { padding: 1.5rem; overflow-y: auto; }
+.backBtn { background: none; border: none; cursor: pointer; color: #0ea5e9; font-size: 0.9rem; font-weight: 600; padding: 0; margin-bottom: 1.5rem; }
+.detailHanzi { font-size: 3.5rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; }
+.detailPinyin { color: #0ea5e9; font-size: 1.2rem; text-align: center; font-weight: 600; margin-bottom: 0.5rem; }
+.detailMeaning { font-size: 1.4rem; font-weight: 600; text-align: center; color: #374151; margin-bottom: 1rem; }
+.wordType {
+  display: inline-block; background: #00EE76; color: #1e293b;
+  padding: 0.2rem 0.8rem; border-radius: 99px; font-size: 0.8rem;
+  font-weight: 700; margin: 0 auto 0.75rem; display: block; width: fit-content; margin: 0 auto 0.75rem;
+}
+.lesson { text-align: center; color: #6b7280; font-size: 0.85rem; margin-bottom: 1.5rem; }
+.detailActions { display: flex; gap: 0.75rem; }
+.speakBtn, .starBtn {
+  flex: 1; padding: 0.75rem; border: none; border-radius: 12px;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.speakBtn { background: #0ea5e9; color: white; }
+.starBtn { background: #f3f4f6; color: #374151; }
+.starred { background: #fef9c3; color: #d97706; }

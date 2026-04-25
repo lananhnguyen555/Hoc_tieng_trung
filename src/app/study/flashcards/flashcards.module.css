@@ -1,86 +1,207 @@
 .container {
-  padding: 3rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  min-height: 100vh;
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 3rem;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
+.title { margin: 0; font-size: 1.5rem; }
+
 .lessonSelect {
   padding: 0.5rem 1rem;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--primary);
-  font-weight: 600;
-  outline: none;
+  border-radius: 10px;
+  border: 1.5px solid #e5e7eb;
+  background: white;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
-.empty {
-  padding: 4rem;
-  text-align: center;
-  color: var(--text-muted);
-  font-style: italic;
+.progressSection { margin-bottom: 1.5rem; }
+.progressInfo { display: flex; justify-content: space-between; font-size: 0.85rem; color: #6b7280; margin-bottom: 0.4rem; }
+
+.barTrack {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0ea5e9, #22c55e);
+  border-radius: 99px;
+  transition: width 0.5s ease;
 }
 
-.title {
-  font-size: 2.5rem;
-  font-weight: 800;
+/* Card flip */
+.card {
+  perspective: 1200px;
+  height: 320px;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  border-radius: 20px;
 }
-
-.subtitle {
-  color: var(--text-muted);
+.cardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 20px;
 }
+.card.flipped .cardInner { transform: rotateY(180deg); }
 
-.studyArea {
+.cardFront, .cardBack {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
-  width: 100%;
+  justify-content: center;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+.cardFront {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+.cardBack {
+  background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+  color: white;
+  transform: rotateY(180deg);
 }
 
-.progress {
-  font-weight: 600;
-  color: var(--text-muted);
+.lessonTag {
+  font-size: 0.78rem;
+  opacity: 0.8;
+  margin: 0 0 1rem 0;
+  background: rgba(255,255,255,0.2);
+  padding: 0.2rem 0.8rem;
+  border-radius: 99px;
 }
+.hanzi { font-size: 4rem; font-weight: 700; margin: 0.5rem 0; line-height: 1; }
+.hint { font-size: 0.8rem; opacity: 0.7; margin: 1rem 0 0 0; }
 
-.controls {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
+.scoreBadge {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+}
+.mastered { background: #22c55e; color: white; }
+.medium { background: #f59e0b; color: white; }
+.weak { background: rgba(255,255,255,0.3); color: white; }
+
+.pinyin { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.8rem; opacity: 0.9; }
+.meaning { font-size: 1.6rem; font-weight: 700; text-align: center; margin-bottom: 1rem; }
+.wordType { background: rgba(255,255,255,0.25); padding: 0.2rem 0.8rem; border-radius: 99px; font-size: 0.8rem; }
+.speakBtn {
   margin-top: 1rem;
-}
-
-.controlBtn, .resetBtn {
-  width: 50px;
-  height: 50px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
   border-radius: 50%;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.speakBtn:hover { background: rgba(255,255,255,0.35); }
+
+/* Answer buttons */
+.answerBtns { display: flex; gap: 1rem; justify-content: center; }
+.wrongBtn, .correctBtn {
+  flex: 1;
+  max-width: 200px;
+  padding: 1rem;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  color: var(--foreground);
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.wrongBtn { background: #fef2f2; color: #ef4444; box-shadow: 0 2px 12px rgba(239,68,68,0.2); }
+.correctBtn { background: #f0fdf4; color: #22c55e; box-shadow: 0 2px 12px rgba(34,197,94,0.2); }
+.wrongBtn:hover { transform: scale(1.03); }
+.correctBtn:hover { transform: scale(1.03); }
+
+.navBtns { display: flex; gap: 1rem; justify-content: center; }
+.navBtn {
+  background: #f3f4f6; border: none; border-radius: 50%;
+  width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1.2rem;
+}
+.navBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Result card */
+.resultCard {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  padding: 3rem 2rem;
+  text-align: center;
+  max-width: 500px;
+  margin: 2rem auto;
+}
+.resultIcon { font-size: 4rem; margin-bottom: 0.5rem; }
+.resultCard h2 { margin: 0 0 1rem 0; font-size: 1.5rem; }
+.resultScore { font-size: 3.5rem; font-weight: 900; margin: 0.5rem 0; }
+.resultCard p { color: #6b7280; margin-bottom: 1.5rem; }
+
+.masteryBar { margin: 1.5rem 0; text-align: left; }
+.masteryLabel { font-size: 0.85rem; color: #6b7280; margin-bottom: 0.4rem; }
+
+.successBanner {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
 }
 
-.controlBtn:hover, .resetBtn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  transform: scale(1.1);
+.resultActions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+.restartBtn, .weakBtn {
+  flex: 1;
+  padding: 0.85rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
+.restartBtn { background: #0ea5e9; color: white; }
+.weakBtn { background: #f3f4f6; color: #374151; }
 
-.resetBtn {
-  width: 40px;
-  height: 40px;
+.empty {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: #9ca3af;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

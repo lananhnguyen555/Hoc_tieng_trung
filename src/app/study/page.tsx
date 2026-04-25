@@ -1,385 +1,110 @@
 "use client";
-
+import Link from "next/link";
 import { useState, useEffect } from "react";
-import { 
-  Play, 
-  RotateCcw, 
-  Eye, 
-  EyeOff, 
-  Layers, 
-  Ear, 
-  CheckCircle2, 
-  ChevronRight, 
-  ChevronLeft,
-  BookOpen,
-  Filter
-} from "lucide-react";
+import { useVocabData } from "@/hooks/useVocabData";
+import { getProgress, MASTERY_THRESHOLD_VALUE } from "@/lib/srs";
 import styles from "./study.module.css";
-import { supabase } from "@/lib/supabase";
-import Flashcard from "@/components/Flashcard";
-import { pinyin as getPinyin } from "pinyin-pro";
 
-interface Word {
-  id: string;
-  word: string;
-  pinyin: string;
-  meaning: string;
-  lesson_id: string;
-}
-
-type StudyMode = "hidden_rows" | "flashcards" | "quiz" | "listening";
-
-export default function StudyPage() {
-  const [activeMode, setActiveMode] = useState<StudyMode>("hidden_rows");
-  const [vocab, setVocab] = useState<Word[]>([]);
-  const [lessons, setLessons] = useState<any[]>([]);
-  const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
-  const [loading, setLoading] = useState(true);
-
-  // Hidden Rows state
-  const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
-  const [visibleCount, setVisibleCount] = useState(5);
-
-  // Flashcards/Quiz/Table Paging state
-  const [startIndex, setStartIndex] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Listening Mode Inputs
-  const [userInputs, setUserInputs] = useState({ word: "", meaning: "" });
-  const [showResult, setShowResult] = useState(false);
-  const [checkResult, setCheckResult] = useState<{ word: boolean, meaning: boolean } | null>(null);
-
-  const sortLessons = (lessonList: any[]) => {
-    return [...lessonList].sort((a, b) => {
-      const numA = a.name.match(/\d+/);
-      const numB = b.name.match(/\d+/);
-
-      if (numA && numB) {
-        return parseInt(numA[0]) - parseInt(numB[0]);
-      }
-      if (numA) return -1;
-      if (numB) return 1;
-
-      const dateA = new Date(a.created_at || 0).getTime();
-      const dateB = new Date(b.created_at || 0).getTime();
-      return dateA - dateB;
-    });
-  };
+export default function StudyHubPage() {
+  const { vocab, loading } = useVocabData();
+  const [sessions, setSessions] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchData();
+    setSessions(JSON.parse(localStorage.getItem("study_sessions") || "[]"));
   }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUser = session?.user;
+  const mastered = vocab.filter(v => getProgress(v.id).score >= MASTERY_THRESHOLD_VALUE).length;
+  const avgProgress = vocab.length > 0
+    ? Math.round(vocab.reduce((s, v) => s + getProgress(v.id).score, 0) / vocab.length)
+    : 0;
 
-      // Fetch Lessons
-      const { data: dbLessons } = await supabase.from("lessons").select("*").order("created_at");
-      const localLessons = JSON.parse(localStorage.getItem("user_lessons") || "[]");
-
-      // Fetch Vocab
-      const { data: dbVocab } = await supabase.from("vocab").select("*");
-      const localVocab = JSON.parse(localStorage.getItem("user_vocab") || "[]");
-
-      let finalLessons = [...(dbLessons || []), ...localLessons];
-      setVocab(finalVocab);
-      setLessons(sortLessons(finalLessons));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredVocab = selectedLessonId === "all" 
-    ? vocab 
-    : vocab.filter(v => v.lesson_id === selectedLessonId);
-
-  const displayVocab = activeMode === "hidden_rows" 
-    ? filteredVocab.slice(startIndex, startIndex + visibleCount) 
-    : filteredVocab;
-
-  const currentWord = filteredVocab[currentIndex];
-
-  const speak = (text: string) => {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "zh-CN";
-    utterance.rate = 0.8;
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const toggleHiddenColumn = (col: string) => {
-    setHiddenColumns(prev => 
-      prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]
-    );
-  };
+  const modes = [
+    {
+      href: "/study/flashcards",
+      icon: "🗃️",
+      title: "Flashcard",
+      desc: "Lật thẻ, đánh giá Biết / Chưa biết",
+      color: "linear-gradient(135deg,#667eea,#764ba2)",
+      badge: "SRS",
+    },
+    {
+      href: "/study/quiz",
+      icon: "📝",
+      title: "Quiz Trắc nghiệm",
+      desc: "4 đáp án + nhận dạng giọng nói",
+      color: "linear-gradient(135deg,#0ea5e9,#0284c7)",
+      badge: "AI Voice",
+    },
+    {
+      href: "/study/writing",
+      icon: "✍️",
+      title: "Bài kiểm tra viết",
+      desc: "Gõ Pinyin hoặc Hán tự từ gợi ý",
+      color: "linear-gradient(135deg,#7c3aed,#5b21b6)",
+      badge: "Typing",
+    },
+    {
+      href: "/study/history",
+      icon: "📊",
+      title: "Lịch sử & Thống kê",
+      desc: "Tiến độ, chuỗi ngày, biểu đồ",
+      color: "linear-gradient(135deg,#f59e0b,#d97706)",
+      badge: "Stats",
+    },
+  ];
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Trung tâm Ôn tập</h1>
-        <p className={styles.subtitle}>Luyện tập và ghi nhớ từ vựng qua nhiều phương pháp khác nhau.</p>
+    <div className={styles.hubContainer}>
+      <header className={styles.hubHeader}>
+        <h1>🎓 Trung tâm Ôn tập</h1>
+        <p>Chọn chế độ học để bắt đầu!</p>
       </header>
 
-      {/* Control Panel */}
-      <div className={styles.toolbar}>
-        <div className={styles.filterSection}>
-          <div className={styles.selectGroup}>
-            <Filter size={18} />
-            <select 
-              className={styles.select} 
-              value={selectedLessonId} 
-              onChange={e => {
-                setSelectedLessonId(e.target.value);
-                setStartIndex(0);
-                setCurrentIndex(0);
-              }}
-            >
-              <option value="all">Tất cả từ vựng</option>
-              {lessons.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
-          </div>
+      {/* Quick stats */}
+      <div className={styles.hubStats}>
+        <div className={styles.hubStat}>
+          <span className={styles.hubStatValue}>{vocab.length}</span>
+          <span className={styles.hubStatLabel}>Tổng từ</span>
         </div>
-
-        <div className={styles.modeTabs}>
-          <button 
-            className={`${styles.tab} ${activeMode === "hidden_rows" ? styles.activeTab : ""}`}
-            onClick={() => setActiveMode("hidden_rows")}
-          >
-            <EyeOff size={18} /> <span>Tự ôn tập (Ẩn cột)</span>
-          </button>
-          <button 
-            className={`${styles.tab} ${activeMode === "flashcards" ? styles.activeTab : ""}`}
-            onClick={() => setActiveMode("flashcards")}
-          >
-            <Layers size={18} /> <span>Flashcards</span>
-          </button>
-          <button 
-            className={`${styles.tab} ${activeMode === "listening" ? styles.activeTab : ""}`}
-            onClick={() => setActiveMode("listening")}
-          >
-            <Ear size={18} /> <span>Luyện nghe</span>
-          </button>
+        <div className={styles.hubStat}>
+          <span className={styles.hubStatValue} style={{color:'#22c55e'}}>{mastered}</span>
+          <span className={styles.hubStatLabel}>Thành thạo</span>
+        </div>
+        <div className={styles.hubStat}>
+          <span className={styles.hubStatValue} style={{color:'#0ea5e9'}}>{avgProgress}%</span>
+          <span className={styles.hubStatLabel}>Tiến độ TB</span>
+        </div>
+        <div className={styles.hubStat}>
+          <span className={styles.hubStatValue} style={{color:'#f59e0b'}}>{sessions.length}</span>
+          <span className={styles.hubStatLabel}>Bài đã làm</span>
         </div>
       </div>
 
-      {loading ? (
-        <div className={styles.loader}>Đang tải dữ liệu...</div>
-      ) : filteredVocab.length === 0 ? (
-        <div className={styles.empty}>Chưa có từ vựng nào để ôn tập.</div>
-      ) : (
-        <main className={styles.mainContent}>
-          
-          {/* MODE: HIDDEN ROWS */}
-          {activeMode === "hidden_rows" && (
-            <div className={styles.studySection}>
-              <div className={styles.tableControls}>
-                <p>Nhóm 5 từ: Đang hiển thị <b>{displayVocab.length}</b> / {filteredVocab.length} từ</p>
-                <div className={styles.checkGroup}>
-                  <label className={styles.checkLabel}>
-                    <input type="checkbox" checked={hiddenColumns.includes("word")} onChange={() => toggleHiddenColumn("word")} />
-                    Ẩn Hán tự
-                  </label>
-                  <label className={styles.checkLabel}>
-                    <input type="checkbox" checked={hiddenColumns.includes("pinyin")} onChange={() => toggleHiddenColumn("pinyin")} />
-                    Ẩn Pinyin
-                  </label>
-                  <label className={styles.checkLabel}>
-                    <input type="checkbox" checked={hiddenColumns.includes("meaning")} onChange={() => toggleHiddenColumn("meaning")} />
-                    Ẩn Nghĩa Việt
-                  </label>
-                </div>
-              </div>
+      {/* Mode cards */}
+      <div className={styles.modeGrid}>
+        {modes.map(m => (
+          <Link key={m.href} href={m.href} className={styles.modeCard} style={{ background: m.color }}>
+            <div className={styles.modeBadge}>{m.badge}</div>
+            <div className={styles.modeIcon}>{m.icon}</div>
+            <h3 className={styles.modeTitle}>{m.title}</h3>
+            <p className={styles.modeDesc}>{m.desc}</p>
+          </Link>
+        ))}
+      </div>
 
-              <div className={styles.studyTableWrapper}>
-                <table className={styles.studyTable}>
-                  <thead>
-                    <tr>
-                      <th style={{width: "60px"}}>STT</th>
-                      <th>Hán tự</th>
-                      <th>Pinyin</th>
-                      <th>Nghĩa Việt</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayVocab.map((item, idx) => (
-                      <tr key={item.id}>
-                        <td className={styles.stt}>{startIndex + idx + 1}</td>
-                        <td 
-                          className={`hanzi ${hiddenColumns.includes("word") ? styles.blurred : ""}`} 
-                          style={{fontSize: "2.5rem", cursor: "pointer"}}
-                          onClick={() => speak(item.word)}
-                          title="Nhấn để nghe phát âm"
-                        >
-                          {item.word}
-                        </td>
-                        <td className={styles.cellContent}>
-                          <span className={`${hiddenColumns.includes("pinyin") ? styles.blurred : ""}`}>
-                            {item.pinyin}
-                          </span>
-                        </td>
-                        <td className={styles.cellContent}>
-                          <span className={`${hiddenColumns.includes("meaning") ? styles.blurred : ""}`}>
-                            {item.meaning}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-                <div className={styles.pagination}>
-                  <button 
-                    className={styles.navBtn} 
-                    disabled={startIndex === 0}
-                    onClick={() => setStartIndex(prev => Math.max(0, prev - visibleCount))}
-                  >
-                    <ChevronLeft size={18} /> Nhóm 5 từ trước
-                  </button>
-                  <span className={styles.pageInfo}>
-                    Hiển thị <b>{startIndex + 1} - {Math.min(startIndex + visibleCount, filteredVocab.length)}</b> / {filteredVocab.length} từ
-                  </span>
-                  <button 
-                    className={styles.navBtn} 
-                    disabled={startIndex + visibleCount >= filteredVocab.length}
-                    onClick={() => setStartIndex(prev => prev + visibleCount)}
-                  >
-                    Nhóm 5 từ tiếp theo <ChevronRight size={18} />
-                  </button>
-                </div>
-            </div>
-          )}
-
-          {/* MODE: FLASHCARDS */}
-          {activeMode === "flashcards" && (
-            <div className={styles.flashcardContainer}>
-              <Flashcard 
-                word={currentWord.word} 
-                pinyin={currentWord.pinyin} 
-                meaning={currentWord.meaning} 
-              />
-              <div className={styles.navBtns}>
-                <button 
-                  disabled={currentIndex === 0} 
-                  onClick={() => setCurrentIndex(prev => prev - 1)}
-                  className={styles.navBtn}
-                >
-                  <ChevronLeft size={24} /> Trước
-                </button>
-                <span className={styles.cardCounter}>{currentIndex + 1} / {filteredVocab.length}</span>
-                <button 
-                  disabled={currentIndex === filteredVocab.length - 1} 
-                  onClick={() => setCurrentIndex(prev => prev + 1)}
-                  className={styles.navBtn}
-                >
-                  Sau <ChevronRight size={24} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* MODE: LISTENING */}
-          {activeMode === "listening" && (
-            <div className={styles.listeningContainer}>
-              <div className={styles.listenCard}>
-                <button className={styles.bigPlayBtn} onClick={() => speak(currentWord.word)} title="Nhấn để nghe">
-                  <Play size={48} fill="white" />
-                </button>
-                <p className={styles.instruction}>Hãy nghe và nhập lại Hán tự & Nghĩa Việt</p>
-                
-                <div className={styles.quizForm}>
-                  <div className={styles.inputBox}>
-                    <label>Hán tự:</label>
-                    <input 
-                      type="text" 
-                      className={`${styles.studyInput} hanzi`} 
-                      placeholder="Nhập chữ Hán..."
-                      value={userInputs.word}
-                      onChange={e => setUserInputs({...userInputs, word: e.target.value})}
-                      disabled={showResult}
-                    />
-                    {showResult && (
-                      <span className={checkResult?.word ? styles.correct : styles.incorrect}>
-                        {checkResult?.word ? "✓ Chính xác" : `✗ Sai (Đúng là: ${currentWord.word})`}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className={styles.inputBox}>
-                    <label>Nghĩa Việt:</label>
-                    <input 
-                      type="text" 
-                      className={styles.studyInput} 
-                      placeholder="Nhập nghĩa tiếng Việt..."
-                      value={userInputs.meaning}
-                      onChange={e => setUserInputs({...userInputs, meaning: e.target.value})}
-                      disabled={showResult}
-                    />
-                    {showResult && (
-                      <span className={checkResult?.meaning ? styles.correct : styles.incorrect}>
-                        {checkResult?.meaning ? "✓ Chính xác" : `✗ Sai (Đúng là: ${currentWord.meaning})`}
-                      </span>
-                    )}
-                  </div>
-
-                  {!showResult ? (
-                    <button 
-                      className={styles.checkBtn} 
-                      onClick={() => {
-                        const wordMatch = userInputs.word.trim() === currentWord.word.trim();
-                        const meaningMatch = userInputs.meaning.trim().toLowerCase() === currentWord.meaning.trim().toLowerCase();
-                        setCheckResult({ word: wordMatch, meaning: meaningMatch });
-                        setShowResult(true);
-                      }}
-                    >
-                      Kiểm tra đáp án
-                    </button>
-                  ) : (
-                    <button 
-                      className={styles.nextBtn}
-                      onClick={() => {
-                        if (currentIndex < filteredVocab.length - 1) {
-                          setCurrentIndex(prev => prev + 1);
-                          setUserInputs({ word: "", meaning: "" });
-                          setShowResult(false);
-                          setCheckResult(null);
-                        } else {
-                          alert("Chúc mừng! Bạn đã hoàn thành bài luyện nghe.");
-                        }
-                      }}
-                    >
-                      Tiếp theo <ChevronRight size={18} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.navBtns}>
-                <button 
-                  disabled={currentIndex === 0} 
-                  onClick={() => setCurrentIndex(prev => prev - 1)}
-                  className={styles.navBtn}
-                >
-                  Câu trước
-                </button>
-                <button 
-                  disabled={currentIndex === filteredVocab.length - 1} 
-                  onClick={() => setCurrentIndex(prev => prev + 1)}
-                  className={styles.navBtn}
-                >
-                  Tiếp theo
-                </button>
-              </div>
-            </div>
-          )}
-
-        </main>
+      {/* Mastery progress */}
+      {vocab.length > 0 && (
+        <div className={styles.masterySection}>
+          <div className={styles.masteryHeader}>
+            <span>Mức độ thành thạo tổng thể</span>
+            <span style={{fontWeight:700, color: avgProgress >= 85 ? '#22c55e' : '#f59e0b'}}>{avgProgress}%</span>
+          </div>
+          <div className={styles.masteryTrack}>
+            <div className={styles.masteryFill} style={{width:`${avgProgress}%`}} />
+            <div className={styles.masteryThreshold} style={{left:'85%'}} title="Ngưỡng thành thạo 85%" />
+          </div>
+          <p className={styles.masteryHint}>Đạt &gt;85% để được coi là thành thạo · {mastered}/{vocab.length} từ đạt ngưỡng</p>
+        </div>
       )}
     </div>
   );
