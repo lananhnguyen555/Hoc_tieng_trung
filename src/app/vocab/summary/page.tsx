@@ -125,9 +125,9 @@ export default function VocabSummaryPage() {
           <table className={styles.vocabTable} style={{tableLayout:'fixed', width:'100%'}}>
             <colgroup>
               <col style={{width:'5%'}} />    {/* STT */}
-              <col style={{width:'16%'}} />   {/* Hán tự - rộng hơn */}
-              <col style={{width:'13%'}} />   {/* Pinyin - hẹp hơn Hán tự */}
-              <col style={{width:'100px'}} /> {/* Loại từ - cố định 100px */}
+              <col style={{width:'20%'}} />   {/* Hán tự - rộng nhất */}
+              <col style={{width:'14%'}} />   {/* Pinyin */}
+              <col style={{width:'130px'}} /> {/* Loại từ - 130px có padding */}
               <col />                         {/* Nghĩa - còn lại */}
             </colgroup>
             <thead>
@@ -144,10 +144,10 @@ export default function VocabSummaryPage() {
                 <tr key={item.id}>
                   <td style={{textAlign:'center', color:'#94a3b8', fontWeight:'700'}}>{index + 1}</td>
                   <td>
-                    <span className="hanzi" style={{fontSize:'1.8rem'}}>{item.word}</span>
+                    <span className="hanzi" style={{fontSize:'2.5rem'}}>{item.word}</span>
                   </td>
                   <td style={{fontWeight:'700', color:'#6366f1', fontSize:'0.92rem'}}>{item.pinyin}</td>
-                  <td style={{textAlign:'center'}}>
+                  <td style={{textAlign:'center', paddingRight:'1.5rem'}}>
                     <span className={styles.typeBadge}>{item.word_type || 'N/A'}</span>
                   </td>
                   <td style={{fontWeight:'600'}}>{item.meaning}</td>
