@@ -124,11 +124,11 @@ export default function VocabSummaryPage() {
         <div className={styles.tableWrapper}>
           <table className={styles.vocabTable} style={{tableLayout:'fixed', width:'100%'}}>
             <colgroup>
-              <col style={{width:'50px'}} />   {/* STT */}
-              <col style={{width:'120px'}} />  {/* Hán tự */}
-              <col style={{width:'170px'}} />  {/* Pinyin */}
-              <col style={{width:'90px'}} />   {/* Loại từ */}
-              <col />                          {/* Nghĩa */}
+              <col style={{width:'5%'}} />    {/* STT */}
+              <col style={{width:'16%'}} />   {/* Hán tự - rộng hơn */}
+              <col style={{width:'13%'}} />   {/* Pinyin - hẹp hơn Hán tự */}
+              <col style={{width:'100px'}} /> {/* Loại từ - cố định 100px */}
+              <col />                         {/* Nghĩa - còn lại */}
             </colgroup>
             <thead>
               <tr>
