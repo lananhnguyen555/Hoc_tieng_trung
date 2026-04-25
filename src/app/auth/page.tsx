@@ -27,15 +27,17 @@ export default function AuthPage() {
         });
         if (signInError) throw signInError;
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
         });
         if (signUpError) throw signUpError;
-        alert("Kiểm tra email của bạn để xác nhận đăng ký!");
+        // Nếu email confirmation bị tắt trong Supabase → đăng nhập luôn
+        if (data?.session) {
+          router.push("/");
+          return;
+        }
+        setError("Kiểm tra email để xác nhận đăng ký (nếu có).");
       }
       
       if (isLogin) router.push("/");
