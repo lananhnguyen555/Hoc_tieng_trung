@@ -125,23 +125,24 @@ export default function VocabSummaryPage() {
           <table className={styles.vocabTable}>
             <thead>
               <tr>
-                <th style={{width: '60px'}}>STT</th>
-                <th>Hán tự</th>
-                <th>Pinyin</th>
+                <th style={{width: '55px', textAlign:'center'}}>STT</th>
+                <th style={{width: '180px'}}>Hán tự / Pinyin</th>
                 <th>Nghĩa tiếng Việt</th>
-                <th>Loại từ</th>
+                <th style={{width: '100px', textAlign:'center'}}>Loại từ</th>
               </tr>
             </thead>
             <tbody>
               {filteredVocab.map((item, index) => (
                 <tr key={item.id}>
-                  <td style={{textAlign: 'center', fontWeight: 'bold'}}>{index + 1}</td>
+                  <td style={{textAlign: 'center', fontWeight: 'bold', color:'#94a3b8'}}>{index + 1}</td>
                   <td>
-                    <span className="hanzi" style={{fontSize: '2rem'}}>{item.word}</span>
+                    <div style={{display:'flex', flexDirection:'column', gap:'0.1rem', lineHeight:1.2}}>
+                      <span className="hanzi" style={{fontSize: '1.8rem'}}>{item.word}</span>
+                      <span style={{fontSize:'0.82rem', color:'#6366f1', fontWeight:700, letterSpacing:'0.02em'}}>{item.pinyin}</span>
+                    </div>
                   </td>
-                  <td style={{fontWeight: '800'}}>{item.pinyin}</td>
-                  <td style={{fontWeight: '800'}}>{item.meaning}</td>
-                  <td>
+                  <td style={{fontWeight: '600'}}>{item.meaning}</td>
+                  <td style={{textAlign:'center'}}>
                     <span className={styles.typeBadge}>{item.word_type || 'N/A'}</span>
                   </td>
                 </tr>
