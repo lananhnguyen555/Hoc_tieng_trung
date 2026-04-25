@@ -1,119 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 :root {
-  --primary: #0ea5e9;
-  --primary-hover: #0284c7;
-  --background: #ffffff;
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --secondary: #ec4899;
+  --accent: #06b6d4;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --background: #f8faff;
+  --surface: #ffffff;
+  --surface-2: #f1f5ff;
   --foreground: #0f172a;
-  --card-bg: #f8fafc;
-  --border: #e2e8f0;
   --text-muted: #64748b;
-  --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
-  --font-chinese: 'ChineseCalligraphy', cursive;
-  --radius: 12px;
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --nav-bg: #FFE4E1; /* Màu thiết lập theo yêu cầu người dùng */
-  --chinese-color: #0ea5e9; /* Màu xanh thư pháp theo yêu cầu */
-}
+  --border: #e2e8f0;
 
-/* Định nghĩa font-face riêng cho chữ Hán để tự động phóng to và dùng font thư pháp */
-@font-face {
-  font-family: 'ChineseCalligraphy';
-  src: local('Ma Shan Zheng'), local('PingFang SC'), local('Hiragino Sans GB'), local('Noto Sans CJK SC'), var(--font-chinese), local('cursive');
-}
+  --font-sans: 'Inter', var(--font-geist-sans), system-ui, sans-serif;
+  --font-chinese: var(--font-ma-shan-zheng), 'Ma Shan Zheng', cursive;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-lg: 24px;
 
-/* Selector toàn cục cho tất cả chữ Hán */
-/* Lưu ý: Cách tốt nhất là dùng class hoặc font-family phối hợp unicode-range */
-:is(h1, h2, h3, h4, h5, h6, p, span, div, li, td, th) {
-  font-family: inherit;
-}
+  --nav-bg: rgba(255,255,255,0.85);
+  --nav-border: rgba(99,102,241,0.15);
+  --chinese-color: #6366f1;
 
-/* Áp dụng màu sắc cho chữ Hán nếu có thể hoặc qua class */
-.hanzi {
-  font-family: var(--font-chinese);
-  color: var(--chinese-color);
-  font-weight: 400;
-  font-size: 2.8rem; /* Giảm nhẹ để cân đối hơn */
-  line-height: 1.1;
-  display: inline-block;
-  vertical-align: middle;
-}
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 20px rgba(99,102,241,0.1), 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 20px 60px rgba(99,102,241,0.15), 0 8px 24px rgba(0,0,0,0.08);
 
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  --gradient-cool: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
+  --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+}
 
 [data-theme='dark'] {
-  --primary: #38bdf8;
-  --primary-hover: #7dd3fc;
-  --background: #020617;
-  --foreground: #f8fafc;
-  --card-bg: #1e293b;
-  --border: #334155;
+  --primary: #818cf8;
+  --primary-light: #a5b4fc;
+  --primary-dark: #6366f1;
+  --background: #080c1a;
+  --surface: #0f162b;
+  --surface-2: #141d35;
+  --foreground: #f1f5f9;
   --text-muted: #94a3b8;
-  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  --nav-bg: #0f172a;
+  --border: #1e2d4d;
+  --nav-bg: rgba(8,12,26,0.9);
+  --nav-border: rgba(99,102,241,0.2);
+  --chinese-color: #a5b4fc;
+  --shadow: 0 4px 20px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.4);
+}
+
+@font-face {
+  font-family: 'ChineseCalligraphy';
+  src: local('Ma Shan Zheng'), local('PingFang SC'), local('Noto Sans CJK SC');
 }
 
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-html,
-body {
+html, body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: var(--font-sans);
   background: var(--background);
   color: var(--foreground);
-  line-height: 1.8; /* Tăng khoảng cách dòng để phù hợp với chữ Hán to */
+  line-height: 1.6;
   scroll-behavior: smooth;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 999px; opacity: 0.5; }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
-}
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-  padding-top: 90px; /* Bù cho chiều cao Navbar */
+  padding-top: 80px;
 }
 
+/* ─── CARDS ─── */
 .card {
-  background: var(--card-bg);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
   box-shadow: var(--shadow);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
+.card:hover { box-shadow: var(--shadow-lg); }
 
+/* ─── BUTTONS ─── */
 .btn-primary {
-  background: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--gradient-primary);
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.75rem;
   border-radius: var(--radius);
-  font-weight: 600;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+  border: none;
+  cursor: pointer;
 }
-
 .btn-primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99,102,241,0.5);
 }
 
+/* ─── HANZI ─── */
+.hanzi {
+  font-family: var(--font-chinese);
+  color: var(--chinese-color);
+  font-weight: 400;
+  font-size: 2.5rem;
+  line-height: 1.1;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ─── GLASS ─── */
 .glass {
-  background: var(--nav-bg) !important; /* Đảm bảo màu đục và không bị ghi đè */
-  border-bottom: 1px solid var(--border);
-  z-index: 1000;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--nav-border);
 }
-/* Loại bỏ tất cả các pseudo-alpha trong theme sáng/tối để màu sắc nhất quán chói lóa */
 
-
+/* ─── ANIMATIONS ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.3); }
+  50% { box-shadow: 0 0 40px rgba(99,102,241,0.6), 0 0 60px rgba(236,72,153,0.2); }
+}
