@@ -136,7 +136,7 @@ export default function VocabSummaryPage() {
                 <th>Hán tự</th>
                 <th>Pinyin</th>
                 <th style={{textAlign:'center'}}>Loại từ</th>
-                <th>Nghĩa tiếng Việt</th>
+                <th style={{paddingLeft:'2rem'}}>Nghĩa tiếng Việt</th>
               </tr>
             </thead>
             <tbody>
@@ -150,7 +150,7 @@ export default function VocabSummaryPage() {
                   <td style={{textAlign:'center', paddingRight:'1.5rem'}}>
                     <span className={styles.typeBadge}>{item.word_type || 'N/A'}</span>
                   </td>
-                  <td style={{fontWeight:'600'}}>{item.meaning}</td>
+                  <td style={{fontWeight:'600', paddingLeft:'2rem'}}>{item.meaning}</td>
                 </tr>
               ))}
             </tbody>
