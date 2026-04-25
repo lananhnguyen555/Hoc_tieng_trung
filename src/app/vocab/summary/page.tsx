@@ -125,18 +125,18 @@ export default function VocabSummaryPage() {
           <table className={styles.vocabTable} style={{tableLayout:'fixed', width:'100%'}}>
             <colgroup>
               <col style={{width:'50px'}} />   {/* STT */}
-              <col style={{width:'110px'}} />  {/* Hán tự */}
-              <col style={{width:'160px'}} />  {/* Pinyin */}
-              <col />                          {/* Nghĩa */}
+              <col style={{width:'120px'}} />  {/* Hán tự */}
+              <col style={{width:'170px'}} />  {/* Pinyin */}
               <col style={{width:'90px'}} />   {/* Loại từ */}
+              <col />                          {/* Nghĩa */}
             </colgroup>
             <thead>
               <tr>
                 <th style={{textAlign:'center'}}>STT</th>
                 <th>Hán tự</th>
                 <th>Pinyin</th>
-                <th>Nghĩa tiếng Việt</th>
                 <th style={{textAlign:'center'}}>Loại từ</th>
+                <th>Nghĩa tiếng Việt</th>
               </tr>
             </thead>
             <tbody>
@@ -147,10 +147,10 @@ export default function VocabSummaryPage() {
                     <span className="hanzi" style={{fontSize:'1.8rem'}}>{item.word}</span>
                   </td>
                   <td style={{fontWeight:'700', color:'#6366f1', fontSize:'0.92rem'}}>{item.pinyin}</td>
-                  <td style={{fontWeight:'600'}}>{item.meaning}</td>
                   <td style={{textAlign:'center'}}>
                     <span className={styles.typeBadge}>{item.word_type || 'N/A'}</span>
                   </td>
+                  <td style={{fontWeight:'600'}}>{item.meaning}</td>
                 </tr>
               ))}
             </tbody>
