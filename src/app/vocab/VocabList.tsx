@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Volume2, Plus, X, Edit2, Trash2, BookOpen, Save, FileUp, LogIn } from "lucide-react";
 import styles from "./vocab.module.css";
 import HanziWriter from "hanzi-writer";
@@ -10,6 +10,16 @@ import { HAN_VIET_DATA } from "@/lib/han-viet";
 import * as XLSX from "xlsx";
 import { pinyin } from "pinyin-pro";
 import { isAdmin } from "@/lib/auth-utils";
+import ColumnSettings, { ColConfig } from "@/components/ColumnSettings";
+
+const DEFAULT_VOCAB_COLS: ColConfig[] = [
+  { key: "stt",    label: "STT",      width: 50,  unit: "px", min: 36,  max: 100 },
+  { key: "hanzi",  label: "Hán tự",   width: 130, unit: "px", min: 80,  max: 240 },
+  { key: "pinyin", label: "Pinyin",   width: 150, unit: "px", min: 80,  max: 260 },
+  { key: "loaitu", label: "Loại từ",  width: 100, unit: "px", min: 70,  max: 160 },
+  { key: "nghia",  label: "Nghĩa Việt", width: 200, unit: "px", min: 120, max: 400 },
+  { key: "action", label: "Thao tác", width: 110, unit: "px", min: 80,  max: 160 },
+];
 
 interface Word {
   id: string;
@@ -65,6 +75,9 @@ export default function VocabList() {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   
+  const [vocabCols, setVocabCols] = useState<ColConfig[]>(DEFAULT_VOCAB_COLS);
+  const handleVocabColsChange = useCallback((c: ColConfig[]) => setVocabCols(c), []);
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [detailedWord, setDetailedWord] = useState<Word | null>(null);
@@ -464,6 +477,7 @@ export default function VocabList() {
           <button className={styles.addBtn} style={{background:'#1ea362', color:'white'}} onClick={handleExportExcel}><FileUp size={20} /> Xuất</button>
           <button className={styles.addBtn} style={{background:'var(--foreground)', color:'white'}} onClick={() => setShowImportModal(true)}><LogIn size={20} /> Nhập</button>
           <button className={styles.addBtn} onClick={handleOpenAddModal}><Plus size={20} /> Thêm mới</button>
+          <ColumnSettings storageKey="col_vocab" defaultCols={DEFAULT_VOCAB_COLS} onChange={handleVocabColsChange} />
         </div>
       </div>
 
@@ -471,7 +485,10 @@ export default function VocabList() {
         <div className={styles.emptyState}><BookOpen size={48} style={{opacity:0.2, marginBottom:'1rem'}} /><p>Chọn bài học để bắt đầu!</p></div>
       ) : (
         <div className={styles.tableWrapper}>
-          <table className={styles.vocabTable}>
+          <table className={styles.vocabTable} style={{tableLayout:'fixed', width:'100%'}}>
+            <colgroup>
+              {vocabCols.map(c => <col key={c.key} style={{width:`${c.width}${c.unit}`}} />)}
+            </colgroup>
             <thead><tr><th className={styles.sttCell}>STT</th><th>Hán tự</th><th>Pinyin</th><th>Loại từ</th><th>Nghĩa Việt</th><th className={styles.actionCell}>Thao tác</th></tr></thead>
             <tbody>
               {filteredVocab.map((item, index) => (

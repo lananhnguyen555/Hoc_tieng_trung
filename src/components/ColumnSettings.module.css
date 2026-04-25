@@ -1,0 +1,193 @@
+.wrapper {
+  position: relative;
+}
+
+/* ── Toggle button ── */
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.48rem 1rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(99,102,241,0.35);
+  white-space: nowrap;
+}
+.toggleBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(99,102,241,0.45);
+}
+
+/* ── Panel ── */
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 200;
+  width: 480px;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(99,102,241,0.15), 0 4px 12px rgba(0,0,0,0.08);
+  animation: popIn 0.18s ease;
+  overflow: hidden;
+}
+@media (max-width: 600px) { .panel { width: calc(100vw - 2rem); right: 0; } }
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.panelHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fafafa;
+}
+
+.panelTitle {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.adminTag {
+  background: #fef3c7;
+  color: #d97706;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.resetBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.resetBtn:hover { border-color: #6366f1; color: #6366f1; }
+
+.closeBtn {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: #f3f4f6;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.15s;
+}
+.closeBtn:hover { background: #fee2e2; color: #ef4444; }
+
+/* ── Column list ── */
+.colList {
+  padding: 0.5rem 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.colRow {
+  display: grid;
+  grid-template-columns: 180px 1fr 72px;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 1.25rem;
+  border-bottom: 1px solid #f9fafb;
+  transition: background 0.1s;
+}
+.colRow:last-child { border-bottom: none; }
+.colRow:hover { background: #fafafe; }
+
+.colMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.colIdx {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: #ede9fe;
+  color: #6366f1;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.colLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Slider group: min — slider — max */
+.sliderGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sliderMin, .sliderMax {
+  font-size: 0.68rem;
+  color: #9ca3af;
+  flex-shrink: 0;
+  min-width: 28px;
+}
+.sliderMax { text-align: right; }
+
+.slider {
+  flex: 1;
+  height: 5px;
+  border-radius: 99px;
+  appearance: none;
+  background: linear-gradient(90deg, #6366f1, #a5b4fc);
+  cursor: pointer;
+  outline: none;
+}
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: white;
+  border: 2.5px solid #6366f1;
+  box-shadow: 0 2px 6px rgba(99,102,241,0.4);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.slider::-webkit-slider-thumb:hover { transform: scale(1.25); }
+
+.colValue {
+  background: #f0f0ff;
+  color: #4f46e5;
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+  min-width: 62px;
+}
+.colUnit { font-size: 0.7rem; opacity: 0.7; margin-left: 1px; }
